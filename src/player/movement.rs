@@ -2,6 +2,7 @@ use avian2d::math::Scalar;
 use avian2d::prelude::*;
 use bevy::prelude::*;
 
+use crate::menus::Menu;
 use crate::screens::Screen;
 
 use super::Player;
@@ -18,11 +19,45 @@ pub struct RotationSpeed(pub Scalar);
 #[derive(Component, Deref, DerefMut)]
 pub struct MaxSpeed(pub Scalar);
 
+#[derive(Component)]
+pub struct CurrentSpeed {
+    pub x: Scalar,
+    pub y: Scalar,
+    pub angular_velocity: Scalar,
+}
+
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         Update,
-        (keyboard_input, movement_update).run_if(in_state(Screen::Gameplay)),
-    );
+        (keyboard_input, movement_update)
+            .run_if(in_state(Screen::Gameplay).and(in_state(Menu::None))),
+    )
+    .add_systems(OnEnter(Menu::Pause), on_pause)
+    .add_systems(OnExit(Menu::Pause), on_unpause);
+}
+
+fn on_unpause(
+    player_query: Single<(&mut LinearVelocity, &mut AngularVelocity, &CurrentSpeed), With<Player>>,
+) {
+    let (mut velocity, mut angular_velocity, current_speed) = player_query.into_inner();
+
+    velocity.x = current_speed.x;
+    velocity.y = current_speed.y;
+    angular_velocity.0 = current_speed.angular_velocity;
+}
+
+fn on_pause(
+    player: Single<(&mut LinearVelocity, &mut AngularVelocity, &mut CurrentSpeed), With<Player>>,
+) {
+    let (mut velocity, mut angular_velocity, mut current_speed) = player.into_inner();
+
+    current_speed.x = velocity.x;
+    current_speed.y = velocity.y;
+    current_speed.angular_velocity = angular_velocity.0;
+
+    velocity.x = 0.0;
+    velocity.y = 0.0;
+    angular_velocity.0 = 0.0;
 }
 
 fn keyboard_input(
@@ -46,11 +81,15 @@ fn keyboard_input(
     let (mut velocity, mut angular_velocity, transform, acceleration, rotation_speed, max_speed) =
         player_query.into_inner();
 
-    if left {
+    if left && right {
+        angular_velocity.0 = 0.;
+    } else if left {
         angular_velocity.0 = **rotation_speed;
     } else if right {
         angular_velocity.0 = -**rotation_speed;
-    } else {
+    }
+
+    if angular_velocity.0 != 0. {
         angular_velocity.0 *= 0.95;
     }
 
@@ -64,9 +103,9 @@ fn keyboard_input(
     velocity.x += thrust_force.x;
     velocity.y += thrust_force.y;
 
-    let current_speed = (velocity.x * velocity.x + velocity.y * velocity.y).sqrt();
-    if current_speed > **max_speed {
-        let scale = **max_speed / current_speed;
+    let speed = (velocity.x * velocity.x + velocity.y * velocity.y).sqrt();
+    if speed > **max_speed {
+        let scale = **max_speed / speed;
         velocity.x *= scale;
         velocity.y *= scale;
     }

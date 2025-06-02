@@ -1,16 +1,19 @@
 use avian2d::prelude::{AngularVelocity, LinearVelocity, RigidBody};
 use bevy::prelude::*;
 
-use crate::{demo::player, screens::Screen};
+use crate::screens::Screen;
 
 use super::{
     Player,
     assets::PlayerAssets,
-    movement::{MaxSpeed, MovementAcceleration, MovementDampingFactor, RotationSpeed},
+    movement::{
+        CurrentSpeed, MaxSpeed, MovementAcceleration, MovementDampingFactor, RotationSpeed,
+    },
 };
 
 pub(crate) fn plugin(app: &mut App) {
-    app.add_systems(OnEnter(Screen::Gameplay), spawn_player);
+    app.add_systems(OnEnter(Screen::Gameplay), spawn_player)
+        .add_systems(OnExit(Screen::Gameplay), despawn_player);
 }
 
 fn spawn_player(mut commands: Commands, player_assets: Res<PlayerAssets>) {
@@ -28,6 +31,9 @@ fn spawn_player_with_movement(
     // we don't have a sprite for the ship yet might just rip a random thing off google for testing.
     // SpriteBundle: SpriteBundle,
 ) -> Entity {
+    let mut sprite = Sprite::from_image(player_assets.ship.clone());
+    sprite.custom_size = Some(Vec2::new(64.0, 64.0)); // Set a custom size for the sprite
+
     commands
         .spawn((
             Player,
@@ -38,8 +44,17 @@ fn spawn_player_with_movement(
             RotationSpeed(3.0),
             MaxSpeed(300.0),
             MovementDampingFactor(2.0),
-            Sprite::from_image(player_assets.ship.clone()),
+            CurrentSpeed {
+                x: 0.0,
+                y: 0.0,
+                angular_velocity: 0.0,
+            },
+            sprite,
+            transform,
         ))
-        .insert(transform)
         .id()
+}
+
+fn despawn_player(mut commands: Commands, player_query: Single<Entity, With<Player>>) {
+    commands.entity(*player_query).despawn();
 }
