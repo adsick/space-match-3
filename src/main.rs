@@ -11,10 +11,11 @@ mod dev_tools;
 mod menus;
 mod player;
 mod screens;
+mod terrain;
 mod theme;
 use avian2d::prelude::*;
 use bevy::{asset::AssetMetaCheck, prelude::*};
-use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
+use bevy_inspector_egui::bevy_egui::EguiPlugin;
 
 fn main() -> AppExit {
     App::new().add_plugins(AppPlugin).run()
@@ -47,7 +48,6 @@ impl Plugin for AppPlugin {
             EguiPlugin {
                 enable_multipass_for_primary_context: true,
             },
-            WorldInspectorPlugin::new()
         ));
 
         // Add other plugins.
@@ -60,6 +60,7 @@ impl Plugin for AppPlugin {
             screens::plugin,
             theme::plugin,
             player::plugin,
+            terrain::plugin,
         ));
 
         // Order new `AppSystems` variants by adding them here:
@@ -105,5 +106,15 @@ struct Pause(pub bool);
 struct PausableSystems;
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn((Name::new("Camera"), Camera2d));
+    commands.spawn((
+        Name::new("Camera"),
+        Camera2d,
+        Projection::Orthographic(OrthographicProjection {
+            scaling_mode: bevy::render::camera::ScalingMode::FixedVertical {
+                viewport_height: 2.0,
+            },
+            scale: 10.0,
+            ..OrthographicProjection::default_2d()
+        }),
+    ));
 }

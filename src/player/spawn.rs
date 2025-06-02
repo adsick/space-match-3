@@ -1,4 +1,4 @@
-use avian2d::prelude::{AngularVelocity, LinearVelocity, RigidBody};
+use avian2d::prelude::{AngularDamping, AngularVelocity, LinearDamping, LinearVelocity, RigidBody};
 use bevy::prelude::*;
 
 use crate::screens::Screen;
@@ -30,7 +30,7 @@ fn spawn_player_with_movement(
     // SpriteBundle: SpriteBundle,
 ) -> Entity {
     let mut sprite = Sprite::from_image(player_assets.ship.clone());
-    sprite.custom_size = Some(Vec2::new(64.0, 64.0));
+    sprite.custom_size = Some(Vec2::new(1.0, 1.0));
 
     commands
         .spawn((
@@ -38,10 +38,11 @@ fn spawn_player_with_movement(
             RigidBody::Dynamic,
             LinearVelocity::ZERO,
             AngularVelocity(0.0),
-            MovementAcceleration(500.0),
-            RotationSpeed(3.0),
-            MaxSpeed(300.0),
-            MovementDampingFactor(2.0),
+            MovementAcceleration(500.0 / 100.0),
+            AngularDamping(2.0),
+            LinearDamping(1.0),
+            RotationSpeed(1.5),
+            MaxSpeed(300.0 / 100.0),
             sprite,
             transform,
         ))

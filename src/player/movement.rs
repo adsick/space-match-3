@@ -57,21 +57,13 @@ fn keyboard_input(
         angular_velocity.0 = -**rotation_speed;
     }
 
-    if angular_velocity.0 != 0. {
-        angular_velocity.0 *= 0.95;
-    }
+    let forward_dir = (transform.rotation * Vec3::Y).truncate();
 
-    let forward_dir = Vec2::new(
-        transform.rotation.mul_vec3(Vec3::Y).x,
-        transform.rotation.mul_vec3(Vec3::Y).y,
-    );
+    let thrust_force = forward_dir * **acceleration * 1.;
 
-    let thrust_force = forward_dir * **acceleration * 1. * time.delta_secs();
+    velocity.0 += thrust_force * time.delta_secs();
 
-    velocity.x += thrust_force.x;
-    velocity.y += thrust_force.y;
-
-    let speed = (velocity.x * velocity.x + velocity.y * velocity.y).sqrt();
+    let speed = velocity.0.length();
     if speed > **max_speed {
         let scale = **max_speed / speed;
         velocity.x *= scale;
@@ -79,19 +71,16 @@ fn keyboard_input(
     }
 }
 
-fn movement_update(
-    player_query: Single<(&mut LinearVelocity, &MovementDampingFactor), With<Player>>,
-    time: Res<Time>,
-) {
-    let (mut velocity, damping_factor) = player_query.into_inner();
+fn movement_update(player_query: Single<&mut LinearVelocity, With<Player>>, time: Res<Time>) {
+    let mut velocity = player_query.into_inner();
 
-    velocity.x *= 1.0 - **damping_factor * time.delta_secs();
-    velocity.y *= 1.0 - **damping_factor * time.delta_secs();
+    // velocity.x *= 1.0 * damping_factor.0.powf(time.delta_secs());
+    // velocity.y *= 1.0 * damping_factor.0.powf(time.delta_secs());
 
-    if velocity.x.abs() < 0.1 {
-        velocity.x = 0.0;
-    }
-    if velocity.y.abs() < 0.1 {
-        velocity.y = 0.0;
-    }
+    // if velocity.x.abs() < 0.001 {
+    //     velocity.x = 0.0;
+    // }
+    // if velocity.y.abs() < 0.001 {
+    //     velocity.y = 0.0;
+    // }
 }
