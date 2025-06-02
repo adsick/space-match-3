@@ -21,7 +21,7 @@ jobs:
   # Check formatting.
   format:
     name: Format
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 10
     steps:
       - name: Checkout repository
@@ -39,7 +39,7 @@ jobs:
   # Check documentation.
   docs:
     name: Docs
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 20
     steps:
       - name: Checkout repository
@@ -67,7 +67,7 @@ jobs:
   # Run Clippy lints.
   clippy-lints:
     name: Clippy lints
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 20
     steps:
       - name: Checkout repository
@@ -96,7 +96,7 @@ jobs:
   # Run Bevy lints.
   bevy-lints:
     name: Bevy lints
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 20
     steps:
       - name: Checkout repository
@@ -122,7 +122,7 @@ jobs:
   # Run tests.
   tests:
     name: Tests
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 40
     steps:
       - name: Checkout repository
@@ -153,7 +153,7 @@ jobs:
   # Check that the web build compiles.
   check-web:
     name: Check web
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 20
     steps:
       - name: Checkout repository
