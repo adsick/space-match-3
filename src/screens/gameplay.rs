@@ -1,5 +1,6 @@
 //! The screen state for the main gameplay.
 
+use avian2d::prelude::{Physics, PhysicsTime};
 use bevy::{input::common_conditions::input_just_pressed, prelude::*, ui::Val::*};
 
 use crate::{Pause, menus::Menu, screens::Screen};
@@ -28,11 +29,13 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
-fn unpause(mut next_pause: ResMut<NextState<Pause>>) {
+fn unpause(mut next_pause: ResMut<NextState<Pause>>, mut phys_time: ResMut<Time<Physics>>) {
+    phys_time.unpause();
     next_pause.set(Pause(false));
 }
 
-fn pause(mut next_pause: ResMut<NextState<Pause>>) {
+fn pause(mut next_pause: ResMut<NextState<Pause>>, mut phys_time: ResMut<Time<Physics>>) {
+    phys_time.pause();
     next_pause.set(Pause(true));
 }
 

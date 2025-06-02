@@ -6,9 +6,7 @@ use crate::screens::Screen;
 use super::{
     Player,
     assets::PlayerAssets,
-    movement::{
-        CurrentSpeed, MaxSpeed, MovementAcceleration, MovementDampingFactor, RotationSpeed,
-    },
+    movement::{MaxSpeed, MovementAcceleration, MovementDampingFactor, RotationSpeed},
 };
 
 pub(crate) fn plugin(app: &mut App) {
@@ -45,7 +43,6 @@ fn spawn_player_with_movement(
             MaxSpeed(300.0),
             MovementDampingFactor(2.0),
             sprite,
-            CurrentSpeed::default(),
             transform,
         ))
         .id()
