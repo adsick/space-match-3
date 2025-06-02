@@ -44,7 +44,7 @@ impl Plugin for AppPlugin {
                     .into(),
                     ..default()
                 }),
-            PhysicsPlugins::default().with_length_unit(20.0),
+            PhysicsPlugins::default().with_length_unit(1.0),
             EguiPlugin {
                 enable_multipass_for_primary_context: true,
             },

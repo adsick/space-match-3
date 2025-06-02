@@ -63,6 +63,7 @@ fn keyboard_input(
 
     velocity.0 += thrust_force * time.delta_secs();
 
+    // TODO: not framerate-independent
     let speed = velocity.0.length();
     if speed > **max_speed {
         let scale = **max_speed / speed;
