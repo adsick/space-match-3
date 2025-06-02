@@ -12,7 +12,7 @@ mod menus;
 mod player;
 mod screens;
 mod theme;
-use avian2d::{math::*, prelude::*};
+use avian2d::prelude::*;
 use bevy::{asset::AssetMetaCheck, prelude::*};
 
 fn main() -> AppExit {

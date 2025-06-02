@@ -32,7 +32,7 @@ fn spawn_player_with_movement(
     // SpriteBundle: SpriteBundle,
 ) -> Entity {
     let mut sprite = Sprite::from_image(player_assets.ship.clone());
-    sprite.custom_size = Some(Vec2::new(64.0, 64.0)); // Set a custom size for the sprite
+    sprite.custom_size = Some(Vec2::new(64.0, 64.0));
 
     commands
         .spawn((
@@ -44,12 +44,8 @@ fn spawn_player_with_movement(
             RotationSpeed(3.0),
             MaxSpeed(300.0),
             MovementDampingFactor(2.0),
-            CurrentSpeed {
-                x: 0.0,
-                y: 0.0,
-                angular_velocity: 0.0,
-            },
             sprite,
+            CurrentSpeed::default(),
             transform,
         ))
         .id()

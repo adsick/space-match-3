@@ -2,6 +2,7 @@ use avian2d::math::Scalar;
 use avian2d::prelude::*;
 use bevy::prelude::*;
 
+use crate::PausableSystems;
 use crate::menus::Menu;
 use crate::screens::Screen;
 
@@ -19,7 +20,7 @@ pub struct RotationSpeed(pub Scalar);
 #[derive(Component, Deref, DerefMut)]
 pub struct MaxSpeed(pub Scalar);
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct CurrentSpeed {
     pub x: Scalar,
     pub y: Scalar,
@@ -30,7 +31,8 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         Update,
         (keyboard_input, movement_update)
-            .run_if(in_state(Screen::Gameplay).and(in_state(Menu::None))),
+            .run_if(in_state(Screen::Gameplay))
+            .in_set(PausableSystems),
     )
     .add_systems(OnEnter(Menu::Pause), on_pause)
     .add_systems(OnExit(Menu::Pause), on_unpause);
