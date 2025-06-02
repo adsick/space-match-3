@@ -3,7 +3,6 @@ use avian2d::prelude::*;
 use bevy::prelude::*;
 
 use crate::PausableSystems;
-use crate::menus::Menu;
 use crate::screens::Screen;
 
 use super::Player;
