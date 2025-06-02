@@ -9,9 +9,10 @@ mod demo;
 #[cfg(feature = "dev")]
 mod dev_tools;
 mod menus;
+mod player;
 mod screens;
 mod theme;
-
+use avian2d::{math::*, prelude::*};
 use bevy::{asset::AssetMetaCheck, prelude::*};
 
 fn main() -> AppExit {
@@ -23,7 +24,7 @@ pub struct AppPlugin;
 impl Plugin for AppPlugin {
     fn build(&self, app: &mut App) {
         // Add Bevy plugins.
-        app.add_plugins(
+        app.add_plugins((
             DefaultPlugins
                 .set(AssetPlugin {
                     // Wasm builds will check for meta files (that don't exist) if this isn't set.
@@ -41,18 +42,19 @@ impl Plugin for AppPlugin {
                     .into(),
                     ..default()
                 }),
-        );
+            PhysicsPlugins::default().with_length_unit(20.0),
+        ));
 
         // Add other plugins.
         app.add_plugins((
             asset_tracking::plugin,
             audio::plugin,
-            demo::plugin,
             #[cfg(feature = "dev")]
             dev_tools::plugin,
             menus::plugin,
             screens::plugin,
             theme::plugin,
+            player::plugin,
         ));
 
         // Order new `AppSystems` variants by adding them here:
