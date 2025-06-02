@@ -84,7 +84,7 @@ jobs:
   # This is needed because the `env` context can't be used in the `if:` condition of a job:
   # <https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability>
   forward-env:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Do nothing
         run: "true"
@@ -93,7 +93,7 @@ jobs:
 
   # Determine the version number for this workflow.
   get-version:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Determine version number
         id: tag
@@ -301,7 +301,7 @@ jobs:
 
   # Upload all packages to itch.io.
   upload-to-itch:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs:
       - forward-env
       - get-version
