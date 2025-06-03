@@ -132,7 +132,7 @@ fn spawn_camera(mut commands: Commands) {
     commands.spawn((
         DirectionalLight {
             color: WHITE.into(),
-            illuminance: 3000.0,
+            illuminance: 500.0,
             shadows_enabled: false,
             ..Default::default()
         },
