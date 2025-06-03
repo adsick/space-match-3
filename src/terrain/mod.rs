@@ -6,7 +6,7 @@
 
 use std::collections::HashSet;
 
-use bevy::prelude::*;
+use bevy::{color::palettes::css::WHEAT, prelude::*, render::mesh::CircleMeshBuilder};
 use noiz::{Noise, SampleableFor, prelude::common_noise::Simplex};
 
 use crate::player::Player;
@@ -20,7 +20,7 @@ pub fn plugin(app: &mut App) {
 
 const CHUNK_SIZE: f32 = 7.0; // TODO: Increase this
 /// Number of orbs per m²
-const MAX_CLOUD_DENSITY: f32 = 1.0;
+const MAX_CLOUD_DENSITY: f32 = 2.0;
 
 // Chunks that have already been spawned.
 #[derive(Default, Resource)]
@@ -68,6 +68,8 @@ fn populate_chunk(
     trigger: Trigger<PopulateChunk>,
     mut cmds: Commands,
     terrain: Res<TerrainGenerator>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     // Calculate how many subdivisions along each axis is required to get the desired maximum cloud density.
     const CHUNK_SUBDIV: usize = ((MAX_CLOUD_DENSITY * CHUNK_SIZE * CHUNK_SIZE) as usize).isqrt();
@@ -78,7 +80,9 @@ fn populate_chunk(
                 + Vec2::new(x as f32, y as f32) / (CHUNK_SUBDIV as f32))
                 * CHUNK_SIZE as f32;
 
-            if rand::random::<f32>() > terrain.orb_probability(cell_pos) {
+            let r = terrain.orb_probability(cell_pos);
+
+            if r < 0.16 {
                 continue;
             }
 
@@ -89,10 +93,12 @@ fn populate_chunk(
 
             // TODO: Spawn an orb here
             cmds.spawn((
-                Sprite {
-                    custom_size: Some(Vec2::splat(CHUNK_SIZE / CHUNK_SUBDIV as f32 * 0.3)),
-                    ..default()
-                },
+                Mesh2d(meshes.add(CircleMeshBuilder::new(0.2 * r, 10).build())),
+                MeshMaterial2d(materials.add(ColorMaterial::from_color(WHEAT))),
+                // Sprite {
+                //     custom_size: Some(Vec2::splat(CHUNK_SIZE / CHUNK_SUBDIV as f32 * 0.3)),
+                //     ..default()
+                // },
                 Transform::from_translation(pos.extend(0.0)),
             ));
         }
