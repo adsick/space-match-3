@@ -6,6 +6,7 @@ use bevy::prelude::*;
 
 use crate::PausableSystems;
 use crate::screens::Screen;
+use crate::terrain::TerrainGenerator;
 
 use super::Player;
 
@@ -44,16 +45,18 @@ fn keyboard_input(
         With<Player>,
     >,
     // diagnostics: Res<DiagnosticsStore>,
+    terrain: Res<TerrainGenerator>,
     time: Res<Time>,
 ) {
     let left = keyboard_input.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]);
     let right = keyboard_input.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]);
+    let brake = keyboard_input.pressed(KeyCode::Space);
 
-    let (mut velocity, mut angular_velocity, transform, acceleration, rotation_speed, max_speed) =
+    let (mut velocity, mut angular_velocity, transform, acceleration, rotation_speed, _max_speed) =
         player_query.into_inner();
 
     if left && right {
-        angular_velocity.0 = 0.;
+        angular_velocity.0 = 0.; // *instantly stops rotation when both keys are pressed
     } else if left {
         angular_velocity.0 = **rotation_speed;
     } else if right {
@@ -62,9 +65,15 @@ fn keyboard_input(
 
     let forward_dir = (transform.rotation * Vec3::Y).truncate();
 
-    let thrust_force = forward_dir * **acceleration * 1.;
+    let thrust_force = forward_dir * **acceleration;
 
-    velocity.0 += thrust_force * time.delta_secs();
+    velocity.0 += thrust_force
+        * time.delta_secs()
+        * (terrain
+            .orb_probability(transform.translation.truncate())
+            .clamp(0.1, 0.25)
+            * 6.0)
+        * (!brake as i32 as f32).clamp(0.15, 1.0);
 
     // TODO: not framerate-independent
     let speed = velocity.0.length();
@@ -86,8 +95,13 @@ fn keyboard_input(
 }
 
 #[allow(unused)]
-fn movement_update(player_query: Single<&mut LinearVelocity, With<Player>>, time: Res<Time>) {
-    let mut velocity = player_query.into_inner();
+fn movement_update(
+    mut player_query: Single<(&mut LinearVelocity, &Transform), With<Player>>,
+    time: Res<Time>,
+) {
+    // info!("going thru orb");
+    // player_query.0.x *= 1.01;
+    // player_query.0.y *= 1.01;
 
     // velocity.x *= 1.0 * damping_factor.0.powf(time.delta_secs());
     // velocity.y *= 1.0 * damping_factor.0.powf(time.delta_secs());

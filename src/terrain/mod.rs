@@ -18,7 +18,7 @@ pub fn plugin(app: &mut App) {
         .add_systems(Update, trigger_chunk_population);
 }
 
-const CHUNK_SIZE: f32 = 7.0; // TODO: Increase this
+const CHUNK_SIZE: f32 = 16.0; // TODO: Increase this
 /// Number of orbs per m²
 const MAX_CLOUD_DENSITY: f32 = 2.0;
 
@@ -27,7 +27,7 @@ const MAX_CLOUD_DENSITY: f32 = 2.0;
 pub struct PopulatedChunks(HashSet<IVec2>);
 
 #[derive(Resource)]
-struct TerrainGenerator(Noise<Simplex>);
+pub struct TerrainGenerator(Noise<Simplex>);
 
 impl TerrainGenerator {
     pub fn orb_probability(&self, p: Vec2) -> f32 {
@@ -78,7 +78,7 @@ fn populate_chunk(
         for x in 0..CHUNK_SUBDIV {
             let cell_pos = (trigger.0.as_vec2()
                 + Vec2::new(x as f32, y as f32) / (CHUNK_SUBDIV as f32))
-                * CHUNK_SIZE as f32;
+                * CHUNK_SIZE;
 
             let r = terrain.orb_probability(cell_pos);
 

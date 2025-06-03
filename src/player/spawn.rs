@@ -6,7 +6,7 @@ use crate::screens::Screen;
 use super::{
     Player,
     assets::PlayerAssets,
-    movement::{MaxSpeed, MovementAcceleration, MovementDampingFactor, RotationSpeed},
+    movement::{MaxSpeed, MovementAcceleration, RotationSpeed},
 };
 
 pub(crate) fn plugin(app: &mut App) {
