@@ -6,14 +6,20 @@ use crate::asset_tracking::LoadResource;
 #[reflect(Resource)]
 pub struct PlayerAssets {
     #[dependency]
-    pub ship: Handle<Image>,
+    pub ship: Handle<Mesh>,
 }
 
 impl FromWorld for PlayerAssets {
     fn from_world(world: &mut World) -> Self {
         let assets = world.resource::<AssetServer>();
         Self {
-            ship: assets.load("images/ship.png"),
+            ship: assets.load(
+                GltfAssetLabel::Primitive {
+                    mesh: 0,
+                    primitive: 0,
+                }
+                .from_asset("3D/Ship.glb"),
+            ),
         }
     }
 }

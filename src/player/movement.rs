@@ -77,7 +77,7 @@ fn keyboard_input(
 
     // TODO: not framerate-independent
     let speed = velocity.0.length();
-    debug!("{speed:.2}");
+    // debug!("{speed:.2}");
 
     // we don't need additional speed limiting as avian's dampening will do it for us anyway
     // if speed > **max_speed {

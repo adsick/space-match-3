@@ -24,10 +24,18 @@ impl LoadResource for App {
         let assets = world.resource::<AssetServer>();
         let handle = assets.add(value);
         let mut handles = world.resource_mut::<ResourceHandles>();
+
+        debug!("asset queued... {handle:?}");
+
         handles
             .waiting
             .push_back((handle.untyped(), |world, handle| {
                 let assets = world.resource::<Assets<T>>();
+
+                for (id, val) in assets.iter() {
+                    debug!("assets: {id:?}");
+                }
+
                 if let Some(value) = assets.get(handle.id().typed::<T>()) {
                     world.insert_resource(value.clone());
                 }
@@ -60,9 +68,11 @@ fn load_resource_assets(world: &mut World) {
             for _ in 0..resource_handles.waiting.len() {
                 let (handle, insert_fn) = resource_handles.waiting.pop_front().unwrap();
                 if assets.is_loaded_with_dependencies(&handle) {
+                    info!("asset loaded: {handle:?}");
                     insert_fn(world, &handle);
                     resource_handles.finished.push(handle);
                 } else {
+                    // debug!("waiting... {handle:?}");
                     resource_handles.waiting.push_back((handle, insert_fn));
                 }
             }

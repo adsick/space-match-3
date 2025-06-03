@@ -12,8 +12,13 @@ mod player;
 mod screens;
 mod terrain;
 mod theme;
+use std::f32::consts::PI;
+
 use avian2d::prelude::*;
-use bevy::{asset::AssetMetaCheck, diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
+use bevy::{
+    asset::AssetMetaCheck, color::palettes::css::WHITE, diagnostic::FrameTimeDiagnosticsPlugin,
+    prelude::*,
+};
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 
 fn main() -> AppExit {
@@ -106,15 +111,36 @@ struct Pause(pub bool);
 struct PausableSystems;
 
 fn spawn_camera(mut commands: Commands) {
+    // commands.spawn((
+    //     Name::new("Camera"),
+    //     Camera3d,
+    //     Projection::Orthographic(OrthographicProjection {
+    //         scaling_mode: bevy::render::camera::ScalingMode::FixedVertical {
+    //             viewport_height: 2.0,
+    //         },
+    //         scale: 1.0,
+    //         ..OrthographicProjection::default_3d()
+    //     }),
+    // ));
+
     commands.spawn((
         Name::new("Camera"),
-        Camera2d,
-        Projection::Orthographic(OrthographicProjection {
-            scaling_mode: bevy::render::camera::ScalingMode::FixedVertical {
-                viewport_height: 2.0,
-            },
-            scale: 10.0,
-            ..OrthographicProjection::default_2d()
-        }),
+        Camera3d::default(),
+        Transform::from_xyz(0.0, 0.0, 10.0).looking_at(Vec3::ZERO, Dir3::Y),
+    ));
+
+    commands.spawn((
+        DirectionalLight {
+            color: WHITE.into(),
+            illuminance: 500.0,
+            shadows_enabled: false,
+            ..Default::default()
+        },
+        Transform::default().looking_at(Vec3::new(0.0, 10.0, -2.0), Dir3::Y),
+        // Transform {
+        //     translation: Vec3::new(0.0, 0.0, 2.0),
+        //     rotation: Quat::from_rotation_x(-PI / 4.),
+        //     ..default()
+        // },
     ));
 }
