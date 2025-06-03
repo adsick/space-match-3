@@ -1,7 +1,4 @@
-use bevy::{
-    image::{ImageLoaderSettings, ImageSampler},
-    prelude::*,
-};
+use bevy::prelude::*;
 
 use crate::asset_tracking::LoadResource;
 
@@ -16,13 +13,7 @@ impl FromWorld for PlayerAssets {
     fn from_world(world: &mut World) -> Self {
         let assets = world.resource::<AssetServer>();
         Self {
-            ship: assets.load_with_settings(
-                "images/ship.png",
-                |settings: &mut ImageLoaderSettings| {
-                    // Use `nearest` image sampling to preserve pixel art style.
-                    settings.sampler = ImageSampler::nearest();
-                },
-            ),
+            ship: assets.load("images/ship.png"),
         }
     }
 }
