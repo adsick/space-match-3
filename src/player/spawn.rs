@@ -27,9 +27,23 @@ fn spawn_player_with_movement(
     transform: Transform,
     player_assets: Res<PlayerAssets>,
 ) -> Entity {
-    let mut sprite = Sprite::from_image(player_assets.ship.clone());
+    
+// commands.spawn((
+//         SceneRoot(rocket_model),
+//         Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)).with_scale(Vec3::ONE * 3.0),
+//         // CustomizeMaterial {
+//         //     material: materials.add(StandardMaterial {
+//         //         base_color: GREEN.into(),
+//         //         ..Default::default()
+//         //     }),
+//         // },
+//     ));
 
-    sprite.custom_size = Some(Vec2::new(1.0, 2.0));
+    // let mut sprite = Sprite::from_image(player_assets.ship.clone());
+
+    // sprite.custom_size = Some(Vec2::new(1.0, 2.0));
+
+
 
     commands
         .spawn((
@@ -42,7 +56,7 @@ fn spawn_player_with_movement(
             LinearDamping(0.3),
             RotationSpeed(2.0),
             MaxSpeed(1000.0 / 100.0),
-            sprite,
+            SceneRoot(player_assets.ship.clone()),
             transform,
         ))
         .id()

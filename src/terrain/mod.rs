@@ -6,7 +6,7 @@
 
 use std::collections::HashSet;
 
-use bevy::{color::palettes::css::WHEAT, prelude::*, render::mesh::CircleMeshBuilder};
+use bevy::{color::palettes::css::{GRAY, WHEAT, WHITE}, prelude::*, render::mesh::CircleMeshBuilder};
 use noiz::{Noise, SampleableFor, prelude::common_noise::Simplex};
 
 use crate::player::Player;
@@ -18,7 +18,7 @@ pub fn plugin(app: &mut App) {
         .add_systems(Update, trigger_chunk_population);
 }
 
-const CHUNK_SIZE: f32 = 7.0; // TODO: Increase this
+const CHUNK_SIZE: f32 = 20.0; // TODO: Increase this
 /// Number of orbs per m²
 const MAX_CLOUD_DENSITY: f32 = 2.0;
 
@@ -69,7 +69,8 @@ fn populate_chunk(
     mut cmds: Commands,
     terrain: Res<TerrainGenerator>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    // mut materials: ResMut<Assets<ColorMaterial>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // Calculate how many subdivisions along each axis is required to get the desired maximum cloud density.
     const CHUNK_SUBDIV: usize = ((MAX_CLOUD_DENSITY * CHUNK_SIZE * CHUNK_SIZE) as usize).isqrt();
@@ -94,13 +95,13 @@ fn populate_chunk(
 
             // TODO: Spawn an orb here
             cmds.spawn((
-                Mesh2d(meshes.add(CircleMeshBuilder::new(0.2 * r, 10).build())),
-                MeshMaterial2d(materials.add(ColorMaterial::from_color(WHEAT))),
-                // Sprite {
-                //     custom_size: Some(Vec2::splat(CHUNK_SIZE / CHUNK_SUBDIV as f32 * 0.3)),
-                //     ..default()
-                // },
-                Transform::from_translation(pos.extend(0.0)),
+                Mesh3d(meshes.add(CircleMeshBuilder::new(0.2 * r, 10).build())),
+                MeshMaterial3d(materials.add(StandardMaterial {
+                    base_color: WHEAT.with_alpha(0.7).into(),
+                    emissive: GRAY.into(),
+                    ..Default::default()
+                })),
+                Transform::from_translation(pos.extend((rand::random::<f32>() - 0.5) * 1.0)),
             ));
         }
     }
