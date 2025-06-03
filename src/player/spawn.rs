@@ -40,7 +40,7 @@ fn spawn_player_with_movement(
             AngularVelocity(0.0),
             MovementAcceleration(1000.0 / 100.0),
             AngularDamping(1.0),
-            LinearDamping(1.0),
+            LinearDamping(0.3),
             RotationSpeed(2.0),
             MaxSpeed(1000.0 / 100.0),
             sprite,

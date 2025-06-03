@@ -14,7 +14,7 @@ mod screens;
 mod terrain;
 mod theme;
 use avian2d::prelude::*;
-use bevy::{asset::AssetMetaCheck, prelude::*};
+use bevy::{asset::AssetMetaCheck, diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 
 fn main() -> AppExit {
@@ -61,6 +61,7 @@ impl Plugin for AppPlugin {
             theme::plugin,
             player::plugin,
             terrain::plugin,
+            FrameTimeDiagnosticsPlugin::default()
         ));
 
         // Order new `AppSystems` variants by adding them here:

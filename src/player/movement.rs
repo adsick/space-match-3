@@ -2,6 +2,8 @@ use avian2d::math::Scalar;
 use avian2d::prelude::*;
 use bevy::prelude::*;
 
+// use bevy::diagnostic::{DiagnosticPath, DiagnosticsStore};
+
 use crate::PausableSystems;
 use crate::screens::Screen;
 
@@ -41,6 +43,7 @@ fn keyboard_input(
         ),
         With<Player>,
     >,
+    // diagnostics: Res<DiagnosticsStore>,
     time: Res<Time>,
 ) {
     let left = keyboard_input.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]);
@@ -65,13 +68,24 @@ fn keyboard_input(
 
     // TODO: not framerate-independent
     let speed = velocity.0.length();
-    if speed > **max_speed {
-        let scale = **max_speed / speed;
-        velocity.x *= scale;
-        velocity.y *= scale;
-    }
+    debug!("{speed:.2}");
+
+    // we don't need additional speed limiting as avian's dampening will do it for us anyway
+    // if speed > **max_speed {
+    //     let fps = diagnostics
+    //         .get(&DiagnosticPath::const_new("fps"))
+    //         .and_then(|fps| fps.smoothed())
+    //         .unwrap_or(60.0);
+
+    //     Dir2::try_from(velocity.0)
+    //         .map(|dir| {
+    //             velocity.0 = velocity.lerp(dir * max_speed.0, time.delta_secs() * fps as f32 / 1000.0);
+    //         })
+    //         .ok();
+    // }
 }
 
+#[allow(unused)]
 fn movement_update(player_query: Single<&mut LinearVelocity, With<Player>>, time: Res<Time>) {
     let mut velocity = player_query.into_inner();
 
