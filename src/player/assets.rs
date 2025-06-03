@@ -18,7 +18,7 @@ impl FromWorld for PlayerAssets {
                     mesh: 0,
                     primitive: 0,
                 }
-                .from_asset("3D/Ship1.glb"),
+                .from_asset("3D/Ship.glb"),
             ),
         }
     }
