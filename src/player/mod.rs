@@ -1,3 +1,4 @@
+use avian2d::prelude::LinearVelocity;
 use bevy::{ecs::query::QueryFilter, prelude::*};
 
 pub mod assets;
@@ -13,17 +14,16 @@ pub(super) fn plugin(app: &mut App) {
 pub struct Player;
 
 fn camera_follow_player(
-    mut q_camera: Query<&mut Transform, With<Camera>>,
-    q_player: Query<&GlobalTransform, With<Player>>,
+    mut q_camera: Single<&mut Transform, With<Camera>>,
+    q_player: Single<(&GlobalTransform, &LinearVelocity), With<Player>>,
 ) {
-    let Ok(mut cam_transform) = q_camera.single_mut() else {
-        return;
-    };
+    let mut cam_transform = q_camera.into_inner();
 
-    if let Ok(player_transform) = q_player.single() {
-        cam_transform.translation = player_transform
-            .translation()
-            .truncate()
-            .extend(cam_transform.translation.z);
-    }
+    let (player_transform, vel) = q_player.into_inner();
+
+    cam_transform.translation = player_transform
+        .translation()
+        .truncate()
+        .extend(vel.0.length() * 10.0);
+        // .extend(cam_transform.translation.z);
 }
