@@ -20,7 +20,7 @@ pub fn plugin(app: &mut App) {
 
 const CHUNK_SIZE: f32 = 20.0; // TODO: Increase this
 /// Number of orbs per m²
-const MAX_CLOUD_DENSITY: f32 = 2.0;
+const MAX_CLOUD_DENSITY: f32 = 7.0;
 
 // Chunks that have already been spawned.
 #[derive(Default, Resource)]
@@ -101,7 +101,7 @@ fn populate_chunk(
                     emissive: GRAY.into(),
                     ..Default::default()
                 })),
-                Transform::from_translation(pos.extend((rand::random::<f32>() - 0.5) * 1.0)),
+                Transform::from_translation(pos.extend((rand::random::<f32>() - 0.5) * 10.0 * r)),
             ));
         }
     }
