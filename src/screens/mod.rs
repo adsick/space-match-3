@@ -22,9 +22,10 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(States, Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
 #[states(scoped_entities)]
 pub enum Screen {
-    #[default]
+    #[cfg_attr(not(debug_assertions), default)]
     Splash,
     Title,
+    #[cfg_attr(debug_assertions, default)]
     Loading,
     Gameplay,
 }
