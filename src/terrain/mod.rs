@@ -87,6 +87,7 @@ fn populate_chunk(
             }
 
             // The actual orb position is slightly offset to avoid a grid-like look
+            // TODO: improve random generation perf
             let pos = cell_pos
                 + Vec2::new(rand::random::<f32>(), rand::random::<f32>()) * CHUNK_SIZE
                     / CHUNK_SUBDIV as f32;

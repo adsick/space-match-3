@@ -61,7 +61,7 @@ impl Plugin for AppPlugin {
             theme::plugin,
             player::plugin,
             terrain::plugin,
-            FrameTimeDiagnosticsPlugin::default()
+            FrameTimeDiagnosticsPlugin::default(),
         ));
 
         // Order new `AppSystems` variants by adding them here:

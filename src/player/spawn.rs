@@ -30,7 +30,6 @@ fn spawn_player_with_movement(
     let mut sprite = Sprite::from_image(player_assets.ship.clone());
 
     sprite.custom_size = Some(Vec2::new(1.0, 2.0));
-    
 
     commands
         .spawn((
