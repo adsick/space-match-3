@@ -26,11 +26,11 @@ fn spawn_player_with_movement(
     commands: &mut Commands,
     transform: Transform,
     player_assets: Res<PlayerAssets>,
-    // we don't have a sprite for the ship yet might just rip a random thing off google for testing.
-    // SpriteBundle: SpriteBundle,
 ) -> Entity {
     let mut sprite = Sprite::from_image(player_assets.ship.clone());
-    sprite.custom_size = Some(Vec2::new(1.0, 1.0));
+
+    sprite.custom_size = Some(Vec2::new(1.0, 2.0));
+    
 
     commands
         .spawn((
@@ -38,11 +38,11 @@ fn spawn_player_with_movement(
             RigidBody::Dynamic,
             LinearVelocity::ZERO,
             AngularVelocity(0.0),
-            MovementAcceleration(500.0 / 100.0),
-            AngularDamping(2.0),
+            MovementAcceleration(1000.0 / 100.0),
+            AngularDamping(1.0),
             LinearDamping(1.0),
-            RotationSpeed(1.5),
-            MaxSpeed(300.0 / 100.0),
+            RotationSpeed(2.0),
+            MaxSpeed(1000.0 / 100.0),
             sprite,
             transform,
         ))
