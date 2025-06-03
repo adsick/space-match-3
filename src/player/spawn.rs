@@ -1,5 +1,8 @@
 use avian2d::prelude::{AngularDamping, AngularVelocity, LinearDamping, LinearVelocity, RigidBody};
-use bevy::prelude::*;
+use bevy::{
+    color::palettes::css::{VIOLET, WHITE},
+    prelude::*,
+};
 
 use crate::screens::Screen;
 
@@ -14,11 +17,16 @@ pub(crate) fn plugin(app: &mut App) {
         .add_systems(OnExit(Screen::Gameplay), despawn_player);
 }
 
-fn spawn_player(mut commands: Commands, player_assets: Res<PlayerAssets>) {
+fn spawn_player(
+    mut commands: Commands,
+    player_assets: Res<PlayerAssets>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
     spawn_player_with_movement(
         &mut commands,
         Transform::from_xyz(0.0, 0.0, 0.0),
         player_assets,
+        materials,
     );
 }
 
@@ -26,25 +34,8 @@ fn spawn_player_with_movement(
     commands: &mut Commands,
     transform: Transform,
     player_assets: Res<PlayerAssets>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) -> Entity {
-    
-// commands.spawn((
-//         SceneRoot(rocket_model),
-//         Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)).with_scale(Vec3::ONE * 3.0),
-//         // CustomizeMaterial {
-//         //     material: materials.add(StandardMaterial {
-//         //         base_color: GREEN.into(),
-//         //         ..Default::default()
-//         //     }),
-//         // },
-//     ));
-
-    // let mut sprite = Sprite::from_image(player_assets.ship.clone());
-
-    // sprite.custom_size = Some(Vec2::new(1.0, 2.0));
-
-
-
     commands
         .spawn((
             Player,
@@ -56,7 +47,12 @@ fn spawn_player_with_movement(
             LinearDamping(0.3),
             RotationSpeed(2.0),
             MaxSpeed(1000.0 / 100.0),
-            SceneRoot(player_assets.ship.clone()),
+            Mesh3d(player_assets.ship.clone()),
+            MeshMaterial3d(materials.add(StandardMaterial {
+                base_color: VIOLET.with_alpha(0.7).into(),
+                emissive: (VIOLET * 100.0).into(),
+                ..Default::default()
+            })),
             transform,
         ))
         .id()
