@@ -56,13 +56,10 @@ fn trigger_chunk_population(
         for x in [-1, 0, 1] {
             let chunk_coords = player_chunk_coord + IVec2::new(x, y);
             if !populated.0.contains_key(&chunk_coords) {
-
-                let pos = chunk_coords.as_vec2().extend(0.0) * CHUNK_SIZE; 
+                let pos = chunk_coords.as_vec2().extend(0.0) * CHUNK_SIZE;
                 let chunk_entity = cmds
                     .spawn((
-                        Transform::from_translation(
-                            pos,
-                        ),
+                        Transform::from_translation(pos),
                         InheritedVisibility::VISIBLE,
                     ))
                     .id();

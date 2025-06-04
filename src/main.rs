@@ -13,7 +13,6 @@ mod screens;
 mod terrain;
 mod theme;
 
-
 use avian2d::prelude::*;
 use bevy::{
     asset::AssetMetaCheck, color::palettes::css::WHITE, diagnostic::FrameTimeDiagnosticsPlugin,

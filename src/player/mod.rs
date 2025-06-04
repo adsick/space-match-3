@@ -17,7 +17,7 @@ pub struct Player;
 fn camera_follow_player(
     q_camera: Single<&mut Transform, With<Camera>>,
     q_player: Single<(&GlobalTransform, &LinearVelocity), With<Player>>,
-    time: Res<Time>
+    time: Res<Time>,
 ) {
     let mut cam_transform = q_camera.into_inner();
 
