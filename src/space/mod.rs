@@ -29,14 +29,17 @@ pub fn plugin(app: &mut App) {
         );
 }
 
-const CHUNK_SIZE: f32 = 32.0; // TODO: Increase this
+pub const CHUNK_SIZE: f32 = 32.0; // TODO: Increase this
 /// Number of orbs per m²
-const MAX_CLOUD_DENSITY: f32 = 0.03;
-const RADIUS: i32 = 16;
+pub const MAX_CLOUD_DENSITY: f32 = 0.03;
+pub const RENDER_DISTANCE: i32 = 16;
 
 // Chunks that have already been spawned.
 #[derive(Default, Resource)]
 pub struct PopulatedChunks(HashMap<IVec2, Entity>);
+
+#[derive(Component)]
+pub struct GasOrb;
 
 #[derive(Resource, Default)]
 pub struct GasGenerator {
@@ -64,7 +67,7 @@ fn trigger_chunk_population(
     let mut closest = None;
     let mut min_d = i32::MAX;
 
-    let r = RADIUS;
+    let r = RENDER_DISTANCE;
 
     // todo: more efficient traversal and quit on first match
     for y in -r..=r {
@@ -148,6 +151,7 @@ fn populate_chunk(
                 MeshMaterial3d(space_assets.orb_materials[2].clone()),
                 Transform::from_translation(pos.extend((rand::random::<f32>() - 0.5) * 70.0 * r))
                     .with_scale(Vec3::splat(0.2 + 3.0 * r)),
+                GasOrb,
             ));
         }
     }
@@ -178,7 +182,7 @@ fn unload_far_chunks(
         .as_ivec2();
     for (chunk_coords, chunk_entity) in populated.0.clone().iter() {
         // need to figure out this const
-        if player_chunk_coord.distance_squared(*chunk_coords) > RADIUS * RADIUS {
+        if player_chunk_coord.distance_squared(*chunk_coords) > RENDER_DISTANCE * RENDER_DISTANCE {
             populated.0.remove(chunk_coords);
             cmds.entity(*chunk_entity).despawn();
         }

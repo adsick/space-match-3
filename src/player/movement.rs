@@ -1,12 +1,14 @@
 use avian2d::math::Scalar;
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use bevy_spatial::SpatialAccess;
+use bevy_spatial::kdtree::KDTree2;
 
 // use bevy::diagnostic::{DiagnosticPath, DiagnosticsStore};
 
 use crate::PausableSystems;
 use crate::screens::Screen;
-use crate::space::GasGenerator;
+use crate::space::{GasGenerator, GasOrb};
 
 use super::Player;
 
@@ -31,7 +33,9 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
+// *maybe rename this function
 fn keyboard_input(
+    mut commands: Commands,
     keyboard_input: Res<ButtonInput<KeyCode>>,
     player_query: Single<
         (
@@ -44,7 +48,9 @@ fn keyboard_input(
         ),
         With<Player>,
     >,
+    // gas_orb_query: Query<(Entity, &Transform), With<GasOrb>>,
     // diagnostics: Res<DiagnosticsStore>,
+    tree: Res<KDTree2<GasOrb>>,
     gas: Res<GasGenerator>,
     time: Res<Time>,
 ) {
@@ -71,11 +77,18 @@ fn keyboard_input(
         thrust_force *= 0.15;
     }
 
-    let orb_boost = forward_dir
-        * gas
-            .sample(transform.translation.truncate())
-            .clamp(0.1, 0.25)
-        * 6.0;
+    let orb_density = gas.sample(transform.translation.truncate()).max(0.2); // 0.2 so the clouds are visible
+
+    let orb_boost = forward_dir * orb_density * 50.0;
+
+    if orb_density > 0.0 {
+        let player_pos = transform.translation.truncate();
+        for (_, entity) in tree.within_distance(player_pos, 10.0) {
+            if let Some(e) = entity {
+                commands.entity(e).try_despawn();
+            }
+        }
+    }
 
     velocity.0 += thrust_force * time.delta_secs();
     velocity.0 += orb_boost * time.delta_secs(); // TODO: test this properly

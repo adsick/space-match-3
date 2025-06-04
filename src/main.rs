@@ -13,6 +13,8 @@ mod screens;
 mod space;
 mod theme;
 
+use std::time::Duration;
+
 use avian2d::prelude::*;
 use bevy::{
     asset::AssetMetaCheck, color::palettes::css::WHITE, diagnostic::FrameTimeDiagnosticsPlugin,
@@ -20,7 +22,10 @@ use bevy::{
 };
 use bevy_framepace::FramepacePlugin;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
+use bevy_spatial::{AutomaticUpdate, SpatialStructure, TransformMode};
 use bevy_vector_shapes::Shape2dPlugin;
+
+use crate::space::GasOrb;
 
 fn main() -> AppExit {
     App::new().add_plugins(AppPlugin).run()
@@ -55,6 +60,10 @@ impl Plugin for AppPlugin {
             },
             FramepacePlugin,
             Shape2dPlugin::default(), // bevy_vector_shapes
+            AutomaticUpdate::<GasOrb>::new()
+                .with_spatial_ds(SpatialStructure::KDTree2)
+                .with_frequency(Duration::from_secs_f32(0.3))
+                .with_transform(TransformMode::GlobalTransform),
         ));
 
         // Add other plugins.
