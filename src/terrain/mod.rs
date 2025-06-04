@@ -4,11 +4,12 @@
 //! that are populated on the fly as the player moves around.
 //!
 
-use std::time::Instant;
+use std::{collections::VecDeque, time::Instant};
 
 use avian2d::parry::utils::hashmap::HashMap;
 use bevy::{
     color::palettes::css::{GRAY, WHEAT, WHITE},
+    ecs::{spawn::SpawnIter, world::SpawnBatchIter},
     prelude::*,
     render::mesh::CircleMeshBuilder,
 };
@@ -17,13 +18,13 @@ use noiz::{Noise, SampleableFor, prelude::common_noise::Simplex};
 use crate::player::Player;
 
 pub fn plugin(app: &mut App) {
-    app.insert_resource(TerrainGenerator(default()))
+    app.insert_resource(TerrainGenerator::default())
         .insert_resource(PopulatedChunks::default())
         .add_observer(populate_chunk)
-        .add_systems(Update, (trigger_chunk_population, unload_far_chunks));
+        .add_systems(FixedUpdate, (trigger_chunk_population, unload_far_chunks));
 }
 
-const CHUNK_SIZE: f32 = 20.0; // TODO: Increase this
+const CHUNK_SIZE: f32 = 8.0; // TODO: Increase this
 /// Number of orbs per m²
 const MAX_CLOUD_DENSITY: f32 = 3.0;
 
@@ -31,12 +32,15 @@ const MAX_CLOUD_DENSITY: f32 = 3.0;
 #[derive(Default, Resource)]
 pub struct PopulatedChunks(HashMap<IVec2, Entity>);
 
-#[derive(Resource)]
-pub struct TerrainGenerator(Noise<Simplex>);
+#[derive(Resource, Default)]
+pub struct TerrainGenerator {
+    noise: Noise<Simplex>,
+    // queue: VecDeque<IVec2>
+}
 
 impl TerrainGenerator {
-    pub fn orb_probability(&self, p: Vec2) -> f32 {
-        self.0.sample(p / 10.0)
+    pub fn sample(&self, p: Vec2) -> f32 {
+        self.noise.sample(p / 100.0)
     }
 }
 
@@ -48,25 +52,40 @@ fn trigger_chunk_population(
 ) {
     let player_tr = q_player.into_inner();
 
-    let player_chunk_coord = (player_tr.translation.truncate() / CHUNK_SIZE)
-        .floor()
-        .as_ivec2();
+    let player_tr_2d = player_tr.translation.truncate();
 
-    for y in [-1, 0, 1] {
-        for x in [-1, 0, 1] {
+    let player_chunk_coord = (player_tr_2d / CHUNK_SIZE).floor().as_ivec2();
+
+    let mut closest = None;
+    let mut min_d = i32::MAX;
+
+    let r = 7;
+
+    // todo: more efficient traversal and quit on first match
+    for y in -r..=r {
+        for x in -r..=r {
             let chunk_coords = player_chunk_coord + IVec2::new(x, y);
+
             if !populated.0.contains_key(&chunk_coords) {
-                let pos = chunk_coords.as_vec2().extend(0.0) * CHUNK_SIZE;
-                let chunk_entity = cmds
-                    .spawn((
-                        Transform::from_translation(pos),
-                        InheritedVisibility::VISIBLE,
-                    ))
-                    .id();
-                debug!("spawning chunk at {pos}");
-                cmds.trigger_targets(PopulateChunk(chunk_coords), chunk_entity);
+                let d = IVec2::new(x, y).length_squared();
+
+                if d < min_d {
+                    closest = Some(chunk_coords);
+                    min_d = d;
+                }
             }
         }
+    }
+
+    if let Some(chunk_coords) = closest {
+        let pos = chunk_coords.as_vec2().extend(0.0) * CHUNK_SIZE;
+        let chunk_entity = cmds
+            .spawn((
+                Transform::from_translation(pos),
+                InheritedVisibility::VISIBLE,
+            ))
+            .id();
+        cmds.trigger_targets(PopulateChunk(chunk_coords), chunk_entity);
     }
 }
 
@@ -90,12 +109,15 @@ fn populate_chunk(
 
     let inst = Instant::now();
 
+    let mut entities = vec![];
+
     for y in 0..CHUNK_SUBDIV {
         for x in 0..CHUNK_SUBDIV {
             let cell_pos = (Vec2::new(x as f32, y as f32) / (CHUNK_SUBDIV as f32)) * CHUNK_SIZE;
-            let r = terrain.orb_probability(trigger.0.as_vec2() * CHUNK_SIZE + cell_pos);
+            let r = terrain.sample(trigger.0.as_vec2() * CHUNK_SIZE + cell_pos);
+            // let r = 0.5;
 
-            if r < 0.16 {
+            if r < 0.1 {
                 continue;
             }
 
@@ -105,20 +127,32 @@ fn populate_chunk(
                 + Vec2::new(rand::random::<f32>(), rand::random::<f32>()) * CHUNK_SIZE
                     / CHUNK_SUBDIV as f32;
 
+            // let pos = cell_pos;
+
             let resolution = 3 + (6.0 * r) as u32;
-            // debug!("{resolution}");
             // TODO: Spawn an orb here
-            cmds.entity(trigger.target()).with_child((
-                Mesh3d(meshes.add(CircleMeshBuilder::new(0.2 * r, resolution).build())),
+            // cmds.entity(trigger.target()).with_child(bundle)
+            entities.push((
+                Mesh3d(meshes.add(CircleMeshBuilder::new(0.44 * r, resolution).build())),
                 MeshMaterial3d(materials.add(StandardMaterial {
-                    base_color: WHEAT.with_alpha(0.7).into(),
-                    emissive: GRAY.into(),
+                    base_color: WHEAT.with_alpha(4.0 / (1.0 + r * 20.0)).into(),
+                    alpha_mode: AlphaMode::AlphaToCoverage,
+                    emissive: (WHITE * 4.0).into(),
                     ..Default::default()
                 })),
-                Transform::from_translation(pos.extend((rand::random::<f32>() - 0.5) * 10.0 * r)),
+                Transform::from_translation(pos.extend((rand::random::<f32>() - 0.5) * 20.0 * r)),
             ));
         }
     }
+
+    debug!("new orbs: {}", entities.len());
+    cmds.entity(trigger.target()).with_children(|parent| {
+        for b in entities {
+            parent.spawn(b);
+        }
+    });
+    // cmds.entity(trigger.target())
+    //     .insert(Children::spawn(SpawnIter(entities.into_iter())));
 
     let t = inst.elapsed();
 
@@ -136,7 +170,8 @@ fn unload_far_chunks(
         .floor()
         .as_ivec2();
     for (chunk_coords, chunk_entity) in populated.0.clone().iter() {
-        if player_chunk_coord.distance_squared(*chunk_coords) > 2 {
+        // need to figure out this const
+        if player_chunk_coord.distance_squared(*chunk_coords) > 64 {
             populated.0.remove(chunk_coords);
             cmds.entity(*chunk_entity).despawn();
         }

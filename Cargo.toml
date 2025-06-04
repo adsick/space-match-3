@@ -60,7 +60,7 @@ wayland = ["bevy/wayland"]
 
 [package.metadata.bevy_cli.release]
 # Disable dev features for release builds.
-default-features = false
+default-features = true
 
 [package.metadata.bevy_cli.web]
 # Disable native features for web builds.

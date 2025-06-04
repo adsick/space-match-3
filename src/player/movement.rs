@@ -73,7 +73,7 @@ fn keyboard_input(
 
     let orb_boost = forward_dir
         * terrain
-            .orb_probability(transform.translation.truncate())
+            .sample(transform.translation.truncate())
             .clamp(0.1, 0.25)
         * 6.0;
 
