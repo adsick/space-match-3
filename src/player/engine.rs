@@ -74,6 +74,7 @@ impl MaterialExtension for FireMaterialExtension {
 
 #[derive(Component)]
 pub struct EngineFire {
+    /// Use 0.5. Other values look cringe.
     pub power: f32,
 }
 
