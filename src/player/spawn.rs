@@ -1,8 +1,5 @@
 use avian2d::prelude::*;
-use bevy::{
-    color::palettes::css::{VIOLET, WHITE},
-    prelude::*,
-};
+use bevy::{color::palettes::css::VIOLET, prelude::*};
 
 use crate::{player::movement::CurrentGas, screens::Screen};
 
@@ -45,7 +42,7 @@ fn spawn_player_with_movement(
                 Mass(1.0),
                 AngularInertia(1.0),
                 MovementAcceleration(20.0),
-                GasBoost(10.0),
+                GasBoost(50.0),
                 CurrentGas(1.0),
                 AngularDamping(10.0),
                 LinearDamping(0.3),
@@ -59,7 +56,10 @@ fn spawn_player_with_movement(
                     ..Default::default()
                 })),
                 transform,
-                children![(engine::EngineFire { power: 0.5 },)],
+                children![(engine::EngineFire {
+                    power: 0.5,
+                    color: Vec4::default()
+                },)],
             ),
         ))
         .id()

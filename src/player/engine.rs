@@ -72,6 +72,7 @@ impl MaterialExtension for FireMaterialExtension {
 pub struct EngineFire {
     /// Use 0.5. Other values look cringe.
     pub power: f32,
+    pub color: Vec4,
 }
 
 fn on_add_fire(
@@ -126,7 +127,7 @@ fn update_engine_power(
         let Ok(current_gas) = ship_query.get(child_of.parent()) else {
             return;
         };
-        fire_params.power = (0.3 + current_gas.0).min(1.0);
+        fire_params.color = RED.lerp(PURPLE * 2000.0, current_gas.0).to_vec4();
     }
 }
 
@@ -177,8 +178,7 @@ fn update_shader_params(
 
         fire_material.extension.center = ship_transform.translation().extend(0.0);
 
-        let color = RED.lerp(PURPLE, fire_params.power);
-        fire_material.extension.color = color.to_vec4();
+        fire_material.extension.color = fire_params.color;
 
         fire_material.extension.power = Vec4::splat(fire_params.power);
     }

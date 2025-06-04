@@ -1,14 +1,13 @@
 use avian2d::math::Scalar;
 use avian2d::prelude::*;
 use bevy::prelude::*;
-use bevy_spatial::SpatialAccess;
-use bevy_spatial::kdtree::KDTree2;
 
 // use bevy::diagnostic::{DiagnosticPath, DiagnosticsStore};
 
 use crate::PausableSystems;
+use crate::gas::pickup_gas;
 use crate::screens::Screen;
-use crate::space::{GasGenerator, GasOrb, THRESHOLD};
+use crate::space::GasGenerator;
 
 use super::Player;
 
@@ -31,7 +30,7 @@ pub(super) fn plugin(app: &mut App) {
         .register_type::<CurrentGas>()
         .add_systems(
             Update,
-            ((collect_gas, thrust).chain(), glide)
+            (thrust.after(pickup_gas), glide)
                 .run_if(in_state(Screen::Gameplay))
                 .in_set(PausableSystems),
         );
@@ -44,7 +43,7 @@ fn thrust(
         (
             &mut ExternalForce,
             &mut ExternalTorque,
-            &CurrentGas,
+            &mut CurrentGas,
             &Rotation,
             &MovementAcceleration,
             &RotationSpeed,
@@ -52,6 +51,7 @@ fn thrust(
         ),
         With<Player>,
     >,
+    time: Res<Time>,
     // gas_orb_query: Query<(Entity, &Transform), With<GasOrb>>,
     // diagnostics: Res<DiagnosticsStore>,
 ) {
@@ -59,7 +59,7 @@ fn thrust(
     let right = keyboard_input.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]);
     let brake = keyboard_input.pressed(KeyCode::Space);
 
-    let (mut force, mut torque, current_gas, rotation, acceleration, rotation_speed, gas_boost) =
+    let (mut force, mut torque, mut current_gas, rotation, acceleration, rotation_speed, gas_boost) =
         player_query.into_inner();
 
     force.persistent = false;
@@ -83,21 +83,7 @@ fn thrust(
 
     force.apply_force(thrust_force);
     force.apply_force(gas_boost_force); // TODO: test this properly
-}
 
-fn collect_gas(
-    mut commands: Commands,
-    player_query: Single<(&mut CurrentGas, &Position), With<Player>>,
-    tree: Res<KDTree2<GasOrb>>,
-    time: Res<Time>,
-) {
-    let (mut current_gas, position) = player_query.into_inner();
-    for (_, entity) in tree.within_distance(position.0, 10.0) {
-        if let Some(e) = entity {
-            current_gas.0 = (current_gas.0 + 0.02).min(1.0);
-            commands.entity(e).try_despawn();
-        }
-    }
     current_gas.0 *= 0.01f32.powf(time.delta_secs());
 }
 
