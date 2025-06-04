@@ -10,7 +10,7 @@ mod dev_tools;
 mod menus;
 mod player;
 mod screens;
-mod terrain;
+mod space;
 mod theme;
 
 use avian2d::prelude::*;
@@ -67,7 +67,7 @@ impl Plugin for AppPlugin {
             screens::plugin,
             theme::plugin,
             player::plugin,
-            terrain::plugin,
+            space::plugin,
             FrameTimeDiagnosticsPlugin::default(),
         ));
 

@@ -6,7 +6,7 @@ use bevy::prelude::*;
 
 use crate::PausableSystems;
 use crate::screens::Screen;
-use crate::terrain::TerrainGenerator;
+use crate::space::GasGenerator;
 
 use super::Player;
 
@@ -45,7 +45,7 @@ fn keyboard_input(
         With<Player>,
     >,
     // diagnostics: Res<DiagnosticsStore>,
-    terrain: Res<TerrainGenerator>,
+    gas: Res<GasGenerator>,
     time: Res<Time>,
 ) {
     let left = keyboard_input.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]);
@@ -72,7 +72,7 @@ fn keyboard_input(
     }
 
     let orb_boost = forward_dir
-        * terrain
+        * gas
             .sample(transform.translation.truncate())
             .clamp(0.1, 0.25)
         * 6.0;

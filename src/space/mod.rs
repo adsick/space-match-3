@@ -1,6 +1,6 @@
 //!
 //! This handles placement of the orbs in the level according to an underlying simplex noise function.
-//! To ensure the terrain is infinite, the terrain made up of square chunks `CHUNK_SIZE` units wide,
+//! To ensure the space is infinite it's made up of square chunks `CHUNK_SIZE` units wide,
 //! that are populated on the fly as the player moves around.
 //!
 
@@ -15,16 +15,19 @@ use bevy::{
 };
 use noiz::{Noise, SampleableFor, prelude::common_noise::Simplex};
 
-use crate::player::Player;
+use crate::{player::Player, space::assets::SpaceAssets};
+
+mod assets;
 
 pub fn plugin(app: &mut App) {
-    app.insert_resource(TerrainGenerator::default())
+    app.add_plugins(assets::plugin)
+        .insert_resource(GasGenerator::default())
         .insert_resource(PopulatedChunks::default())
         .add_observer(populate_chunk)
         .add_systems(FixedUpdate, (trigger_chunk_population, unload_far_chunks));
 }
 
-const CHUNK_SIZE: f32 = 8.0; // TODO: Increase this
+const CHUNK_SIZE: f32 = 20.0; // TODO: Increase this
 /// Number of orbs per m²
 const MAX_CLOUD_DENSITY: f32 = 3.0;
 
@@ -33,12 +36,11 @@ const MAX_CLOUD_DENSITY: f32 = 3.0;
 pub struct PopulatedChunks(HashMap<IVec2, Entity>);
 
 #[derive(Resource, Default)]
-pub struct TerrainGenerator {
+pub struct GasGenerator {
     noise: Noise<Simplex>,
-    // queue: VecDeque<IVec2>
 }
 
-impl TerrainGenerator {
+impl GasGenerator {
     pub fn sample(&self, p: Vec2) -> f32 {
         self.noise.sample(p / 100.0)
     }
@@ -94,15 +96,13 @@ pub struct PopulateChunk(IVec2);
 
 /// Observer that populates a chunk with orb clouds.
 /// The chunk is first subdivided into `CHUNK_SUBDIV` parts along each axis,
-/// then each cell may spawn an orb depending on randomness and underlying terrain parameters.
+/// then each cell may spawn an orb depending on randomness and underlying space parameters.
 fn populate_chunk(
     trigger: Trigger<PopulateChunk>,
     mut cmds: Commands,
-    terrain: Res<TerrainGenerator>,
-    mut meshes: ResMut<Assets<Mesh>>,
+    gas: Res<GasGenerator>,
+    space_assets: Res<SpaceAssets>,
     mut populated: ResMut<PopulatedChunks>,
-    // mut materials: ResMut<Assets<ColorMaterial>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // Calculate how many subdivisions along each axis is required to get the desired maximum cloud density.
     const CHUNK_SUBDIV: usize = ((MAX_CLOUD_DENSITY * CHUNK_SIZE * CHUNK_SIZE) as usize).isqrt();
@@ -114,10 +114,10 @@ fn populate_chunk(
     for y in 0..CHUNK_SUBDIV {
         for x in 0..CHUNK_SUBDIV {
             let cell_pos = (Vec2::new(x as f32, y as f32) / (CHUNK_SUBDIV as f32)) * CHUNK_SIZE;
-            let r = terrain.sample(trigger.0.as_vec2() * CHUNK_SIZE + cell_pos);
+            let r = gas.sample(trigger.0.as_vec2() * CHUNK_SIZE + cell_pos);
             // let r = 0.5;
 
-            if r < 0.1 {
+            if r < 0.2 {
                 continue;
             }
 
@@ -129,18 +129,13 @@ fn populate_chunk(
 
             // let pos = cell_pos;
 
-            let resolution = 3 + (6.0 * r) as u32;
             // TODO: Spawn an orb here
             // cmds.entity(trigger.target()).with_child(bundle)
             entities.push((
-                Mesh3d(meshes.add(CircleMeshBuilder::new(0.44 * r, resolution).build())),
-                MeshMaterial3d(materials.add(StandardMaterial {
-                    base_color: WHEAT.with_alpha(4.0 / (1.0 + r * 20.0)).into(),
-                    alpha_mode: AlphaMode::AlphaToCoverage,
-                    emissive: (WHITE * 4.0).into(),
-                    ..Default::default()
-                })),
-                Transform::from_translation(pos.extend((rand::random::<f32>() - 0.5) * 20.0 * r)),
+                Mesh3d(space_assets.orb_meshes[2].clone()),
+                MeshMaterial3d(space_assets.orb_materials[2].clone()),
+                Transform::from_translation(pos.extend((rand::random::<f32>() - 0.5) * 20.0 * r))
+                    .with_scale(Vec3::splat(0.3 * r)),
             ));
         }
     }
