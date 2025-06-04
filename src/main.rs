@@ -19,7 +19,9 @@ use bevy::{
     asset::AssetMetaCheck, color::palettes::css::WHITE, diagnostic::FrameTimeDiagnosticsPlugin,
     prelude::*,
 };
+use bevy_framepace::FramepacePlugin;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
+use bevy_vector_shapes::Shape2dPlugin;
 
 fn main() -> AppExit {
     App::new().add_plugins(AppPlugin).run()
@@ -52,6 +54,8 @@ impl Plugin for AppPlugin {
             EguiPlugin {
                 enable_multipass_for_primary_context: true,
             },
+            FramepacePlugin,
+            Shape2dPlugin::default(), // bevy_vector_shapes
         ));
 
         // Add other plugins.
