@@ -23,7 +23,7 @@ fn spawn_player(
     player_assets: Res<PlayerAssets>,
     materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let transform = Transform::from_xyz(0.0, 0.0, 0.0).with_scale(Vec3::ONE * 2.5);
+    let transform = Transform::from_xyz(0.0, 0.0, 0.0);
 
     spawn_player_with_movement(&mut commands, transform, player_assets, materials);
 }
