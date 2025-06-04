@@ -154,8 +154,10 @@ fn populate_chunk(
             entities.push((
                 Mesh3d(space_assets.orb_meshes[2].clone()),
                 MeshMaterial3d(space_assets.orb_materials[2].clone()),
-                Transform::from_translation(pos.extend((rand::random::<f32>() - 0.5) * CLOUD_Z_SCALE * r)) // todo: we can vary that 0.5 with another noise for more depth effect
-                    .with_scale(Vec3::splat(MIN_ORB_SIZE + ORB_SCALE * r)),
+                Transform::from_translation(
+                    pos.extend((rand::random::<f32>() - 0.5) * CLOUD_Z_SCALE * r),
+                ) // todo: we can vary that 0.5 with another noise for more depth effect
+                .with_scale(Vec3::splat(MIN_ORB_SIZE + ORB_SCALE * r)),
                 GasOrb,
             ));
         }
@@ -187,7 +189,9 @@ fn unload_far_chunks(
         .as_ivec2();
     for (chunk_coords, chunk_entity) in populated.0.clone().iter() {
         // need to figure out this const
-        if player_chunk_coord.distance_squared(*chunk_coords) > RENDER_DISTANCE * RENDER_DISTANCE * 6 / 5 {
+        if player_chunk_coord.distance_squared(*chunk_coords)
+            > RENDER_DISTANCE * RENDER_DISTANCE * 6 / 5
+        {
             populated.0.remove(chunk_coords);
             cmds.entity(*chunk_entity).despawn();
         }

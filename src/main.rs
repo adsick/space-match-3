@@ -80,6 +80,8 @@ impl Plugin for AppPlugin {
             FrameTimeDiagnosticsPlugin::default(),
         ));
 
+        app.insert_resource(ClearColor(Color::srgb(0.12, 0.1, 0.14)));
+
         // Order new `AppSystems` variants by adding them here:
         app.configure_sets(
             Update,

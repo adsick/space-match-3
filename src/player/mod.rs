@@ -2,13 +2,18 @@ use avian2d::prelude::LinearVelocity;
 use bevy::{ecs::query::QueryFilter, prelude::*};
 
 pub mod assets;
+pub mod engine;
 pub mod movement;
 pub mod spawn;
-pub mod engine;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins((movement::plugin, spawn::plugin, assets::plugin, engine::plugin))
-        .add_systems(Update, camera_follow_player);
+    app.add_plugins((
+        movement::plugin,
+        spawn::plugin,
+        assets::plugin,
+        engine::plugin,
+    ))
+    .add_systems(Update, camera_follow_player);
 }
 
 #[derive(Component, QueryFilter)]
