@@ -4,15 +4,8 @@
 //! that are populated on the fly as the player moves around.
 //!
 
-use std::{collections::VecDeque, time::Instant};
-
 use avian2d::parry::utils::hashmap::HashMap;
-use bevy::{
-    color::palettes::css::{GRAY, WHEAT, WHITE},
-    ecs::{spawn::SpawnIter, world::SpawnBatchIter},
-    prelude::*,
-    render::mesh::CircleMeshBuilder,
-};
+use bevy::prelude::*;
 use noiz::{Noise, SampleableFor, prelude::common_noise::Simplex};
 
 use crate::{player::Player, space::assets::SpaceAssets};
@@ -24,12 +17,16 @@ pub fn plugin(app: &mut App) {
         .insert_resource(GasGenerator::default())
         .insert_resource(PopulatedChunks::default())
         .add_observer(populate_chunk)
-        .add_systems(FixedUpdate, (trigger_chunk_population, unload_far_chunks));
+        .add_systems(
+            Update,
+            (trigger_chunk_population, unload_far_chunks).chain(),
+        );
 }
 
-const CHUNK_SIZE: f32 = 20.0; // TODO: Increase this
+const CHUNK_SIZE: f32 = 32.0; // TODO: Increase this
 /// Number of orbs per m²
-const MAX_CLOUD_DENSITY: f32 = 3.0;
+const MAX_CLOUD_DENSITY: f32 = 0.2;
+const RADIUS: i32 = 16;
 
 // Chunks that have already been spawned.
 #[derive(Default, Resource)]
@@ -42,7 +39,7 @@ pub struct GasGenerator {
 
 impl GasGenerator {
     pub fn sample(&self, p: Vec2) -> f32 {
-        self.noise.sample(p / 100.0)
+        self.noise.sample(p / 200.0)
     }
 }
 
@@ -61,7 +58,7 @@ fn trigger_chunk_population(
     let mut closest = None;
     let mut min_d = i32::MAX;
 
-    let r = 7;
+    let r = RADIUS;
 
     // todo: more efficient traversal and quit on first match
     for y in -r..=r {
@@ -69,6 +66,15 @@ fn trigger_chunk_population(
             let chunk_coords = player_chunk_coord + IVec2::new(x, y);
 
             if !populated.0.contains_key(&chunk_coords) {
+                // let pos = chunk_coords.as_vec2().extend(0.0) * CHUNK_SIZE;
+                // let chunk_entity = cmds
+                //     .spawn((
+                //         Transform::from_translation(pos),
+                //         InheritedVisibility::VISIBLE,
+                //     ))
+                //     .id();
+                // cmds.trigger_targets(PopulateChunk(chunk_coords), chunk_entity);
+
                 let d = IVec2::new(x, y).length_squared();
 
                 if d < min_d {
@@ -134,8 +140,8 @@ fn populate_chunk(
             entities.push((
                 Mesh3d(space_assets.orb_meshes[2].clone()),
                 MeshMaterial3d(space_assets.orb_materials[2].clone()),
-                Transform::from_translation(pos.extend((rand::random::<f32>() - 0.5) * 20.0 * r))
-                    .with_scale(Vec3::splat(0.3 * r)),
+                Transform::from_translation(pos.extend((rand::random::<f32>() - 0.5) * 70.0 * r))
+                    .with_scale(Vec3::splat(0.4 + 0.7 * r)),
             ));
         }
     }
@@ -166,7 +172,7 @@ fn unload_far_chunks(
         .as_ivec2();
     for (chunk_coords, chunk_entity) in populated.0.clone().iter() {
         // need to figure out this const
-        if player_chunk_coord.distance_squared(*chunk_coords) > 64 {
+        if player_chunk_coord.distance_squared(*chunk_coords) > RADIUS * RADIUS {
             populated.0.remove(chunk_coords);
             cmds.entity(*chunk_entity).despawn();
         }

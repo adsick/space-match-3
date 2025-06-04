@@ -39,7 +39,7 @@ fn spawn_player_with_movement(
             RigidBody::Dynamic,
             LinearVelocity::ZERO,
             AngularVelocity(0.0),
-            MovementAcceleration(1000.0 / 100.0),
+            MovementAcceleration(3000.0 / 100.0),
             AngularDamping(1.0),
             LinearDamping(0.3),
             RotationSpeed(2.0),
