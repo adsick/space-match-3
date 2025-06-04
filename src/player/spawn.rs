@@ -20,14 +20,11 @@ pub(crate) fn plugin(app: &mut App) {
 fn spawn_player(
     mut commands: Commands,
     player_assets: Res<PlayerAssets>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    spawn_player_with_movement(
-        &mut commands,
-        Transform::from_xyz(0.0, 0.0, 0.0),
-        player_assets,
-        materials,
-    );
+    let transform = Transform::from_xyz(0.0, 0.0, 0.0);
+
+    spawn_player_with_movement(&mut commands, transform, player_assets, materials);
 }
 
 fn spawn_player_with_movement(
@@ -49,8 +46,8 @@ fn spawn_player_with_movement(
             MaxSpeed(1000.0 / 100.0),
             Mesh3d(player_assets.ship.clone()),
             MeshMaterial3d(materials.add(StandardMaterial {
-                base_color: VIOLET.with_alpha(0.7).into(),
-                emissive: (VIOLET * 100.0).into(),
+                base_color: VIOLET.into(),
+                emissive: (VIOLET * 4.0).into(),
                 ..Default::default()
             })),
             transform,
