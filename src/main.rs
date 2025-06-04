@@ -12,7 +12,7 @@ mod player;
 mod screens;
 mod terrain;
 mod theme;
-use std::f32::consts::PI;
+
 
 use avian2d::prelude::*;
 use bevy::{
@@ -111,18 +111,6 @@ struct Pause(pub bool);
 struct PausableSystems;
 
 fn spawn_camera(mut commands: Commands) {
-    // commands.spawn((
-    //     Name::new("Camera"),
-    //     Camera3d,
-    //     Projection::Orthographic(OrthographicProjection {
-    //         scaling_mode: bevy::render::camera::ScalingMode::FixedVertical {
-    //             viewport_height: 2.0,
-    //         },
-    //         scale: 1.0,
-    //         ..OrthographicProjection::default_3d()
-    //     }),
-    // ));
-
     commands.spawn((
         Name::new("Camera"),
         Camera3d::default(),
@@ -137,10 +125,5 @@ fn spawn_camera(mut commands: Commands) {
             ..Default::default()
         },
         Transform::default().looking_at(Vec3::new(0.0, 10.0, -2.0), Dir3::Y),
-        // Transform {
-        //     translation: Vec3::new(0.0, 0.0, 2.0),
-        //     rotation: Quat::from_rotation_x(-PI / 4.),
-        //     ..default()
-        // },
     ));
 }
