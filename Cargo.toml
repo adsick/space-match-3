@@ -25,7 +25,7 @@ bevy_input_prompts = "0.2.2"
 bevy_vector_shapes = "0.10.0"
 bevy_framepace = "0.19.1"
 iyes_perf_ui = "0.5.0"
-bevy_spatial = "0.11.0"
+bevy_spatial = { version = "0.11.0", default-features = false }
 
 # Your web builds will start failing if you add a dependency that pulls in `getrandom` v0.3+.
 # To fix this, you should tell `getrandom` to use the `wasm_js` backend on Wasm.
@@ -60,16 +60,23 @@ dev_native = [
 wayland = ["bevy/wayland"]
 
 
+[package.metadata.bevy_cli.dev]
+features = ["dev", "bevy_spatial/default"]
+
 [package.metadata.bevy_cli.release]
 # Disable dev features for release builds.
+# TODO: switch to false before publish
 default-features = true
+features = ["bevy_spatial/default"]
 
 [package.metadata.bevy_cli.web]
 # Disable native features for web builds.
 default-features = false
+features = ["bevy_spatial/kdtree"]
 
 [package.metadata.bevy_cli.web.dev]
-features = ["dev"]
+# features = ["dev", "bevy_spatial/kdtree-rayon", "bevy_spatial/kdtree"]
+features = ["dev", "bevy_spatial/kdtree"]
 
 
 [lints.rust]
