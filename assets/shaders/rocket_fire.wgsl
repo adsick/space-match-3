@@ -29,7 +29,7 @@ var<uniform> dir: vec4f;
 @group(2) @binding(105)
 var<uniform> power: vec4f;
 
-const PARTICLE_RADIUS: f32 = 3.0;
+const PARTICLE_RADIUS: f32 = 5.0;
 
 fn snoise3(p: vec3<f32>) -> vec3<f32> {
     return vec3f(snoise(p), snoise(p + vec3f(100.0)), 0.0);
@@ -58,7 +58,6 @@ fn density_at_point(point: vec3f) -> f32 {
     let dist_to_engine = distance(point, center);
 
     var density = 0.0;
-    var prev_dist = 1.0;
     for (var i = 0u; i < nof_particles; i++) {
         var particle_pos = particles[i].xyz;
         particle_pos += snoise3(particle_pos) * dist_to_engine * 0.1;
@@ -69,9 +68,6 @@ fn density_at_point(point: vec3f) -> f32 {
         var dist = distance(point, particle_pos);
 
         dist = smoothstep(0.0, particle_radius, dist);
-        let t = dist;
-        dist = smooth_min(dist, prev_dist * (1.1 + 2 * particle_intensity), 0.9);
-        prev_dist = t;
 
         var curr_density = 1.0 - dist;
 
@@ -80,7 +76,7 @@ fn density_at_point(point: vec3f) -> f32 {
         density += curr_density;
     }
 
-    density = smoothstep(0.0, 1.0, density * power);
+    density = smoothstep(0.0, 1.0, density * power * 2.);
 
 
     var mask = dot(-dir.xy, normalize(local_point.xy));
