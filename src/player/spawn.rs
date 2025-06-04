@@ -10,7 +10,7 @@ use super::{
     Player,
     assets::PlayerAssets,
     engine,
-    movement::{MaxSpeed, MovementAcceleration, RotationSpeed},
+    movement::{GasBoost, MovementAcceleration, RotationSpeed},
 };
 
 pub(crate) fn plugin(app: &mut App) {
@@ -40,11 +40,11 @@ fn spawn_player_with_movement(
             RigidBody::Dynamic,
             LinearVelocity::ZERO,
             AngularVelocity(0.0),
-            MovementAcceleration(2000.0 / 100.0),
+            MovementAcceleration(20.0),
             AngularDamping(1.0),
             LinearDamping(0.3),
             RotationSpeed(2.0),
-            MaxSpeed(1000.0 / 100.0),
+            GasBoost(100.0),
             Mesh3d(player_assets.ship.clone()),
             MeshMaterial3d(materials.add(StandardMaterial {
                 base_color: VIOLET.into(),

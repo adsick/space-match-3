@@ -22,7 +22,7 @@ pub struct MovementDampingFactor(pub Scalar);
 pub struct RotationSpeed(pub Scalar);
 
 #[derive(Component, Deref, DerefMut)]
-pub struct MaxSpeed(pub Scalar);
+pub struct GasBoost(pub Scalar);
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(
@@ -44,7 +44,7 @@ fn keyboard_input(
             &Transform,
             &MovementAcceleration,
             &RotationSpeed,
-            &MaxSpeed,
+            &GasBoost,
         ),
         With<Player>,
     >,
@@ -58,7 +58,7 @@ fn keyboard_input(
     let right = keyboard_input.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]);
     let brake = keyboard_input.pressed(KeyCode::Space);
 
-    let (mut velocity, mut angular_velocity, transform, acceleration, rotation_speed, _max_speed) =
+    let (mut velocity, mut angular_velocity, transform, acceleration, rotation_speed, gas_boost_k) =
         player_query.into_inner();
 
     if left && right {
@@ -77,11 +77,11 @@ fn keyboard_input(
         thrust_force *= 0.15;
     }
 
-    let orb_density = (gas.sample(transform.translation.truncate()) - THRESHOLD).max(0.0);
+    let gas_density = (gas.sample(transform.translation.truncate()) - THRESHOLD).max(0.0);
 
-    let orb_boost = forward_dir * orb_density * 50.0;
+    let gas_boost = forward_dir * gas_density * gas_boost_k.0;
 
-    if orb_density > 0.0 {
+    if gas_density > 0.0 {
         let player_pos = transform.translation.truncate();
         for (_, entity) in tree.within_distance(player_pos, 10.0) {
             if let Some(e) = entity {
@@ -90,8 +90,7 @@ fn keyboard_input(
         }
     }
 
-    velocity.0 += thrust_force * time.delta_secs();
-    velocity.0 += orb_boost * time.delta_secs();
+    velocity.0 += (thrust_force + gas_boost) * time.delta_secs();
 
     // TODO: not framerate-independent
     // let speed = velocity.0.length();
