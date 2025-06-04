@@ -33,6 +33,11 @@ pub const CHUNK_SIZE: f32 = 32.0; // TODO: Increase this
 /// Number of orbs per m²
 pub const MAX_CLOUD_DENSITY: f32 = 0.03;
 pub const RENDER_DISTANCE: i32 = 16;
+pub const THRESHOLD: f32 = 0.1;
+
+pub const MIN_ORB_SIZE: f32 = 0.4;
+pub const ORB_SCALE: f32 = 4.0;
+pub const CLOUD_Z_SCALE: f32 = 90.0;
 
 // Chunks that have already been spawned.
 #[derive(Default, Resource)]
@@ -132,7 +137,7 @@ fn populate_chunk(
             let r = gas.sample(trigger.0.as_vec2() * CHUNK_SIZE + cell_pos);
             // let r = 0.5;
 
-            if r < 0.2 {
+            if r < THRESHOLD {
                 continue;
             }
 
@@ -149,8 +154,8 @@ fn populate_chunk(
             entities.push((
                 Mesh3d(space_assets.orb_meshes[2].clone()),
                 MeshMaterial3d(space_assets.orb_materials[2].clone()),
-                Transform::from_translation(pos.extend((rand::random::<f32>() - 0.5) * 70.0 * r))
-                    .with_scale(Vec3::splat(0.2 + 3.0 * r)),
+                Transform::from_translation(pos.extend((rand::random::<f32>() - 0.5) * CLOUD_Z_SCALE * r)) // todo: we can vary that 0.5 with another noise for more depth effect
+                    .with_scale(Vec3::splat(MIN_ORB_SIZE + ORB_SCALE * r)),
                 GasOrb,
             ));
         }

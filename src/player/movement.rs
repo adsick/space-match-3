@@ -8,7 +8,7 @@ use bevy_spatial::kdtree::KDTree2;
 
 use crate::PausableSystems;
 use crate::screens::Screen;
-use crate::space::{GasGenerator, GasOrb};
+use crate::space::{GasGenerator, GasOrb, THRESHOLD};
 
 use super::Player;
 
@@ -77,7 +77,7 @@ fn keyboard_input(
         thrust_force *= 0.15;
     }
 
-    let orb_density = gas.sample(transform.translation.truncate()).max(0.2); // 0.2 so the clouds are visible
+    let orb_density = (gas.sample(transform.translation.truncate()) - THRESHOLD).max(0.0);
 
     let orb_boost = forward_dir * orb_density * 50.0;
 
@@ -91,7 +91,7 @@ fn keyboard_input(
     }
 
     velocity.0 += thrust_force * time.delta_secs();
-    velocity.0 += orb_boost * time.delta_secs(); // TODO: test this properly
+    velocity.0 += orb_boost * time.delta_secs();
 
     // TODO: not framerate-independent
     // let speed = velocity.0.length();
