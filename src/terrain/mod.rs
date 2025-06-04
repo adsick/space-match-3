@@ -6,7 +6,12 @@
 
 use std::collections::HashSet;
 
-use bevy::{color::palettes::css::{GRAY, WHEAT, WHITE}, prelude::*, render::mesh::CircleMeshBuilder};
+use avian2d::parry::utils::hashmap::HashMap;
+use bevy::{
+    color::palettes::css::{GRAY, WHEAT, WHITE},
+    prelude::*,
+    render::mesh::CircleMeshBuilder,
+};
 use noiz::{Noise, SampleableFor, prelude::common_noise::Simplex};
 
 use crate::player::Player;
@@ -15,7 +20,7 @@ pub fn plugin(app: &mut App) {
     app.insert_resource(TerrainGenerator(default()))
         .insert_resource(PopulatedChunks::default())
         .add_observer(populate_chunk)
-        .add_systems(Update, trigger_chunk_population);
+        .add_systems(Update, (trigger_chunk_population, unload_far_chunks));
 }
 
 const CHUNK_SIZE: f32 = 20.0; // TODO: Increase this
@@ -24,7 +29,7 @@ const MAX_CLOUD_DENSITY: f32 = 7.0;
 
 // Chunks that have already been spawned.
 #[derive(Default, Resource)]
-pub struct PopulatedChunks(HashSet<IVec2>);
+pub struct PopulatedChunks(HashMap<IVec2, Entity>);
 
 #[derive(Resource)]
 pub struct TerrainGenerator(Noise<Simplex>);
@@ -38,7 +43,7 @@ impl TerrainGenerator {
 /// Populate new chunks
 fn trigger_chunk_population(
     mut cmds: Commands,
-    mut populated: ResMut<PopulatedChunks>,
+    populated: Res<PopulatedChunks>,
     q_player: Query<&Transform, With<Player>>,
 ) {
     let Ok(player_tr) = q_player.single() else {
@@ -51,15 +56,23 @@ fn trigger_chunk_population(
     for y in [-1, 0, 1] {
         for x in [-1, 0, 1] {
             let chunk_coords = player_chunk_coord + IVec2::new(x, y);
-            if populated.0.insert(chunk_coords) {
-                cmds.trigger(PopulateChunk(chunk_coords));
+            if !populated.0.contains_key(&chunk_coords) {
+                let chunk_entity = cmds
+                    .spawn((
+                        Transform::from_translation(
+                            chunk_coords.as_vec2().extend(0.0) * CHUNK_SIZE,
+                        ),
+                        InheritedVisibility::VISIBLE,
+                    ))
+                    .id();
+                cmds.trigger(PopulateChunk(chunk_coords, chunk_entity));
             }
         }
     }
 }
 
 #[derive(Debug, Event)]
-pub struct PopulateChunk(IVec2);
+pub struct PopulateChunk(IVec2, Entity);
 
 /// Observer that populates a chunk with orb clouds.
 /// The chunk is first subdivided into `CHUNK_SUBDIV` parts along each axis,
@@ -69,6 +82,7 @@ fn populate_chunk(
     mut cmds: Commands,
     terrain: Res<TerrainGenerator>,
     mut meshes: ResMut<Assets<Mesh>>,
+    mut populated: ResMut<PopulatedChunks>,
     // mut materials: ResMut<Assets<ColorMaterial>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
@@ -77,11 +91,9 @@ fn populate_chunk(
 
     for y in 0..CHUNK_SUBDIV {
         for x in 0..CHUNK_SUBDIV {
-            let cell_pos = (trigger.0.as_vec2()
-                + Vec2::new(x as f32, y as f32) / (CHUNK_SUBDIV as f32))
-                * CHUNK_SIZE;
+            let cell_pos = (Vec2::new(x as f32, y as f32) / (CHUNK_SUBDIV as f32)) * CHUNK_SIZE;
 
-            let r = terrain.orb_probability(cell_pos);
+            let r = terrain.orb_probability(trigger.0.as_vec2() + cell_pos);
 
             if r < 0.16 {
                 continue;
@@ -94,7 +106,7 @@ fn populate_chunk(
                     / CHUNK_SUBDIV as f32;
 
             // TODO: Spawn an orb here
-            cmds.spawn((
+            cmds.entity(trigger.1).with_child((
                 Mesh3d(meshes.add(CircleMeshBuilder::new(0.2 * r, 10).build())),
                 MeshMaterial3d(materials.add(StandardMaterial {
                     base_color: WHEAT.with_alpha(0.7).into(),
@@ -103,6 +115,23 @@ fn populate_chunk(
                 })),
                 Transform::from_translation(pos.extend((rand::random::<f32>() - 0.5) * 10.0 * r)),
             ));
+        }
+    }
+    populated.0.insert(trigger.0, trigger.1);
+}
+
+fn unload_far_chunks(
+    mut cmds: Commands,
+    mut populated: ResMut<PopulatedChunks>,
+    player: Single<&Transform, With<Player>>,
+) {
+    let player_chunk_coord = (player.translation.truncate() / CHUNK_SIZE)
+        .floor()
+        .as_ivec2();
+    for (chunk_coords, chunk_entity) in populated.0.clone().iter() {
+        if player_chunk_coord.distance_squared(*chunk_coords) > 2 {
+            populated.0.remove(chunk_coords);
+            cmds.entity(*chunk_entity).despawn();
         }
     }
 }

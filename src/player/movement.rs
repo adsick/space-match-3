@@ -65,18 +65,23 @@ fn keyboard_input(
 
     let forward_dir = (transform.rotation * Vec3::Y).truncate();
 
-    let thrust_force = forward_dir * **acceleration;
+    let mut thrust_force = forward_dir * **acceleration;
 
-    velocity.0 += thrust_force
-        * time.delta_secs()
-        * (terrain
+    if brake {
+        thrust_force *= 0.15;
+    }
+
+    let orb_boost = forward_dir
+        * terrain
             .orb_probability(transform.translation.truncate())
             .clamp(0.1, 0.25)
-            * 6.0)
-        * (!brake as i32 as f32).clamp(0.15, 1.0);
+        * 6.0;
+
+    velocity.0 += thrust_force * time.delta_secs();
+    velocity.0 += orb_boost * time.delta_secs(); // TODO: test this properly
 
     // TODO: not framerate-independent
-    let speed = velocity.0.length();
+    // let speed = velocity.0.length();
     // debug!("{speed:.2}");
 
     // we don't need additional speed limiting as avian's dampening will do it for us anyway
