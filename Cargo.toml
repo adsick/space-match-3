@@ -75,7 +75,6 @@ default-features = false
 features = ["bevy_spatial/kdtree"]
 
 [package.metadata.bevy_cli.web.dev]
-# features = ["dev", "bevy_spatial/kdtree-rayon", "bevy_spatial/kdtree"]
 features = ["dev", "bevy_spatial/kdtree"]
 
 
