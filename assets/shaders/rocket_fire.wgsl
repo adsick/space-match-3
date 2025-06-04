@@ -75,7 +75,7 @@ fn density_at_point(point: vec3f) -> f32 {
 
         var curr_density = 1.0 - dist;
 
-        curr_density = smooth_min(curr_density, dist, 0.9);
+        curr_density = smooth_min(curr_density, dist / (0.01 + particle_intensity ), 0.9);
 
         density += curr_density;
     }
@@ -117,17 +117,35 @@ fn fragment(
     //   out.color = mix(vec4f(color, 0.7), vec4f(1.0), 0.9);
     // }
 
-    if (density > 0.7) {
-      out.color = mix(vec4f(color, 0.7), vec4f(1.0), 0.9);
-    } else if (density > 0.5) {
-      out.color = mix(vec4f(color, 0.7), vec4f(1.0), 0.7);
-    } else  if (density > 0.3) {
-      out.color = mix(vec4f(color, 0.5), vec4f(1.0), 0.5);
-    } else if (density > 0.1) {
-      out.color = mix(vec4f(color, 0.4), vec4f(1.0), 0.3);
+
+
+
+    if (density > 0.5) {
+        out.color = mix(vec4f(1.0), vec4f(color, 1.0), density);
+    } else if (density > 0.4) {
+        out.color = vec4f(1.0);
+    } else if (density > 0.3) {
+        out.color = vec4f(color, 1.0);
+        // out.color = mix(vec4f(color, 1.0), vec4f(1.0), 0.7);
+    // } else  if (density > 0.3) {
+    //     out.color = mix(vec4f(color, 0.5), vec4f(1.0), 0.5);
+    // } else if (density > 0.1) {
+    //     out.color = mix(vec4f(color, 0.4), vec4f(1.0), 0.3);
     } else {
-      out.color = vec4f(0.0);
+        out.color = mix(vec4f(0.0), vec4f(color, 1.0), density);
     }
+
+    // if (density > 0.7) {
+    //   out.color = mix(vec4f(color, 0.7), vec4f(1.0), 0.9);
+    // } else if (density > 0.5) {
+    //   out.color = mix(vec4f(color, 0.7), vec4f(1.0), 0.7);
+    // } else  if (density > 0.3) {
+    //   out.color = mix(vec4f(color, 0.5), vec4f(1.0), 0.5);
+    // } else if (density > 0.1) {
+    //   out.color = mix(vec4f(color, 0.4), vec4f(1.0), 0.3);
+    // } else {
+    //   out.color = vec4f(0.0);
+    // }
 
     return out;
 
