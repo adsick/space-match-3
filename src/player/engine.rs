@@ -1,33 +1,29 @@
 use std::collections::VecDeque;
 
 use bevy::{
-    app::{App, Update},
-    asset::{Asset, Assets},
     color::{
         ColorToComponents,
         palettes::css::{PURPLE, RED},
     },
-    math::{UVec4, Vec2, Vec3, Vec3Swizzles, Vec4, VectorSpace},
+    math::VectorSpace,
     pbr::{ExtendedMaterial, MaterialExtension, MaterialPlugin, MeshMaterial3d, StandardMaterial},
-    prelude::{
-        AlphaMode, Changed, Commands, Component, GlobalTransform, Local, Mesh, Mesh3d, OnAdd,
-        Query, Rectangle, Res, ResMut, Transform, Trigger, With,
-    },
-    reflect::Reflect,
+    prelude::*,
     render::render_resource::{AsBindGroup, ShaderRef},
-    time::Time,
 };
+
+use crate::player::{Player, movement::CurrentGas};
 
 const FIRE_SHADER_PATH: &str = "shaders/rocket_fire.wgsl";
 const NOF_PARTICLES: usize = 20;
 
 pub(crate) fn plugin(app: &mut App) {
-    app.add_observer(on_add_fire)
+    app.register_type::<EngineFire>()
+        .add_observer(on_add_fire)
         .add_plugins((MaterialPlugin::<
             ExtendedMaterial<StandardMaterial, FireMaterialExtension>,
         >::default(),))
         .add_systems(Update, check_fire_params_change)
-        .add_systems(Update, update_shader_params);
+        .add_systems(Update, (update_engine_power, update_shader_params).chain());
 }
 
 #[derive(Asset, AsBindGroup, Reflect, Debug, Clone)]
@@ -72,7 +68,7 @@ impl MaterialExtension for FireMaterialExtension {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct EngineFire {
     /// Use 0.5. Other values look cringe.
     pub power: f32,
@@ -122,54 +118,68 @@ fn check_fire_params_change(
     }
 }
 
-fn update_shader_params(
-    ship_transforms: Query<(&GlobalTransform, &EngineFire)>,
-    mut materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, FireMaterialExtension>>>,
-    fire_material: Query<
-        &MeshMaterial3d<ExtendedMaterial<StandardMaterial, FireMaterialExtension>>,
-        With<EngineFire>,
-    >,
+fn update_engine_power(
+    mut fire_query: Query<(&mut EngineFire, &ChildOf)>,
+    ship_query: Query<&CurrentGas>,
+) {
+    for (mut fire_params, child_of) in &mut fire_query {
+        let Ok(current_gas) = ship_query.get(child_of.parent()) else {
+            return;
+        };
+        fire_params.power = (0.3 + current_gas.0).min(1.0);
+    }
+}
 
+fn update_shader_params(
+    ship_query: Query<&GlobalTransform, With<Player>>,
+    mut materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, FireMaterialExtension>>>,
+    fire_material: Query<(
+        &EngineFire,
+        &MeshMaterial3d<ExtendedMaterial<StandardMaterial, FireMaterialExtension>>,
+        &ChildOf,
+    )>,
     mut particles_queue: Local<VecDeque<(Vec2, Vec2)>>,
     mut last_particle_spawned: Local<u128>,
     time: Res<Time>,
 ) {
-    for (ship_transform, fire_params) in ship_transforms {
-        for fire_material in fire_material {
-            let Some(fire_material) = materials.get_mut(fire_material) else {
-                return;
-            };
+    for (fire_params, fire_material, child_of) in fire_material {
+        let Ok(ship_transform) = ship_query.get(child_of.parent()) else {
+            return;
+        };
 
-            let flame_dir = ship_transform.rotation().mul_vec3(-Vec3::Y);
-            let curr_time = time.elapsed().as_millis();
-            if curr_time - *last_particle_spawned > 30 {
-                particles_queue.push_front((ship_transform.translation().xy(), flame_dir.xy()));
+        let Some(fire_material) = materials.get_mut(fire_material) else {
+            return;
+        };
 
-                if particles_queue.len() >= NOF_PARTICLES {
-                    particles_queue.pop_back();
-                }
+        let flame_dir = ship_transform.rotation().mul_vec3(-Vec3::Y);
+        let curr_time = time.elapsed().as_millis();
+        if curr_time - *last_particle_spawned > 30 {
+            particles_queue.push_front((ship_transform.translation().xy(), flame_dir.xy()));
 
-                *last_particle_spawned = curr_time;
+            if particles_queue.len() >= NOF_PARTICLES {
+                particles_queue.pop_back();
             }
 
-            for (pos, flame_dir) in &mut particles_queue {
-                *pos += *flame_dir * 0.6 * fire_params.power;
-            }
-
-            for (i, (pos, _)) in particles_queue.iter().enumerate() {
-                fire_material.extension.particles[i] = pos.extend(0.0).extend(0.0);
-            }
-
-            fire_material.extension.nof_particles = UVec4::splat(particles_queue.len() as u32);
-
-            fire_material.extension.dir = -flame_dir.extend(0.0);
-
-            fire_material.extension.center = ship_transform.translation().extend(0.0);
-
-            let color = RED.lerp(PURPLE, fire_params.power);
-            fire_material.extension.color = color.to_vec4();
-
-            fire_material.extension.power = Vec4::splat(fire_params.power);
+            *last_particle_spawned = curr_time;
         }
+
+        for (pos, flame_dir) in &mut particles_queue {
+            *pos += *flame_dir * 0.6 * fire_params.power;
+        }
+
+        for (i, (pos, _)) in particles_queue.iter().enumerate() {
+            fire_material.extension.particles[i] = pos.extend(0.0).extend(0.0);
+        }
+
+        fire_material.extension.nof_particles = UVec4::splat(particles_queue.len() as u32);
+
+        fire_material.extension.dir = -flame_dir.extend(0.0);
+
+        fire_material.extension.center = ship_transform.translation().extend(0.0);
+
+        let color = RED.lerp(PURPLE, fire_params.power);
+        fire_material.extension.color = color.to_vec4();
+
+        fire_material.extension.power = Vec4::splat(fire_params.power);
     }
 }
