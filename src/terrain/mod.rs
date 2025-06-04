@@ -4,7 +4,7 @@
 //! that are populated on the fly as the player moves around.
 //!
 
-use std::collections::HashSet;
+use std::time::Instant;
 
 use avian2d::parry::utils::hashmap::HashMap;
 use bevy::{
@@ -25,7 +25,7 @@ pub fn plugin(app: &mut App) {
 
 const CHUNK_SIZE: f32 = 20.0; // TODO: Increase this
 /// Number of orbs per m²
-const MAX_CLOUD_DENSITY: f32 = 7.0;
+const MAX_CLOUD_DENSITY: f32 = 3.0;
 
 // Chunks that have already been spawned.
 #[derive(Default, Resource)]
@@ -44,27 +44,29 @@ impl TerrainGenerator {
 fn trigger_chunk_population(
     mut cmds: Commands,
     populated: Res<PopulatedChunks>,
-    q_player: Query<&Transform, With<Player>>,
+    q_player: Single<&Transform, With<Player>>,
 ) {
-    let Ok(player_tr) = q_player.single() else {
-        return;
-    };
+    let player_tr = q_player.into_inner();
 
     let player_chunk_coord = (player_tr.translation.truncate() / CHUNK_SIZE)
         .floor()
         .as_ivec2();
+
     for y in [-1, 0, 1] {
         for x in [-1, 0, 1] {
             let chunk_coords = player_chunk_coord + IVec2::new(x, y);
             if !populated.0.contains_key(&chunk_coords) {
+
+                let pos = chunk_coords.as_vec2().extend(0.0) * CHUNK_SIZE; 
                 let chunk_entity = cmds
                     .spawn((
                         Transform::from_translation(
-                            chunk_coords.as_vec2().extend(0.0) * CHUNK_SIZE,
+                            pos,
                         ),
                         InheritedVisibility::VISIBLE,
                     ))
                     .id();
+                debug!("spawning chunk at {pos}");
                 cmds.trigger_targets(PopulateChunk(chunk_coords), chunk_entity);
             }
         }
@@ -89,11 +91,12 @@ fn populate_chunk(
     // Calculate how many subdivisions along each axis is required to get the desired maximum cloud density.
     const CHUNK_SUBDIV: usize = ((MAX_CLOUD_DENSITY * CHUNK_SIZE * CHUNK_SIZE) as usize).isqrt();
 
+    let inst = Instant::now();
+
     for y in 0..CHUNK_SUBDIV {
         for x in 0..CHUNK_SUBDIV {
             let cell_pos = (Vec2::new(x as f32, y as f32) / (CHUNK_SUBDIV as f32)) * CHUNK_SIZE;
-
-            let r = terrain.orb_probability(trigger.0.as_vec2() + cell_pos);
+            let r = terrain.orb_probability(trigger.0.as_vec2() * CHUNK_SIZE + cell_pos);
 
             if r < 0.16 {
                 continue;
@@ -105,9 +108,11 @@ fn populate_chunk(
                 + Vec2::new(rand::random::<f32>(), rand::random::<f32>()) * CHUNK_SIZE
                     / CHUNK_SUBDIV as f32;
 
+            let resolution = 3 + (6.0 * r) as u32;
+            // debug!("{resolution}");
             // TODO: Spawn an orb here
             cmds.entity(trigger.target()).with_child((
-                Mesh3d(meshes.add(CircleMeshBuilder::new(0.2 * r, 10).build())),
+                Mesh3d(meshes.add(CircleMeshBuilder::new(0.2 * r, resolution).build())),
                 MeshMaterial3d(materials.add(StandardMaterial {
                     base_color: WHEAT.with_alpha(0.7).into(),
                     emissive: GRAY.into(),
@@ -117,6 +122,11 @@ fn populate_chunk(
             ));
         }
     }
+
+    let t = inst.elapsed();
+
+    debug!("chunk generation took {t:.2?}");
+
     populated.0.insert(trigger.0, trigger.target());
 }
 

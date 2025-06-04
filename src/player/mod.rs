@@ -25,7 +25,7 @@ fn camera_follow_player(
 
     let vel_len = vel.0.length();
 
-    cam_transform.translation = player_transform.translation().with_z(50.0);
+    cam_transform.translation = player_transform.translation().with_z(100.0);
     // cam_transform.translation = cam_transform.translation.move_towards(player_transform.translation().with_z(30.0 + 1.0 * vel_len), 45.0 * time.delta_secs());
 
     // cam_transform.translation = player_transform.translation().with_z(50.0 + 10.0 * vel_len);
