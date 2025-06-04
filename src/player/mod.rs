@@ -16,6 +16,7 @@ pub struct Player;
 fn camera_follow_player(
     q_camera: Single<&mut Transform, With<Camera>>,
     q_player: Single<(&GlobalTransform, &LinearVelocity), With<Player>>,
+    time: Res<Time>
 ) {
     let mut cam_transform = q_camera.into_inner();
 
@@ -23,9 +24,11 @@ fn camera_follow_player(
 
     let vel_len = vel.0.length();
 
-    cam_transform.translation = player_transform.translation().with_z(vel_len);
+    cam_transform.translation = cam_transform.translation.move_towards(player_transform.translation().with_z(50.0 + 10.0 * vel_len), 45.0 * time.delta_secs());
 
-    cam_transform.translation.y += -vel_len / 4.0;
+    // cam_transform.translation = player_transform.translation().with_z(50.0 + 10.0 * vel_len);
 
-    cam_transform.rotation = Quat::from_rotation_x(vel_len / 70.0);
+    // cam_transform.translation.y += -vel_len / 4.0;
+
+    // cam_transform.rotation = Quat::from_rotation_x(vel_len / 70.0);
 }
