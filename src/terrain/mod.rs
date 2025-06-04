@@ -65,14 +65,14 @@ fn trigger_chunk_population(
                         InheritedVisibility::VISIBLE,
                     ))
                     .id();
-                cmds.trigger(PopulateChunk(chunk_coords, chunk_entity));
+                cmds.trigger_targets(PopulateChunk(chunk_coords), chunk_entity);
             }
         }
     }
 }
 
 #[derive(Debug, Event)]
-pub struct PopulateChunk(IVec2, Entity);
+pub struct PopulateChunk(IVec2);
 
 /// Observer that populates a chunk with orb clouds.
 /// The chunk is first subdivided into `CHUNK_SUBDIV` parts along each axis,
@@ -106,7 +106,7 @@ fn populate_chunk(
                     / CHUNK_SUBDIV as f32;
 
             // TODO: Spawn an orb here
-            cmds.entity(trigger.1).with_child((
+            cmds.entity(trigger.target()).with_child((
                 Mesh3d(meshes.add(CircleMeshBuilder::new(0.2 * r, 10).build())),
                 MeshMaterial3d(materials.add(StandardMaterial {
                     base_color: WHEAT.with_alpha(0.7).into(),
@@ -117,7 +117,7 @@ fn populate_chunk(
             ));
         }
     }
-    populated.0.insert(trigger.0, trigger.1);
+    populated.0.insert(trigger.0, trigger.target());
 }
 
 fn unload_far_chunks(
