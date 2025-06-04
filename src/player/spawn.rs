@@ -9,6 +9,7 @@ use crate::screens::Screen;
 use super::{
     Player,
     assets::PlayerAssets,
+    engine,
     movement::{MaxSpeed, MovementAcceleration, RotationSpeed},
 };
 
@@ -51,6 +52,7 @@ fn spawn_player_with_movement(
                 ..Default::default()
             })),
             transform,
+            children![(engine::EngineFire { power: 0.5 },)],
         ))
         .id()
 }
