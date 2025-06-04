@@ -18,7 +18,7 @@ pub fn plugin(app: &mut App) {
         .insert_resource(PopulatedChunks::default())
         .add_observer(populate_chunk)
         .add_systems(
-            Update,
+            FixedUpdate,
             (trigger_chunk_population, unload_far_chunks).chain(),
         );
 }
@@ -172,7 +172,7 @@ fn unload_far_chunks(
         .as_ivec2();
     for (chunk_coords, chunk_entity) in populated.0.clone().iter() {
         // need to figure out this const
-        if player_chunk_coord.distance_squared(*chunk_coords) > RADIUS * RADIUS {
+        if player_chunk_coord.distance_squared(*chunk_coords) > RADIUS * RADIUS * 6 / 5 {
             populated.0.remove(chunk_coords);
             cmds.entity(*chunk_entity).despawn();
         }
