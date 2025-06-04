@@ -6,7 +6,7 @@
 
 use avian2d::parry::utils::hashmap::HashMap;
 use bevy::prelude::*;
-use noiz::{Noise, SampleableFor, prelude::common_noise::Simplex};
+use noiz::{Noise, SampleableFor, prelude::common_noise::Perlin, rng::NoiseRng};
 
 use crate::{player::Player, space::assets::SpaceAssets};
 
@@ -14,7 +14,13 @@ mod assets;
 
 pub fn plugin(app: &mut App) {
     app.add_plugins(assets::plugin)
-        .insert_resource(GasGenerator::default())
+        .insert_resource(GasGenerator {
+            noise: Noise {
+                noise: Perlin::default(),
+                seed: NoiseRng(rand::random()), // it was 0 by default so every time you loaded the game it was the same
+                frequency: 0.004,
+            },
+        })
         .insert_resource(PopulatedChunks::default())
         .add_observer(populate_chunk)
         .add_systems(
@@ -25,7 +31,7 @@ pub fn plugin(app: &mut App) {
 
 const CHUNK_SIZE: f32 = 32.0; // TODO: Increase this
 /// Number of orbs per m²
-const MAX_CLOUD_DENSITY: f32 = 0.2;
+const MAX_CLOUD_DENSITY: f32 = 0.03;
 const RADIUS: i32 = 16;
 
 // Chunks that have already been spawned.
@@ -34,12 +40,12 @@ pub struct PopulatedChunks(HashMap<IVec2, Entity>);
 
 #[derive(Resource, Default)]
 pub struct GasGenerator {
-    noise: Noise<Simplex>,
+    noise: Noise<Perlin>,
 }
 
 impl GasGenerator {
     pub fn sample(&self, p: Vec2) -> f32 {
-        self.noise.sample(p / 200.0)
+        self.noise.sample(p)
     }
 }
 
@@ -141,7 +147,7 @@ fn populate_chunk(
                 Mesh3d(space_assets.orb_meshes[2].clone()),
                 MeshMaterial3d(space_assets.orb_materials[2].clone()),
                 Transform::from_translation(pos.extend((rand::random::<f32>() - 0.5) * 70.0 * r))
-                    .with_scale(Vec3::splat(0.4 + 0.7 * r)),
+                    .with_scale(Vec3::splat(0.2 + 3.0 * r)),
             ));
         }
     }
