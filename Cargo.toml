@@ -41,7 +41,7 @@ bevy_spatial = { version = "0.11.0", default-features = false }
 
 [features]
 # Default to a native dev build.
-default = ["dev_native"]
+default = ["dev_native", "bevy_spatial/default"]
 dev = [
     # Improve compile times for dev builds by linking Bevy as a dynamic library.
     "bevy/dynamic_linking",
@@ -60,9 +60,6 @@ dev_native = [
 wayland = ["bevy/wayland"]
 
 
-[package.metadata.bevy_cli.dev]
-features = ["dev", "bevy_spatial/default"]
-
 [package.metadata.bevy_cli.release]
 # Disable dev features for release builds.
 # TODO: switch to false before publish
@@ -75,7 +72,7 @@ default-features = false
 features = ["bevy_spatial/kdtree"]
 
 [package.metadata.bevy_cli.web.dev]
-features = ["dev", "bevy_spatial/kdtree"]
+features = ["dev"]
 
 
 [lints.rust]
