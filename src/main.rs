@@ -7,25 +7,21 @@ mod asset_tracking;
 mod audio;
 // #[cfg(feature = "dev")]
 mod dev_tools;
+mod gas;
 mod menus;
 mod player;
 mod screens;
 mod space;
 mod theme;
 
-use std::time::Duration;
-
 use avian2d::prelude::*;
 use bevy::{
-    asset::AssetMetaCheck, color::palettes::css::WHITE, diagnostic::FrameTimeDiagnosticsPlugin,
-    prelude::*,
+    asset::AssetMetaCheck, color::palettes::css::WHITE, core_pipeline::bloom::Bloom,
+    diagnostic::FrameTimeDiagnosticsPlugin, prelude::*,
 };
 use bevy_framepace::FramepacePlugin;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
-use bevy_spatial::{AutomaticUpdate, SpatialStructure, TransformMode};
 use bevy_vector_shapes::Shape2dPlugin;
-
-use crate::space::GasOrb;
 
 fn main() -> AppExit {
     App::new().add_plugins(AppPlugin).run()
@@ -60,10 +56,6 @@ impl Plugin for AppPlugin {
             },
             FramepacePlugin,
             Shape2dPlugin::default(), // bevy_vector_shapes
-            AutomaticUpdate::<GasOrb>::new()
-                .with_spatial_ds(SpatialStructure::KDTree2)
-                .with_frequency(Duration::from_secs_f32(0.3))
-                .with_transform(TransformMode::GlobalTransform),
         ));
 
         // Add other plugins.
@@ -77,6 +69,7 @@ impl Plugin for AppPlugin {
             theme::plugin,
             player::plugin,
             space::plugin,
+            gas::plugin,
             FrameTimeDiagnosticsPlugin::default(),
         ));
 
@@ -127,7 +120,12 @@ struct PausableSystems;
 fn spawn_camera(mut commands: Commands) {
     commands.spawn((
         Name::new("Camera"),
+        Camera {
+            hdr: true,
+            ..default()
+        },
         Camera3d::default(),
+        Bloom::NATURAL,
         Transform::from_xyz(0.0, 0.0, 10.0).looking_at(Vec3::ZERO, Dir3::Y),
     ));
 
