@@ -8,7 +8,7 @@ use bevy_spatial::kdtree::KDTree2;
 
 use crate::PausableSystems;
 use crate::screens::Screen;
-use crate::space::{GasGenerator, GasOrb, THRESHOLD};
+use crate::space::{GasGenerator, GasOrb, THRESHOLD, orb_explosion::OrbExplosion};
 
 use super::Player;
 
@@ -83,11 +83,13 @@ fn keyboard_input(
 
     if gas_density > 0.0 {
         let player_pos = transform.translation.truncate();
-        for (_, entity) in tree.within_distance(player_pos, 10.0) {
-            if let Some(e) = entity {
-                commands.entity(e).try_despawn();
-            }
-        }
+
+        commands.send_event(OrbExplosion { pos: player_pos });
+        // for (_, entity) in tree.within_distance(player_pos, 10.0) {
+        //     if let Some(e) = entity {
+        //         commands.entity(e).try_despawn();
+        //     }
+        // }
     }
 
     velocity.0 += (thrust_force + gas_boost) * time.delta_secs();

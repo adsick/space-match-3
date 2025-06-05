@@ -11,9 +11,10 @@ use noiz::{Noise, SampleableFor, prelude::common_noise::Perlin, rng::NoiseRng};
 use crate::{player::Player, space::assets::SpaceAssets};
 
 mod assets;
+pub mod orb_explosion;
 
 pub fn plugin(app: &mut App) {
-    app.add_plugins(assets::plugin)
+    app.add_plugins((assets::plugin, orb_explosion::plugin))
         .insert_resource(GasGenerator {
             noise: Noise {
                 noise: Perlin::default(),
@@ -58,16 +59,16 @@ fn smoothstep(edge0: f32, edge1: f32, x: f32) -> f32 {
 
 impl GasGenerator {
     pub fn sample(&self, p: Vec2) -> f32 {
-        // No orbs should be spawned near the start (0, 0) in order to free up space for the intro
-        // scene.
-        let dist_sq = p.x * p.x + p.y * p.y;
-        const START_RADIUS: f32 = 500.;
-        const START_RADIUS_SQ: f32 = START_RADIUS * START_RADIUS;
-        let start_mask = smoothstep(0., START_RADIUS_SQ, dist_sq);
+        // // No orbs should be spawned near the start (0, 0) in order to free up space for the intro
+        // // scene.
+        // let dist_sq = p.x * p.x + p.y * p.y;
+        // const START_RADIUS: f32 = 500.;
+        // const START_RADIUS_SQ: f32 = START_RADIUS * START_RADIUS;
+        // let start_mask = smoothstep(0., START_RADIUS_SQ, dist_sq);
 
         let noise: f32 = self.noise.sample(p);
 
-        noise * start_mask
+        noise
     }
 }
 
