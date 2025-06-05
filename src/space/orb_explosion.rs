@@ -35,7 +35,7 @@ fn burn_explosion(
     time: Res<Time>,
     mut explosion_queue: Local<Option<VecDeque<OrbExplosionCell>>>,
 ) {
-    const CELL_SIZE: f32 = 10.;
+    const CELL_SIZE: f32 = 6.;
     let explosion_queue = explosion_queue.get_or_insert(VecDeque::new());
     let curr_time = time.elapsed().as_millis();
 
@@ -49,8 +49,9 @@ fn burn_explosion(
     debug!("explosions: {}", explosion_queue.len());
 
     let mut new_explosions = Vec::<OrbExplosionCell>::new();
-    for explosion in explosion_queue.iter() {
-        if curr_time > explosion.time_spawned + 1000 {
+
+    explosion_queue.retain(|explosion| {
+        if curr_time > explosion.time_spawned + 100 {
             let mut burnt_orbs = false;
             for (_, entity) in tree.within_distance(explosion.pos, CELL_SIZE / 2.) {
                 if let Some(e) = entity {
@@ -60,7 +61,7 @@ fn burn_explosion(
             }
 
             if !burnt_orbs {
-                continue;
+                return false;
             }
 
             let neis = [
@@ -76,8 +77,41 @@ fn burn_explosion(
                     time_spawned: curr_time,
                 });
             }
+            false // here I delete the explosion
+        } else {
+            true
         }
-    }
+    });
+
+    // for explosion in explosion_queue.iter() {
+    //     if curr_time > explosion.time_spawned + 1000 {
+    //         let mut burnt_orbs = false;
+    //         for (_, entity) in tree.within_distance(explosion.pos, CELL_SIZE / 2.) {
+    //             if let Some(e) = entity {
+    //                 commands.entity(e).try_despawn();
+    //                 burnt_orbs = true;
+    //             }
+    //         }
+
+    //         if !burnt_orbs {
+    //             continue;
+    //         }
+
+    //         let neis = [
+    //             explosion.pos + Vec2::Y * CELL_SIZE,
+    //             explosion.pos - Vec2::Y * CELL_SIZE,
+    //             explosion.pos + Vec2::X * CELL_SIZE,
+    //             explosion.pos - Vec2::X * CELL_SIZE,
+    //         ];
+
+    //         for nei in neis {
+    //             new_explosions.push(OrbExplosionCell {
+    //                 pos: nei,
+    //                 time_spawned: curr_time,
+    //             });
+    //         }
+    //     }
+    // }
 
     for explosion in new_explosions {
         explosion_queue.push_back(explosion);
