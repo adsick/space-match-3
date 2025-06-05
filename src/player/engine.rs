@@ -1,5 +1,6 @@
-use std::collections::VecDeque;
+use std::{collections::VecDeque, time::Duration};
 
+use avian2d::prelude::LinearVelocity;
 use bevy::{
     app::{App, Update},
     asset::{Asset, Assets},
@@ -7,16 +8,18 @@ use bevy::{
         ColorToComponents,
         palettes::css::{PURPLE, RED},
     },
-    math::{UVec4, Vec2, Vec3, Vec3Swizzles, Vec4, VectorSpace},
+    math::{UVec4, Vec2, Vec2Swizzles, Vec3, Vec3Swizzles, Vec4, VectorSpace},
     pbr::{ExtendedMaterial, MaterialExtension, MaterialPlugin, MeshMaterial3d, StandardMaterial},
     prelude::{
         AlphaMode, Changed, Commands, Component, GlobalTransform, Local, Mesh, Mesh3d, OnAdd,
-        Query, Rectangle, Res, ResMut, Transform, Trigger, With,
+        Query, Rectangle, Res, ResMut, Single, Transform, Trigger, With,
     },
     reflect::Reflect,
     render::render_resource::{AsBindGroup, ShaderRef},
     time::Time,
 };
+
+use super::Player;
 
 const FIRE_SHADER_PATH: &str = "shaders/rocket_fire.wgsl";
 const NOF_PARTICLES: usize = 20;
@@ -123,53 +126,65 @@ fn check_fire_params_change(
 }
 
 fn update_shader_params(
-    ship_transforms: Query<(&GlobalTransform, &EngineFire)>,
+    fire: Single<(&GlobalTransform, &EngineFire)>,
     mut materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, FireMaterialExtension>>>,
-    fire_material: Query<
+    fire_material: Single<
         &MeshMaterial3d<ExtendedMaterial<StandardMaterial, FireMaterialExtension>>,
         With<EngineFire>,
     >,
 
     mut particles_queue: Local<VecDeque<(Vec2, Vec2)>>,
     mut last_particle_spawned: Local<u128>,
+    mut prev_position: Local<Option<Vec2>>,
+
     time: Res<Time>,
 ) {
-    for (ship_transform, fire_params) in ship_transforms {
-        for fire_material in fire_material {
-            let Some(fire_material) = materials.get_mut(fire_material) else {
-                return;
-            };
+    let Some(fire_material) = materials.get_mut(*fire_material) else {
+        return;
+    };
 
-            let flame_dir = ship_transform.rotation().mul_vec3(-Vec3::Y);
-            let curr_time = time.elapsed().as_millis();
-            if curr_time - *last_particle_spawned > 30 {
-                particles_queue.push_front((ship_transform.translation().xy(), flame_dir.xy()));
+    let (ship_transform, fire_params) = *fire;
 
-                if particles_queue.len() >= NOF_PARTICLES {
-                    particles_queue.pop_back();
-                }
+    let flame_dir = ship_transform.rotation().mul_vec3(-Vec3::Y);
+    let curr_time = time.elapsed().as_millis();
 
-                *last_particle_spawned = curr_time;
-            }
+    let prev_position = prev_position.get_or_insert(ship_transform.translation().xy());
+    let td = time.delta_secs();
+    let ship_velocity = (ship_transform.translation().xy() - *prev_position) / td;
+    *prev_position = ship_transform.translation().xy();
 
-            for (pos, flame_dir) in &mut particles_queue {
-                *pos += *flame_dir * 0.6 * fire_params.power;
-            }
+    println!("ship velocity: {ship_velocity}");
 
-            for (i, (pos, _)) in particles_queue.iter().enumerate() {
-                fire_material.extension.particles[i] = pos.extend(0.0).extend(0.0);
-            }
+    if curr_time - *last_particle_spawned > 30 {
+        let new_particle = (
+            ship_transform.translation().xy(),
+            flame_dir.xy() * fire_params.power + ship_velocity,
+        );
+        particles_queue.push_front(new_particle);
 
-            fire_material.extension.nof_particles = UVec4::splat(particles_queue.len() as u32);
-
-            fire_material.extension.dir = -flame_dir.extend(0.0);
-
-            fire_material.extension.center = ship_transform.translation().extend(0.0);
-
-            let color = RED.lerp(PURPLE, fire_params.power);
-            fire_material.extension.color = color.to_vec4();
-
-            fire_material.extension.power = Vec4::splat(fire_params.power);
+        if particles_queue.len() >= NOF_PARTICLES {
+            particles_queue.pop_back();
         }
+
+        *last_particle_spawned = curr_time;
     }
+
+    for (pos, vel) in &mut particles_queue {
+        *pos += *vel * td;
+    }
+
+    for (i, (pos, _)) in particles_queue.iter().enumerate() {
+        fire_material.extension.particles[i] = pos.extend(0.0).extend(0.0);
+    }
+
+    fire_material.extension.nof_particles = UVec4::splat(particles_queue.len() as u32);
+
+    fire_material.extension.dir = -flame_dir.extend(0.0);
+
+    fire_material.extension.center = ship_transform.translation().extend(0.0);
+
+    let color = RED.lerp(PURPLE, fire_params.power);
+    fire_material.extension.color = color.to_vec4();
+
+    fire_material.extension.power = Vec4::splat(fire_params.power);
 }
