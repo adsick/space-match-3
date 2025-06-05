@@ -7,7 +7,6 @@ use bevy::{
     time::Time,
 };
 use bevy_spatial::{SpatialAccess, kdtree::KDTree2};
-use bevy_tweening::Delay;
 
 use super::{GasGenerator, GasOrb};
 
@@ -36,7 +35,7 @@ fn burn_explosion(
     time: Res<Time>,
     mut explosion_queue: Local<Option<VecDeque<OrbExplosionCell>>>,
 ) {
-    const CELL_SIZE: f32 = 30.;
+    const CELL_SIZE: f32 = 10.;
     let explosion_queue = explosion_queue.get_or_insert(VecDeque::new());
     let curr_time = time.elapsed().as_millis();
 
@@ -46,6 +45,8 @@ fn burn_explosion(
             time_spawned: curr_time,
         });
     }
+
+    debug!("explosions: {}", explosion_queue.len());
 
     let mut new_explosions = Vec::<OrbExplosionCell>::new();
     for explosion in explosion_queue.iter() {
