@@ -31,8 +31,8 @@ var<uniform> power: vec4f;
 
 const PARTICLE_RADIUS: f32 = 5.0;
 
-fn snoise3(p: vec3<f32>) -> vec3<f32> {
-    return vec3f(snoise(p), snoise(p + vec3f(100.0)), 0.0);
+fn snoise2(p: vec2<f32>) -> vec2<f32> {
+    return vec2f(snoise(vec3f(p, 0.0)), snoise(vec3f(p, 0.0) + vec3f(100.0)));
 }
 
 
@@ -56,6 +56,8 @@ fn density_at_point(point: vec3f) -> f32 {
     let nof_particles = nof_particles.x;
     let power = power.x;
 
+    let noise_point = smoothstep(0.0, 30., distance(point, center)) * 5.0 * snoise2(point.xy) + point.xy;
+
     // SDF to polyline
     var min_dist = 1e10;
     let count = i32(nof_particles);
@@ -65,7 +67,7 @@ fn density_at_point(point: vec3f) -> f32 {
         let a = particles[i].xy;
         let b = particles[i + 1].xy;
 
-        let pa = point.xy - a;
+        let pa = noise_point - a;
         let ba = b - a;
         let h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
         let d = length(pa - ba * h);
@@ -90,45 +92,6 @@ fn density_at_point(point: vec3f) -> f32 {
     density =  density * mask;
 
     return density;
-
-
-    // let t = mesh_view_bindings::globals.time;
-    //
-    // let color = color.xyz;
-    // let center = center.xyz;
-    // let nof_particles = nof_particles.x;
-    // let power = power.x;
-    //
-    // let local_point = point - center;
-    // let dist_to_engine = distance(point, center);
-    //
-    // var density = 0.0;
-    // for (var i = 0u; i < nof_particles; i++) {
-    //     var particle_pos = particles[i].xyz;
-    //     particle_pos += snoise3(particle_pos) * dist_to_engine * 0.1;
-    //
-    //     let particle_intensity = (1.0 - f32(i) / f32(nof_particles));
-    //     let particle_radius = PARTICLE_RADIUS * particle_intensity;
-    //
-    //     var dist = distance(point, particle_pos);
-    //
-    //     dist = smoothstep(0.0, particle_radius, dist);
-    //
-    //     var curr_density = 1.0 - dist;
-    //
-    //     curr_density = smooth_min(curr_density, dist / (0.01 + particle_intensity ), 0.9);
-    //
-    //     density += curr_density;
-    // }
-    //
-    // density = smoothstep(0.0, 1.0, density * power * 2.);
-    //
-    //
-    // var mask = dot(-dir.xy, normalize(local_point.xy));
-    // mask = smoothstep(0.4, 0.9, mask);
-    // density =  density * mask;
-    //
-    // return density;
 }
 
 @fragment
