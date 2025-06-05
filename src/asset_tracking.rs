@@ -32,10 +32,6 @@ impl LoadResource for App {
             .push_back((handle.untyped(), |world, handle| {
                 let assets = world.resource::<Assets<T>>();
 
-                for (id, val) in assets.iter() {
-                    debug!("assets: {id:?}");
-                }
-
                 if let Some(value) = assets.get(handle.id().typed::<T>()) {
                     world.insert_resource(value.clone());
                 }

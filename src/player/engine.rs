@@ -2,35 +2,29 @@ use std::{collections::VecDeque, time::Duration};
 
 use avian2d::prelude::LinearVelocity;
 use bevy::{
-    app::{App, Update},
-    asset::{Asset, Assets},
     color::{
-        ColorToComponents,
-        palettes::css::{PURPLE, RED},
+        palettes::{css::{PURPLE, RED}, tailwind::{PURPLE_800, RED_300, RED_400, RED_500}}, ColorToComponents
     },
     math::{UVec4, Vec2, Vec2Swizzles, Vec3, Vec3Swizzles, Vec4, VectorSpace},
     pbr::{ExtendedMaterial, MaterialExtension, MaterialPlugin, MeshMaterial3d, StandardMaterial},
-    prelude::{
-        AlphaMode, Changed, Commands, Component, GlobalTransform, Local, Mesh, Mesh3d, OnAdd,
-        Query, Rectangle, Res, ResMut, Single, Transform, Trigger, With,
-    },
+    prelude::{AlphaMode, Changed, Commands, Component, GlobalTransform, Local, Mesh, Mesh3d, OnAdd, Query, Rectangle, Res, ResMut, Single, Transform, Trigger, With, *},
     reflect::Reflect,
     render::render_resource::{AsBindGroup, ShaderRef},
-    time::Time,
 };
 
-use super::Player;
+use crate::player::{Player, movement::CurrentGas};
 
 const FIRE_SHADER_PATH: &str = "shaders/rocket_fire.wgsl";
 const NOF_PARTICLES: usize = 20;
 
 pub(crate) fn plugin(app: &mut App) {
-    app.add_observer(on_add_fire)
+    app.register_type::<EngineFire>()
+        .add_observer(on_add_fire)
         .add_plugins((MaterialPlugin::<
             ExtendedMaterial<StandardMaterial, FireMaterialExtension>,
         >::default(),))
         .add_systems(Update, check_fire_params_change)
-        .add_systems(Update, update_shader_params);
+        .add_systems(Update, (update_engine_power, update_shader_params).chain());
 }
 
 #[derive(Asset, AsBindGroup, Reflect, Debug, Clone)]
@@ -75,10 +69,11 @@ impl MaterialExtension for FireMaterialExtension {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct EngineFire {
     /// Use 0.5. Other values look cringe.
     pub power: f32,
+    pub color: Vec4,
 }
 
 fn on_add_fire(
@@ -125,6 +120,18 @@ fn check_fire_params_change(
     }
 }
 
+fn update_engine_power(
+    mut fire_query: Query<(&mut EngineFire, &ChildOf)>,
+    ship_query: Query<&CurrentGas>,
+) {
+    for (mut fire_params, child_of) in &mut fire_query {
+        let Ok(current_gas) = ship_query.get(child_of.parent()) else {
+            return;
+        };
+        fire_params.color = RED_500.lerp(PURPLE * 2.0, current_gas.0).to_vec4();
+    }
+}
+
 fn update_shader_params(
     fire: Single<(&GlobalTransform, &EngineFire)>,
     mut materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, FireMaterialExtension>>>,
@@ -154,7 +161,7 @@ fn update_shader_params(
 
     if curr_time - *last_particle_spawned > 30 {
         let prev_position = prev_position.get_or_insert(Vec2::ZERO);
-        let ship_velocity = ( curr_position - *prev_position ) / 0.03;
+        let ship_velocity = (curr_position - *prev_position) / 0.03;
         *prev_position = curr_position;
 
         let new_particle = (
@@ -185,10 +192,8 @@ fn update_shader_params(
 
     fire_material.extension.center = curr_position.extend(0.0).extend(0.0);
 
-    let color = RED.lerp(PURPLE, fire_params.power);
-    fire_material.extension.color = color.to_vec4();
+    // let color = RED.lerp(PURPLE, fire_params.power);
+    fire_material.extension.color = fire_params.color;
 
     fire_material.extension.power = Vec4::splat(fire_params.power);
-
-
 }

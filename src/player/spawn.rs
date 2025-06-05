@@ -1,10 +1,7 @@
-use avian2d::prelude::{AngularDamping, AngularVelocity, LinearDamping, LinearVelocity, RigidBody};
-use bevy::{
-    color::palettes::css::{VIOLET, WHITE},
-    prelude::*,
-};
+use avian2d::prelude::*;
+use bevy::{color::palettes::css::VIOLET, prelude::*};
 
-use crate::screens::Screen;
+use crate::{player::movement::CurrentGas, screens::Screen};
 
 use super::{
     Player,
@@ -36,23 +33,34 @@ fn spawn_player_with_movement(
 ) -> Entity {
     commands
         .spawn((
-            Player,
-            RigidBody::Dynamic,
-            LinearVelocity(Vec2::Y * 20.),
-            AngularVelocity(0.0),
-            MovementAcceleration(20.0),
-            AngularDamping(1.0),
-            LinearDamping(0.3),
-            RotationSpeed(2.0),
-            GasBoost(100.0),
-            Mesh3d(player_assets.ship.clone()),
-            MeshMaterial3d(materials.add(StandardMaterial {
-                base_color: VIOLET.into(),
-                emissive: (VIOLET * 4.0).into(),
-                ..Default::default()
-            })),
-            transform,
-            children![(engine::EngineFire { power: 0.0 },)],
+            (
+                Player,
+                Name::new("Player"),
+                RigidBody::Dynamic,
+                LinearVelocity::ZERO,
+                AngularVelocity(0.0),
+                Mass(1.0),
+                AngularInertia(1.0),
+                MovementAcceleration(20.0),
+                GasBoost(50.0),
+                CurrentGas(1.0),
+                AngularDamping(10.0),
+                LinearDamping(0.3),
+                RotationSpeed(20.0),
+            ),
+            (
+                Mesh3d(player_assets.ship.clone()),
+                MeshMaterial3d(materials.add(StandardMaterial {
+                    base_color: VIOLET.into(),
+                    emissive: (VIOLET * 4.0).into(),
+                    ..Default::default()
+                })),
+                transform,
+                children![(engine::EngineFire {
+                    power: 0.5,
+                    color: Vec4::default()
+                },)],
+            ),
         ))
         .id()
 }

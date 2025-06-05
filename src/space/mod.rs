@@ -8,13 +8,12 @@ use avian2d::parry::utils::hashmap::HashMap;
 use bevy::prelude::*;
 use noiz::{Noise, SampleableFor, prelude::common_noise::Perlin, rng::NoiseRng};
 
-use crate::{player::Player, space::assets::SpaceAssets};
+use crate::{gas::GasOrb, player::Player};
 
-mod assets;
 pub mod orb_explosion;
 
 pub fn plugin(app: &mut App) {
-    app.add_plugins((assets::plugin, orb_explosion::plugin))
+    app.add_plugins(orb_explosion::plugin)
         .insert_resource(GasGenerator {
             noise: Noise {
                 noise: Perlin::default(),
@@ -30,10 +29,10 @@ pub fn plugin(app: &mut App) {
         );
 }
 
-pub const CHUNK_SIZE: f32 = 32.0; // TODO: Increase this
+pub const CHUNK_SIZE: f32 = 64.0; // TODO: Increase this
 /// Number of orbs per m²
 pub const MAX_CLOUD_DENSITY: f32 = 0.03;
-pub const RENDER_DISTANCE: i32 = 16;
+pub const RENDER_DISTANCE: i32 = 8;
 pub const THRESHOLD: f32 = 0.1;
 
 pub const MIN_ORB_SIZE: f32 = 0.4;
@@ -43,9 +42,6 @@ pub const CLOUD_Z_SCALE: f32 = 90.0;
 // Chunks that have already been spawned.
 #[derive(Default, Resource)]
 pub struct PopulatedChunks(HashMap<IVec2, Entity>);
-
-#[derive(Component)]
-pub struct GasOrb;
 
 #[derive(Resource, Default)]
 pub struct GasGenerator {
@@ -61,14 +57,16 @@ impl GasGenerator {
     pub fn sample(&self, p: Vec2) -> f32 {
         // // No orbs should be spawned near the start (0, 0) in order to free up space for the intro
         // // scene.
-        // let dist_sq = p.x * p.x + p.y * p.y;
+        // let dist_sq = p.length_squared();
         // const START_RADIUS: f32 = 500.;
         // const START_RADIUS_SQ: f32 = START_RADIUS * START_RADIUS;
         // let start_mask = smoothstep(0., START_RADIUS_SQ, dist_sq);
 
-        let noise: f32 = self.noise.sample(p);
-
-        noise
+        let offset: Vec2 = Vec2::new(
+            self.noise.sample(p * 2.0 + 100.0),
+            self.noise.sample(p * 2.0 + 200.0),
+        ) * 100.0;
+        self.noise.sample(p + offset)
     }
 }
 
@@ -115,12 +113,9 @@ fn trigger_chunk_population(
     }
 
     if let Some(chunk_coords) = closest {
-        let pos = chunk_coords.as_vec2().extend(0.0) * CHUNK_SIZE;
+        // let pos = chunk_coords.as_vec2().extend(0.0) * CHUNK_SIZE;
         let chunk_entity = cmds
-            .spawn((
-                Transform::from_translation(pos),
-                InheritedVisibility::VISIBLE,
-            ))
+            .spawn((Transform::default(), InheritedVisibility::VISIBLE))
             .id();
         cmds.trigger_targets(PopulateChunk(chunk_coords), chunk_entity);
     }
@@ -136,7 +131,6 @@ fn populate_chunk(
     trigger: Trigger<PopulateChunk>,
     mut cmds: Commands,
     gas: Res<GasGenerator>,
-    space_assets: Res<SpaceAssets>,
     mut populated: ResMut<PopulatedChunks>,
 ) {
     // Calculate how many subdivisions along each axis is required to get the desired maximum cloud density.
@@ -144,12 +138,11 @@ fn populate_chunk(
 
     // let inst = Instant::now(); // ! panic on wasm
 
-    let mut entities = vec![];
-
     for y in 0..CHUNK_SUBDIV {
         for x in 0..CHUNK_SUBDIV {
-            let cell_pos = (Vec2::new(x as f32, y as f32) / (CHUNK_SUBDIV as f32)) * CHUNK_SIZE;
-            let r = gas.sample(trigger.0.as_vec2() * CHUNK_SIZE + cell_pos);
+            let cell_pos = trigger.0.as_vec2() * CHUNK_SIZE
+                + (Vec2::new(x as f32, y as f32) / (CHUNK_SUBDIV as f32)) * CHUNK_SIZE;
+            let r = gas.sample(cell_pos);
             // let r = 0.5;
 
             if r < THRESHOLD {
@@ -162,28 +155,17 @@ fn populate_chunk(
                 + Vec2::new(rand::random::<f32>(), rand::random::<f32>()) * CHUNK_SIZE
                     / CHUNK_SUBDIV as f32;
 
-            // let pos = cell_pos;
-
-            // TODO: Spawn an orb here
-            // cmds.entity(trigger.target()).with_child(bundle)
-            entities.push((
-                Mesh3d(space_assets.orb_meshes[2].clone()),
-                MeshMaterial3d(space_assets.orb_materials[2].clone()),
+            cmds.spawn((
+                GasOrb,
                 Transform::from_translation(
                     pos.extend((rand::random::<f32>() - 0.5) * CLOUD_Z_SCALE * r),
                 ) // todo: we can vary that 0.5 with another noise for more depth effect
                 .with_scale(Vec3::splat(MIN_ORB_SIZE + ORB_SCALE * r)),
-                GasOrb,
+                ChildOf(trigger.target()),
             ));
         }
     }
 
-    // debug!("new orbs: {}", entities.len());
-    cmds.entity(trigger.target()).with_children(|parent| {
-        for b in entities {
-            parent.spawn(b);
-        }
-    });
     // cmds.entity(trigger.target())
     //     .insert(Children::spawn(SpawnIter(entities.into_iter())));
 
