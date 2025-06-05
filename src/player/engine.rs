@@ -93,7 +93,7 @@ fn on_add_fire(
 
     commands.entity(entity).insert((
         // Transform::from_translation(-Vec3::Y * 0.),
-        Mesh3d(meshes.add(Rectangle::from_length(200.))),
+        Mesh3d(meshes.add(Rectangle::from_length(2000.))),
         MeshMaterial3d(explosion_materials.add(ExtendedMaterial {
             base: StandardMaterial {
                 alpha_mode: AlphaMode::Blend,
@@ -148,16 +148,21 @@ fn update_shader_params(
     let flame_dir = ship_transform.rotation().mul_vec3(-Vec3::Y);
     let curr_time = time.elapsed().as_millis();
 
-    let prev_position = prev_position.get_or_insert(ship_transform.translation().xy());
     let td = time.delta_secs();
-    let ship_velocity = (ship_transform.translation().xy() - *prev_position) / td;
-    *prev_position = ship_transform.translation().xy();
+
+    let curr_position = ship_transform.translation().xy();
 
     if curr_time - *last_particle_spawned > 30 {
+        let prev_position = prev_position.get_or_insert(Vec2::ZERO);
+        let ship_velocity = ( curr_position - *prev_position ) / 0.03;
+        *prev_position = curr_position;
+
+        println!("ship_velocity: {ship_velocity}; curr_position: {curr_position}; prev_position: {prev_position}");
+
         let new_particle = (
-            ship_transform.translation().xy(),
-            // flame_dir.xy() * fire_params.power + ship_velocity,
-            flame_dir.xy() * fire_params.power,
+            curr_position,
+            flame_dir.xy() * 100.0 + ship_velocity,
+            // flame_dir.xy() * fire_params.power,
         );
         particles_queue.push_front(new_particle);
 
@@ -180,10 +185,12 @@ fn update_shader_params(
 
     fire_material.extension.dir = -flame_dir.extend(0.0);
 
-    fire_material.extension.center = ship_transform.translation().extend(0.0);
+    fire_material.extension.center = curr_position.extend(0.0).extend(0.0);
 
     let color = RED.lerp(PURPLE, fire_params.power);
     fire_material.extension.color = color.to_vec4();
 
     fire_material.extension.power = Vec4::splat(fire_params.power);
+
+
 }

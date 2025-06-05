@@ -56,7 +56,7 @@ fn density_at_point(point: vec3f) -> f32 {
     let nof_particles = nof_particles.x;
     let power = power.x;
 
-    let noise_point = smoothstep(0.0, 30., distance(point, center)) * 5.0 * snoise2(point.xy) + point.xy;
+    let noise_point = smoothstep(0.0, 30., distance(point, center)) * 1.0 * snoise2(point.xy) + point.xy;
 
     // SDF to polyline
     var min_dist = 1e10;

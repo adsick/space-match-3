@@ -41,7 +41,7 @@ fn spawn_player_with_movement(
             LinearVelocity::ZERO,
             AngularVelocity(0.0),
             MovementAcceleration(20.0),
-            AngularDamping(4.0),
+            AngularDamping(1.0),
             LinearDamping(0.3),
             RotationSpeed(2.0),
             GasBoost(100.0),
