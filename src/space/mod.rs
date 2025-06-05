@@ -51,9 +51,23 @@ pub struct GasGenerator {
     noise: Noise<Perlin>,
 }
 
+fn smoothstep(edge0: f32, edge1: f32, x: f32) -> f32 {
+    let t = ((x - edge0) / (edge1 - edge0)).clamp(0.0, 1.0);
+    t * t * (3.0 - 2.0 * t)
+}
+
 impl GasGenerator {
     pub fn sample(&self, p: Vec2) -> f32 {
-        self.noise.sample(p)
+        // No orbs should be spawned near the start (0, 0) in order to free up space for the intro
+        // scene.
+        let dist_sq = p.x * p.x + p.y * p.y;
+        const START_RADIUS: f32 = 500.;
+        const START_RADIUS_SQ: f32 = START_RADIUS * START_RADIUS;
+        let start_mask = smoothstep(0., START_RADIUS_SQ, dist_sq);
+
+        let noise: f32 = self.noise.sample(p);
+
+        noise * start_mask
     }
 }
 

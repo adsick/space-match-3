@@ -157,12 +157,9 @@ fn update_shader_params(
         let ship_velocity = ( curr_position - *prev_position ) / 0.03;
         *prev_position = curr_position;
 
-        println!("ship_velocity: {ship_velocity}; curr_position: {curr_position}; prev_position: {prev_position}");
-
         let new_particle = (
             curr_position,
             flame_dir.xy() * 100.0 + ship_velocity,
-            // flame_dir.xy() * fire_params.power,
         );
         particles_queue.push_front(new_particle);
 
