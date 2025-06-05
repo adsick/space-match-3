@@ -24,6 +24,7 @@ pub struct OrbExplosion {
 struct OrbExplosionCell {
     pos: Vec2,
     time_spawned: u128,
+    distance: u32,
 }
 
 fn burn_explosion(
@@ -35,7 +36,7 @@ fn burn_explosion(
     time: Res<Time>,
     mut explosion_queue: Local<Option<VecDeque<OrbExplosionCell>>>,
 ) {
-    const CELL_SIZE: f32 = 6.;
+    const CELL_SIZE: f32 = 15.;
     let explosion_queue = explosion_queue.get_or_insert(VecDeque::new());
     let curr_time = time.elapsed().as_millis();
 
@@ -43,6 +44,7 @@ fn burn_explosion(
         explosion_queue.push_back(OrbExplosionCell {
             pos: event.pos,
             time_spawned: curr_time,
+            distance: 0,
         });
     }
 
@@ -51,7 +53,11 @@ fn burn_explosion(
     let mut new_explosions = Vec::<OrbExplosionCell>::new();
 
     explosion_queue.retain(|explosion| {
-        if curr_time > explosion.time_spawned + 100 {
+        if explosion.distance > 10 {
+            return true;
+        }
+
+        if curr_time > explosion.time_spawned + 50 * explosion.distance as u128 {
             let mut burnt_orbs = false;
             for (_, entity) in tree.within_distance(explosion.pos, CELL_SIZE / 2.) {
                 if let Some(e) = entity {
@@ -61,6 +67,7 @@ fn burn_explosion(
             }
 
             if !burnt_orbs {
+                debug!("no orbs burnt");
                 return false;
             }
 
@@ -75,6 +82,7 @@ fn burn_explosion(
                 new_explosions.push(OrbExplosionCell {
                     pos: nei,
                     time_spawned: curr_time,
+                    distance: explosion.distance + 1,
                 });
             }
             false // here I delete the explosion
@@ -82,6 +90,10 @@ fn burn_explosion(
             true
         }
     });
+
+    for explosion in new_explosions {
+        explosion_queue.push_back(explosion);
+    }
 
     // for explosion in explosion_queue.iter() {
     //     if curr_time > explosion.time_spawned + 1000 {
@@ -112,8 +124,4 @@ fn burn_explosion(
     //         }
     //     }
     // }
-
-    for explosion in new_explosions {
-        explosion_queue.push_back(explosion);
-    }
 }
