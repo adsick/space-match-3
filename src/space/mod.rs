@@ -178,7 +178,7 @@ fn populate_chunk(
         }
     }
 
-    debug!("new orbs: {}", entities.len());
+    // debug!("new orbs: {}", entities.len());
     cmds.entity(trigger.target()).with_children(|parent| {
         for b in entities {
             parent.spawn(b);
