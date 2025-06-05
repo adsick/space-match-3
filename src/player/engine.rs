@@ -153,12 +153,11 @@ fn update_shader_params(
     let ship_velocity = (ship_transform.translation().xy() - *prev_position) / td;
     *prev_position = ship_transform.translation().xy();
 
-    println!("ship velocity: {ship_velocity}");
-
     if curr_time - *last_particle_spawned > 30 {
         let new_particle = (
             ship_transform.translation().xy(),
-            flame_dir.xy() * fire_params.power + ship_velocity,
+            // flame_dir.xy() * fire_params.power + ship_velocity,
+            flame_dir.xy() * fire_params.power,
         );
         particles_queue.push_front(new_particle);
 
