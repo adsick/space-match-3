@@ -156,7 +156,7 @@ fn populate_chunk(
                     / CHUNK_SUBDIV as f32;
 
             cmds.spawn((
-                GasOrb,
+                GasOrb(r),
                 Transform::from_translation(
                     pos.extend((rand::random::<f32>() - 0.5) * CLOUD_Z_SCALE * r),
                 ) // todo: we can vary that 0.5 with another noise for more depth effect

@@ -1,10 +1,7 @@
 use std::collections::VecDeque;
 
 use bevy::{
-    app::{App, Update},
-    math::Vec2,
-    prelude::*,
-    time::Time,
+    app::{App, Update}, ecs::schedule::ScheduleLabel, math::Vec2, prelude::*, time::Time
 };
 use bevy_spatial::{SpatialAccess, kdtree::KDTree2};
 
@@ -14,24 +11,27 @@ use super::GasOrb;
 
 pub fn plugin(app: &mut App) {
     app.add_event::<OrbExplosion>()
-        .add_systems(Update, (propagate_explosion, update_burning_orbs));
+        .add_systems(Update, (propagate_explosion, update_burning_orbs).in_set(UpdateGasSet));
     // app.add_observer(on_explosion_spawned);
 }
 
 const BURN_TIME: u32 = 670;
+
+#[derive(SystemSet, Hash, Debug, Eq, PartialEq, Clone)]
+pub struct UpdateGasSet;
 
 #[derive(Event)]
 pub struct OrbExplosion {
     pub pos: Vec2,
 }
 
-struct OrbExplosionCell {
+pub struct OrbExplosionCell {
     pos: Vec2,
     time: u32,
     distance: u32,
 }
 
-fn propagate_explosion(
+pub fn propagate_explosion(
     mut events: EventReader<OrbExplosion>,
     mut commands: Commands,
     // gas_generator: Res<GasGenerator>,
