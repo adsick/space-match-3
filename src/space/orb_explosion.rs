@@ -36,7 +36,7 @@ fn burn_explosion(
     time: Res<Time>,
     mut explosion_queue: Local<Option<VecDeque<OrbExplosionCell>>>,
 ) {
-    const CELL_SIZE: f32 = 15.;
+    const CELL_SIZE: f32 = 10.;
     let explosion_queue = explosion_queue.get_or_insert(VecDeque::new());
     let curr_time = time.elapsed().as_millis() as u32;
 
@@ -57,7 +57,7 @@ fn burn_explosion(
             return false;
         }
 
-        if curr_time > explosion.time + 50 * explosion.distance {
+        if curr_time > explosion.time + 100 + 50 * explosion.distance {
             let mut burnt_orbs = false;
             for (_, entity) in tree.within_distance(explosion.pos, CELL_SIZE / 2.) {
                 if let Some(e) = entity {
