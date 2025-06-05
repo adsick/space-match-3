@@ -72,7 +72,7 @@ fn attract_gas(
     q_orb: Query<(), (With<GasOrb>, Without<AttractedGasOrb>)>,
 ) {
     let (ship_entity, position) = player_query.into_inner();
-    for (_, entity) in tree.within_distance(position.0, 30.0) {
+    for (_, entity) in tree.within_distance(position.0, 5.0) {
         if let Some(e) = entity {
             if q_orb.contains(e) {
                 commands.entity(e).insert(AttractedGasOrb {
