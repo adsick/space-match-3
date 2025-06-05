@@ -11,7 +11,7 @@ use crate::{
     player::{Player, movement::CurrentGas},
 };
 
-mod assets;
+pub mod assets;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
@@ -29,6 +29,9 @@ pub(super) fn plugin(app: &mut App) {
 pub struct GasOrb;
 
 #[derive(Component)]
+pub struct BurningGasOrb(pub u32); // time when it started burning in ms
+
+#[derive(Component)]
 pub struct AttractedGasOrb {
     by_ship: Entity,
     // When this reaches 1.0, will get consumed by the ship
@@ -37,8 +40,8 @@ pub struct AttractedGasOrb {
 
 fn setup(trigger: Trigger<OnAdd, GasOrb>, mut cmds: Commands, gas_assets: Res<OrbAssets>) {
     cmds.entity(trigger.target()).insert((
-        Mesh3d(gas_assets.orb_meshes[2].clone()),
-        MeshMaterial3d(gas_assets.orb_materials[2].clone()),
+        Mesh3d(gas_assets.orb_mesh.clone()),
+        MeshMaterial3d(gas_assets.orb_materials[0].clone()),
     ));
 }
 
@@ -55,13 +58,13 @@ pub fn pickup_gas(
         picked_up.time += time.delta_secs();
         if picked_up.time >= 0.2 {
             gas.0 = (gas.0 + 0.02).min(1.0);
-            cmds.entity(entity).despawn();
+            // cmds.entity(entity).despawn();
         }
-        transform.translation = transform
-            .translation
-            .truncate()
-            .lerp(target_pos.0, picked_up.time)
-            .extend(transform.translation.z);
+        // transform.translation = transform
+        //     .translation
+        //     .truncate()
+        //     .lerp(target_pos.0, picked_up.time)
+        //     .extend(transform.translation.z);
     }
 }
 

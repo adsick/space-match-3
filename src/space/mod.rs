@@ -24,7 +24,7 @@ pub fn plugin(app: &mut App) {
         .insert_resource(PopulatedChunks::default())
         .add_observer(populate_chunk)
         .add_systems(
-            FixedUpdate,
+            Update,
             (trigger_chunk_population, unload_far_chunks).chain(),
         );
 }
@@ -32,7 +32,7 @@ pub fn plugin(app: &mut App) {
 pub const CHUNK_SIZE: f32 = 64.0; // TODO: Increase this
 /// Number of orbs per m²
 pub const MAX_CLOUD_DENSITY: f32 = 0.03;
-pub const RENDER_DISTANCE: i32 = 8;
+pub const RENDER_DISTANCE: i32 = 12;
 pub const THRESHOLD: f32 = 0.1;
 
 pub const MIN_ORB_SIZE: f32 = 0.4;

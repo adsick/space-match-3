@@ -1,5 +1,5 @@
 use bevy::{
-    color::palettes::css::{WHEAT, WHITE},
+    color::palettes::{css::{BLACK, GOLD, RED, WHEAT, WHITE}, tailwind::GRAY_700},
     prelude::*,
     render::mesh::CircleMeshBuilder,
 };
@@ -10,7 +10,7 @@ use crate::asset_tracking::LoadResource;
 #[reflect(Resource)]
 pub struct OrbAssets {
     #[dependency]
-    pub orb_meshes: Vec<Handle<Mesh>>,
+    pub orb_mesh: Handle<Mesh>,
     #[dependency]
     pub orb_materials: Vec<Handle<StandardMaterial>>,
 }
@@ -19,22 +19,41 @@ impl FromWorld for OrbAssets {
     fn from_world(world: &mut World) -> Self {
         let assets = world.resource::<AssetServer>();
 
-        let mut orb_meshes = vec![];
         let mut orb_materials = vec![];
 
-        for r in 6..10 {
-            orb_meshes.push(assets.add(CircleMeshBuilder::new(1.0, r).build()));
+        let orb_mesh = assets.add(CircleMeshBuilder::new(1.0, 12).build());
 
-            orb_materials.push(assets.add(StandardMaterial {
-                base_color: WHEAT.with_alpha(14.0 / (1.0 + r as f32 * 20.0)).into(),
-                alpha_mode: AlphaMode::Blend,
-                emissive: (WHITE * 1.0).into(),
-                ..Default::default()
-            }));
-        }
+        orb_materials.push(assets.add(StandardMaterial {
+            base_color: WHEAT.with_alpha(0.5).into(),
+            alpha_mode: AlphaMode::Blend,
+            emissive: (WHITE * 1.0).into(),
+            ..Default::default()
+        }));
+
+        orb_materials.push(assets.add(StandardMaterial {
+            base_color: RED.into(),
+            alpha_mode: AlphaMode::Opaque,
+            emissive: (GOLD * 2.0).into(),
+            ..Default::default()
+        }));
+
+
+        orb_materials.push(assets.add(StandardMaterial {
+            base_color: RED.with_alpha(0.5).into(),
+            alpha_mode: AlphaMode::Blend,
+            emissive: (RED * 0.3).mix(&GOLD, 0.3).into(),
+            ..Default::default()
+        }));
+
+        orb_materials.push(assets.add(StandardMaterial {
+            base_color: GRAY_700.with_alpha(0.2).into(),
+            alpha_mode: AlphaMode::Multiply,
+            // emissive: (WHITE * 0.8).into(),
+            ..Default::default()
+        }));
 
         Self {
-            orb_meshes,
+            orb_mesh,
             orb_materials,
         }
     }
