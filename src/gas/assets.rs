@@ -26,8 +26,8 @@ impl FromWorld for OrbAssets {
             orb_meshes.push(assets.add(CircleMeshBuilder::new(1.0, r).build()));
 
             orb_materials.push(assets.add(StandardMaterial {
-                base_color: WHEAT.with_alpha(4.0 / (1.0 + r as f32 * 20.0)).into(),
-                // alpha_mode: AlphaMode::AlphaToCoverage,
+                base_color: WHEAT.with_alpha(14.0 / (1.0 + r as f32 * 20.0)).into(),
+                alpha_mode: AlphaMode::Blend,
                 emissive: (WHITE * 1.0).into(),
                 ..Default::default()
             }));
