@@ -172,6 +172,7 @@ fn update_shader_params(
 
     for (pos, vel) in &mut particles_queue {
         *pos += *vel * td;
+        *vel *= 0.9;
     }
 
     for (i, (pos, _)) in particles_queue.iter().enumerate() {
