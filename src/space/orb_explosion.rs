@@ -23,7 +23,7 @@ pub struct OrbExplosion {
 
 struct OrbExplosionCell {
     pos: Vec2,
-    time_spawned: u128,
+    time: u32,
     distance: u32,
 }
 
@@ -38,12 +38,12 @@ fn burn_explosion(
 ) {
     const CELL_SIZE: f32 = 15.;
     let explosion_queue = explosion_queue.get_or_insert(VecDeque::new());
-    let curr_time = time.elapsed().as_millis();
+    let curr_time = time.elapsed().as_millis() as u32;
 
     for event in events.read() {
         explosion_queue.push_back(OrbExplosionCell {
             pos: event.pos,
-            time_spawned: curr_time,
+            time: curr_time,
             distance: 0,
         });
     }
@@ -54,10 +54,10 @@ fn burn_explosion(
 
     explosion_queue.retain(|explosion| {
         if explosion.distance > 10 {
-            return true;
+            return false;
         }
 
-        if curr_time > explosion.time_spawned + 50 * explosion.distance as u128 {
+        if curr_time > explosion.time + 50 * explosion.distance {
             let mut burnt_orbs = false;
             for (_, entity) in tree.within_distance(explosion.pos, CELL_SIZE / 2.) {
                 if let Some(e) = entity {
@@ -67,7 +67,7 @@ fn burn_explosion(
             }
 
             if !burnt_orbs {
-                debug!("no orbs burnt");
+                // debug!("no orbs burnt");
                 return false;
             }
 
@@ -81,7 +81,7 @@ fn burn_explosion(
             for nei in neis {
                 new_explosions.push(OrbExplosionCell {
                     pos: nei,
-                    time_spawned: curr_time,
+                    time: curr_time,
                     distance: explosion.distance + 1,
                 });
             }
@@ -94,34 +94,4 @@ fn burn_explosion(
     for explosion in new_explosions {
         explosion_queue.push_back(explosion);
     }
-
-    // for explosion in explosion_queue.iter() {
-    //     if curr_time > explosion.time_spawned + 1000 {
-    //         let mut burnt_orbs = false;
-    //         for (_, entity) in tree.within_distance(explosion.pos, CELL_SIZE / 2.) {
-    //             if let Some(e) = entity {
-    //                 commands.entity(e).try_despawn();
-    //                 burnt_orbs = true;
-    //             }
-    //         }
-
-    //         if !burnt_orbs {
-    //             continue;
-    //         }
-
-    //         let neis = [
-    //             explosion.pos + Vec2::Y * CELL_SIZE,
-    //             explosion.pos - Vec2::Y * CELL_SIZE,
-    //             explosion.pos + Vec2::X * CELL_SIZE,
-    //             explosion.pos - Vec2::X * CELL_SIZE,
-    //         ];
-
-    //         for nei in neis {
-    //             new_explosions.push(OrbExplosionCell {
-    //                 pos: nei,
-    //                 time_spawned: curr_time,
-    //             });
-    //         }
-    //     }
-    // }
 }
