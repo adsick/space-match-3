@@ -1,4 +1,4 @@
-use std::{collections::VecDeque, time::Duration};
+use std::collections::VecDeque;
 
 use bevy::{
     app::{App, Update},
@@ -10,7 +10,7 @@ use bevy_spatial::{SpatialAccess, kdtree::KDTree2};
 
 use crate::gas::{BurningGasOrb, assets::OrbAssets};
 
-use super::{GasGenerator, GasOrb};
+use super::GasOrb;
 
 pub fn plugin(app: &mut App) {
     app.add_event::<OrbExplosion>()

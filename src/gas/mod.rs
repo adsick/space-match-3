@@ -46,12 +46,12 @@ fn setup(trigger: Trigger<OnAdd, GasOrb>, mut cmds: Commands, gas_assets: Res<Or
 }
 
 pub fn pickup_gas(
-    mut cmds: Commands,
+    cmds: Commands,
     mut q_picked_up_orbs: Query<(Entity, &mut Transform, &mut AttractedGasOrb)>,
     mut q_ship: Query<(&Position, &mut CurrentGas)>,
     time: Res<Time>,
 ) {
-    for (entity, mut transform, mut picked_up) in &mut q_picked_up_orbs {
+    for (entity, transform, mut picked_up) in &mut q_picked_up_orbs {
         let Ok((target_pos, mut gas)) = q_ship.get_mut(picked_up.by_ship) else {
             return;
         };

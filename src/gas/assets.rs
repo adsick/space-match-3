@@ -1,5 +1,5 @@
 use bevy::{
-    color::palettes::{css::{BLACK, GOLD, RED, WHEAT, WHITE}, tailwind::GRAY_700},
+    color::palettes::{css::{GOLD, RED, WHEAT, WHITE}, tailwind::GRAY_700},
     prelude::*,
     render::mesh::CircleMeshBuilder,
 };

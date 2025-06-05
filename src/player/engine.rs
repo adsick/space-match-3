@@ -1,18 +1,17 @@
-use std::{collections::VecDeque, time::Duration};
+use std::collections::VecDeque;
 
-use avian2d::prelude::LinearVelocity;
 use bevy::{
     color::{
-        palettes::{css::{PURPLE, RED}, tailwind::{PURPLE_800, RED_300, RED_400, RED_500}}, ColorToComponents
+        palettes::{css::{PURPLE, RED}, tailwind::RED_500}, ColorToComponents
     },
     math::{UVec4, Vec2, Vec2Swizzles, Vec3, Vec3Swizzles, Vec4, VectorSpace},
     pbr::{ExtendedMaterial, MaterialExtension, MaterialPlugin, MeshMaterial3d, StandardMaterial},
-    prelude::{AlphaMode, Changed, Commands, Component, GlobalTransform, Local, Mesh, Mesh3d, OnAdd, Query, Rectangle, Res, ResMut, Single, Transform, Trigger, With, *},
+    prelude::{AlphaMode, Changed, Commands, Component, GlobalTransform, Local, Mesh, Mesh3d, OnAdd, Query, Rectangle, Res, ResMut, Single, Trigger, With, *},
     reflect::Reflect,
     render::render_resource::{AsBindGroup, ShaderRef},
 };
 
-use crate::player::{Player, movement::CurrentGas};
+use crate::player::movement::CurrentGas;
 
 const FIRE_SHADER_PATH: &str = "shaders/rocket_fire.wgsl";
 const NOF_PARTICLES: usize = 20;
