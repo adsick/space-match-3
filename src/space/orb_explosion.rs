@@ -3,7 +3,7 @@ use std::{collections::VecDeque, time::Duration};
 use bevy::{
     app::{App, Update},
     math::Vec2,
-    prelude::{Commands, Component, Event, EventReader, Local, OnAdd, Res, Trigger},
+    prelude::*,
     time::Time,
 };
 use bevy_spatial::{SpatialAccess, kdtree::KDTree2};
