@@ -7,7 +7,7 @@ use bevy::prelude::*;
 use crate::PausableSystems;
 use crate::screens::Screen;
 use crate::space::GasGenerator;
-use crate::space::gas::orb_explosion::OrbExplosion;
+use crate::space::gas::burn::OrbExplosion;
 use crate::space::gas::pickup_gas;
 
 use super::Player;
