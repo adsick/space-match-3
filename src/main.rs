@@ -44,7 +44,7 @@ impl Plugin for AppPlugin {
                 })
                 .set(WindowPlugin {
                     primary_window: Window {
-                        title: "Space Match 3".to_string(),
+                        title: "Space rush - complete burnout".to_string(),
                         fit_canvas_to_parent: true,
                         ..default()
                     }
