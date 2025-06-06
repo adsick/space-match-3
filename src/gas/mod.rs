@@ -7,8 +7,7 @@ use bevy_spatial::{
 };
 
 use crate::{
-    gas::assets::OrbAssets,
-    player::{Player, movement::CurrentGas},
+    PausableSystems, gas::assets::OrbAssets, player::movement::CurrentGas, screens::Screen,
     space::orb_explosion::propagate_explosion,
 };
 
@@ -23,7 +22,13 @@ pub(super) fn plugin(app: &mut App) {
         assets::plugin,
     ))
     .add_observer(setup)
-    .add_systems(Update, pickup_gas.before(propagate_explosion));
+    .add_systems(
+        Update,
+        pickup_gas
+            .before(propagate_explosion)
+            .run_if(in_state(Screen::Gameplay))
+            .in_set(PausableSystems),
+    );
 }
 
 #[derive(Component)]
@@ -49,8 +54,8 @@ fn setup(trigger: Trigger<OnAdd, GasOrb>, mut cmds: Commands, gas_assets: Res<Or
 pub fn pickup_gas(
     cmds: Commands,
     // mut q_picked_up_orbs: Query<(Entity, &mut Transform, &mut AttractedGasOrb)>,
-    mut q_orbs: Query<&GasOrb>,
-    mut q_ship: Single<(&Transform, &mut CurrentGas)>,
+    q_orbs: Query<&GasOrb>,
+    q_ship: Single<(&Transform, &mut CurrentGas)>,
     tree: Res<KDTree2<GasOrb>>,
     time: Res<Time>,
 ) {
@@ -61,9 +66,12 @@ pub fn pickup_gas(
 
     let mut total_gas = 0.0;
 
+    // this code is responsible for detecting gas that is behind the ship
     for (orb_pos, e) in tree.within_distance(ship_tr_2d, 10.0) {
-        let k = orb_pos.dot(backward).clamp(0.0, 1.0);
-
+        let k = (orb_pos - ship_tr_2d)
+            .normalize()
+            .dot(backward)
+            .clamp(0.0, 1.0);
         if let Some(e) = e {
             q_orbs.get(e).map(|g| total_gas += k * g.0).ok();
         }

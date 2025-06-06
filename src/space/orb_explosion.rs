@@ -1,21 +1,41 @@
 use std::collections::VecDeque;
 
 use bevy::{
-    app::{App, Update}, ecs::schedule::ScheduleLabel, math::Vec2, prelude::*, time::Time
+    app::{App, Update},
+    math::Vec2,
+    prelude::*,
+    time::Time,
 };
 use bevy_spatial::{SpatialAccess, kdtree::KDTree2};
 
-use crate::gas::{BurningGasOrb, assets::OrbAssets};
+use crate::{
+    PausableSystems,
+    gas::{BurningGasOrb, assets::OrbAssets, pickup_gas},
+    screens::Screen,
+};
 
 use super::GasOrb;
 
 pub fn plugin(app: &mut App) {
     app.add_event::<OrbExplosion>()
-        .add_systems(Update, (propagate_explosion, update_burning_orbs).in_set(UpdateGasSet));
-    // app.add_observer(on_explosion_spawned);
+        .configure_sets(
+            Update,
+            UpdateGasSet
+                .after(pickup_gas)
+                .run_if(in_state(Screen::Gameplay))
+                .in_set(PausableSystems),
+        )
+        .add_systems(
+            Update,
+            (propagate_explosion, update_burning_orbs).in_set(UpdateGasSet),
+        );
 }
 
 const BURN_TIME: u32 = 670;
+const CELL_SIZE: f32 = 16.;
+const MAX_COUNT: u32 = 1000;
+const LIFETIME: u32 = 30;
+const SLOWDOWN: u32 = 10;
 
 #[derive(SystemSet, Hash, Debug, Eq, PartialEq, Clone)]
 pub struct UpdateGasSet;
@@ -28,27 +48,24 @@ pub struct OrbExplosion {
 pub struct OrbExplosionCell {
     pos: Vec2,
     time: u32,
-    distance: u32,
+    life: u32,
 }
 
 pub fn propagate_explosion(
     mut events: EventReader<OrbExplosion>,
     mut commands: Commands,
-    // gas_generator: Res<GasGenerator>,
     tree: Res<KDTree2<GasOrb>>,
 
     time: Res<Time>,
-    mut explosion_queue: Local<Option<VecDeque<OrbExplosionCell>>>,
+    mut explosion_queue: Local<VecDeque<OrbExplosionCell>>,
 ) {
-    const CELL_SIZE: f32 = 14.;
-    let explosion_queue = explosion_queue.get_or_insert(VecDeque::new());
     let curr_time = time.elapsed().as_millis() as u32;
 
     for event in events.read() {
         explosion_queue.push_back(OrbExplosionCell {
             pos: event.pos,
             time: curr_time,
-            distance: 0,
+            life: LIFETIME,
         });
     }
 
@@ -56,15 +73,21 @@ pub fn propagate_explosion(
 
     let mut new_explosions = Vec::<OrbExplosionCell>::new();
 
+    let mut i = 0;
+    let variation = [0.3, 0.7, 0.4, 0.6, 0.8]; // in total 2.8, 0.5 avg
+
     explosion_queue.retain(|explosion| {
-        if explosion.distance > 8 {
+        if explosion.life == 0 {
             return false;
         }
 
+        let size = CELL_SIZE * variation[i % variation.len()];
+        i += 1;
+
         // condition of burn propagation. basically the older the explosion is the longer it takes to propagate
-        if curr_time > explosion.time + 10 + 30 * explosion.distance {
+        if curr_time > explosion.time + 10 + SLOWDOWN * (LIFETIME - explosion.life) {
             let mut burnt_orbs = false;
-            for (_, entity) in tree.within_distance(explosion.pos, CELL_SIZE / 2.) {
+            for (_, entity) in tree.within_distance(explosion.pos, size / 2.0) {
                 if let Some(e) = entity {
                     commands
                         .entity(e)
@@ -80,18 +103,22 @@ pub fn propagate_explosion(
             }
 
             let neis = [
-                explosion.pos + Vec2::Y * CELL_SIZE,
-                explosion.pos - Vec2::Y * CELL_SIZE,
-                explosion.pos + Vec2::X * CELL_SIZE,
-                explosion.pos - Vec2::X * CELL_SIZE,
+                explosion.pos + Vec2::Y * size,
+                explosion.pos - Vec2::Y * size,
+                explosion.pos + Vec2::X * size,
+                explosion.pos - Vec2::X * size,
             ];
 
             for nei in neis {
-                new_explosions.push(OrbExplosionCell {
-                    pos: nei,
-                    time: curr_time,
-                    distance: explosion.distance + 1,
-                });
+                let life = explosion.life - 1;
+
+                if life > 0 {
+                    new_explosions.push(OrbExplosionCell {
+                        pos: nei,
+                        time: curr_time,
+                        life,
+                    });
+                }
             }
             false // here I delete the explosion
         } else {
@@ -99,13 +126,25 @@ pub fn propagate_explosion(
         }
     });
 
+    let new_len = new_explosions.len();
+    let free_space = MAX_COUNT.saturating_sub(explosion_queue.len() as u32);
+
+    // debug!("free: {free_space}, {}", (variation[i % variation.len()] * new_len as f32));
     for explosion in new_explosions {
-        explosion_queue.push_back(explosion);
+        i += 1;
+
+        // you can think of it as `variation[i] < free_space / new_explosions.len()`
+        if (variation[i % variation.len()] * new_len as f32) < free_space as f32 {
+            explosion_queue.push_back(explosion);
+        }
     }
+
+    // for _ in 0..explosion_queue.len().saturating_sub(MAX_COUNT as usize) {
+    //     explosion_queue.pop_front();
+    // }
 }
 
 fn update_burning_orbs(
-    commands: Commands,
     mut orb_q: Query<(
         &mut Transform,
         &mut MeshMaterial3d<StandardMaterial>,

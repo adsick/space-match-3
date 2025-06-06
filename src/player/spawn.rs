@@ -51,7 +51,7 @@ fn spawn_player_with_movement(
                 CurrentGas(1.0),
                 AngularDamping(10.0),
                 LinearDamping(0.3),
-                RotationSpeed(20.0),
+                RotationSpeed(2000.0),
             ),
             (
                 Mesh3d(player_assets.ship.clone()),

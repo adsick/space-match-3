@@ -46,6 +46,7 @@ fn thrust(
             &mut CurrentGas,
             &Transform,
             &Rotation,
+            &LinearVelocity,
             &MovementAcceleration,
             &RotationSpeed,
             &GasBoost,
@@ -54,24 +55,33 @@ fn thrust(
     >,
     time: Res<Time>,
     gas: Res<GasGenerator>,
-    mut expl_ev: EventWriter<OrbExplosion>
-    // gas_orb_query: Query<(Entity, &Transform), With<GasOrb>>,
-    // diagnostics: Res<DiagnosticsStore>,
+    mut expl_ev: EventWriter<OrbExplosion>, // gas_orb_query: Query<(Entity, &Transform), With<GasOrb>>,
+                                            // diagnostics: Res<DiagnosticsStore>,
 ) {
     let left = keyboard_input.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]);
     let right = keyboard_input.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]);
     let brake = keyboard_input.pressed(KeyCode::Space);
 
-    let (mut force, mut torque, mut current_gas, transform, rotation, acceleration, rotation_speed, gas_boost) =
-        player_query.into_inner();
+    let (
+        mut force,
+        mut torque,
+        mut current_gas,
+        transform,
+        rotation,
+        velocity,
+        acceleration,
+        rotation_speed,
+        gas_boost,
+    ) = player_query.into_inner();
 
     force.persistent = false;
     torque.persistent = false;
+    let tq = rotation_speed.0 / velocity.length().max(100.0);
     if left {
-        torque.apply_torque(**rotation_speed);
+        torque.apply_torque(tq);
     }
     if right {
-        torque.apply_torque(-**rotation_speed);
+        torque.apply_torque(-tq);
     }
 
     let forward_dir = rotation * Vec2::Y;
