@@ -26,7 +26,7 @@ pub(super) fn plugin(app: &mut App) {
         assets::plugin,
         burn::plugin,
     ))
-    .add_observer(setup)
+    .add_observer(orb_setup)
     .add_systems(
         Update,
         ignite_gas
@@ -42,14 +42,11 @@ pub struct GasOrb(pub f32); // contains it's mass
 #[derive(Component)]
 pub struct BurningGasOrb(pub u32); // time when it started burning in ms
 
-// #[derive(Component)]
-// pub struct AttractedGasOrb {
-//     by_ship: Entity,
-//     // When this reaches 1.0, will get consumed by the ship
-//     time: f32,
-// }
+// both should not be high
+pub const IGNITION_OFFSET: f32 = 10.0;
+pub const IGNITION_RADIUS: f32 = 13.0;
 
-fn setup(trigger: Trigger<OnAdd, GasOrb>, mut cmds: Commands, gas_assets: Res<OrbAssets>) {
+fn orb_setup(trigger: Trigger<OnAdd, GasOrb>, mut cmds: Commands, gas_assets: Res<OrbAssets>) {
     cmds.entity(trigger.target()).insert((
         Mesh3d(gas_assets.orb_mesh.clone()),
         MeshMaterial3d(gas_assets.orb_materials[0].clone()),
@@ -72,7 +69,7 @@ pub fn ignite_gas(
 
     let mut count = 0;
     // this code is responsible for detecting gas that is behind the ship
-    for (orb_pos, e) in tree.within_distance(ship_tr_2d, 20.0) {
+    for (orb_pos, e) in tree.within_distance(ship_tr_2d + IGNITION_OFFSET * backward, IGNITION_RADIUS) {
         let k = (orb_pos - ship_tr_2d)
             .normalize()
             .dot(backward)
@@ -85,7 +82,7 @@ pub fn ignite_gas(
 
     if total_gas > 0.0 {
         ignite_gas_tx.write(OrbExplosion {
-            pos: ship_tr_2d + 10.0 * backward,
+            pos: ship_tr_2d + IGNITION_OFFSET * backward,
         });
     }
 
