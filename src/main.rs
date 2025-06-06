@@ -134,7 +134,7 @@ struct CameraShake {
     max_offset: f32,
     trauma: f32,
     latest_position: Vec2,
-    until: f32,
+    until: f32, // physics time in seconds
 }
 
 const CAMERA_DECAY_RATE: f32 = 0.9; // Adjust this for smoother or snappier decay
