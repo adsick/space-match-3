@@ -33,7 +33,7 @@ pub fn plugin(app: &mut App) {
 pub const CHUNK_SIZE: f32 = 64.0; // TODO: Increase this
 /// Number of orbs per m²
 pub const MAX_CLOUD_DENSITY: f32 = 0.03;
-pub const RENDER_DISTANCE: i32 = 12;
+pub const RENDER_DISTANCE: i32 = 10;
 pub const ORB_THRESHOLD: f32 = 0.1;
 
 const MIN_ASTEROID_SIZE: f32 = 20.0;
