@@ -20,11 +20,13 @@ use avian2d::prelude::*;
 use bevy::{
     asset::AssetMetaCheck, color::palettes::css::WHITE, core_pipeline::bloom::Bloom,
     diagnostic::FrameTimeDiagnosticsPlugin, pbr::ExtendedMaterial, prelude::*,
+    render::camera::SubCameraView,
 };
 use bevy_framepace::FramepacePlugin;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_tweening::TweeningPlugin;
 use bevy_vector_shapes::Shape2dPlugin;
+use rand::Rng;
 
 fn main() -> AppExit {
     App::new().add_plugins(AppPlugin).run()
@@ -97,6 +99,10 @@ impl Plugin for AppPlugin {
 
         // Spawn the main camera.
         app.add_systems(Startup, spawn_camera);
+
+        // screen shake shit
+        app.init_resource::<CameraShake>();
+        app.add_systems(Update, screen_shake);
     }
 }
 
@@ -122,11 +128,28 @@ struct Pause(pub bool);
 #[derive(SystemSet, Copy, Clone, Eq, PartialEq, Hash, Debug)]
 struct PausableSystems;
 
+#[derive(Default, Resource, Clone)]
+struct CameraShake {
+    max_angle: f32,
+    max_offset: f32,
+    trauma: f32,
+    latest_position: Vec2,
+    until: f32,
+}
+
+const CAMERA_DECAY_RATE: f32 = 0.9; // Adjust this for smoother or snappier decay
+const TRAUMA_DECAY_SPEED: f32 = 0.5; // How fast trauma decays
+
 fn spawn_camera(mut commands: Commands) {
     commands.spawn((
         Name::new("Camera"),
         Camera {
             hdr: true,
+            sub_camera_view: Some(SubCameraView {
+                full_size: UVec2::new(1000, 700),
+                offset: Vec2::new(0.0, 0.0),
+                size: UVec2::new(1000, 700),
+            }),
             ..default()
         },
         Camera3d::default(),
@@ -143,4 +166,59 @@ fn spawn_camera(mut commands: Commands) {
         },
         Transform::default().looking_at(Vec3::new(0.0, 10.0, -2.0), Dir3::Y),
     ));
+}
+
+// TODO: move this somewhere else?
+fn screen_shake(
+    time: Res<Time<Physics>>,
+    mut screen_shake: ResMut<CameraShake>,
+    mut query: Query<(&mut Camera, &mut Transform)>,
+) {
+    if time.elapsed_secs() < screen_shake.until {
+        // * maybe tweak these
+        screen_shake.max_angle = 0.5;
+        screen_shake.max_offset = 500.0;
+        screen_shake.trauma = (screen_shake.trauma + 1.0 * time.delta_secs()).clamp(0.0, 1.0);
+        screen_shake.latest_position = Vec2::new(0.0, 0.0);
+    }
+
+    let mut rng = rand::thread_rng();
+    let shake = screen_shake.trauma * screen_shake.trauma;
+    let angle = (screen_shake.max_angle * shake).to_radians() * rng.gen_range(-1.0..1.0);
+    let offset_x = screen_shake.max_offset * shake * rng.gen_range(-1.0..1.0);
+    let offset_y = screen_shake.max_offset * shake * rng.gen_range(-1.0..1.0);
+
+    if shake > 0.0 {
+        for (mut camera, mut transform) in query.iter_mut() {
+            // Position
+            let sub_view = camera.sub_camera_view.as_mut().unwrap();
+            let target = sub_view.offset
+                + Vec2 {
+                    x: offset_x,
+                    y: offset_y,
+                };
+            sub_view
+                .offset
+                .smooth_nudge(&target, CAMERA_DECAY_RATE, time.delta_secs());
+
+            // Rotation
+            let rotation = Quat::from_rotation_z(angle);
+            transform.rotation = transform
+                .rotation
+                .interpolate_stable(&(transform.rotation.mul_quat(rotation)), CAMERA_DECAY_RATE);
+        }
+    } else {
+        // return camera to the latest position of player (it's fixed in this example case)
+        if let Ok((mut camera, mut transform)) = query.single_mut() {
+            let sub_view = camera.sub_camera_view.as_mut().unwrap();
+            let target = screen_shake.latest_position;
+            sub_view
+                .offset
+                .smooth_nudge(&target, 1.0, time.delta_secs());
+            transform.rotation = transform.rotation.interpolate_stable(&Quat::IDENTITY, 0.1);
+        }
+    }
+    // Decay the trauma over time
+    screen_shake.trauma -= TRAUMA_DECAY_SPEED * time.delta_secs();
+    screen_shake.trauma = screen_shake.trauma.clamp(0.0, 1.0);
 }

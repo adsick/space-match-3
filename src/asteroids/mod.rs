@@ -1,7 +1,7 @@
 use std::{process::Child, time::Duration};
 
 use avian2d::prelude::{
-    Collider, CollisionEventsEnabled, CollisionLayers, OnCollisionStart, RigidBody,
+    Collider, CollisionEventsEnabled, CollisionLayers, OnCollisionStart, Physics, RigidBody,
 };
 use bevy::{
     app::App,
@@ -24,6 +24,8 @@ use bevy_tweening::{
     Targetable, Tracks, Tween, TweenCompleted, asset_animator_system, component_animator_system,
     lens::{ColorMaterialColorLens, TransformRotationLens, TransformScaleLens},
 };
+
+use crate::CameraShake;
 
 const ASTEROID_SHADER_PATH: &str = "shaders/asteroid.wgsl";
 
@@ -144,14 +146,16 @@ fn on_add_ship_asteroid_collider(
 
     commands
         .entity(entity)
-        .insert((CollisionEventsEnabled,))
+        .insert(CollisionEventsEnabled)
         .observe(
             |trigger: Trigger<OnCollisionStart>,
              mut commands: Commands,
              asteroids: Query<(&Asteroid, &Transform)>,
 
              mut meshes: ResMut<Assets<Mesh>>,
-             mut materials: ResMut<Assets<StandardMaterial>>| {
+             mut materials: ResMut<Assets<StandardMaterial>>,
+             mut screen_shake: ResMut<CameraShake>,
+             time: Res<Time<Physics>>| {
                 // let meteorite = meteorites.get(trigger.collider);
 
                 let Ok((asteroid, asteroid_transform)) = asteroids.get(trigger.collider) else {
@@ -199,6 +203,8 @@ fn on_add_ship_asteroid_collider(
                             Duration::from_millis(700),
                         )
                     });
+
+                screen_shake.until = time.elapsed_secs() + 0.5;
 
                 // let pressure_plate = trigger.target();
                 // let other_entity = trigger.collider;
