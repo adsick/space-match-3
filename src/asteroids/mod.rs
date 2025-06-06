@@ -1,12 +1,12 @@
-use std::{process::Child, time::Duration};
+use std::time::Duration;
 
 use avian2d::prelude::{
-    Collider, CollisionEventsEnabled, CollisionLayers, OnCollisionStart, Physics, RigidBody,
+    Collider, CollisionEventsEnabled, OnCollisionStart, RigidBody,
 };
 use bevy::{
     app::App,
     asset::Assets,
-    color::palettes::css::{GOLD, GREEN, RED, WHEAT, WHITE},
+    color::palettes::css::WHITE,
     ecs::relationship::RelatedSpawnerCommands,
     math::{Quat, Vec3},
     pbr::{ExtendedMaterial, MaterialExtension, MeshMaterial3d, StandardMaterial},
@@ -20,9 +20,9 @@ use bevy::{
     },
 };
 use bevy_tweening::{
-    AnimationSystem, Animator, AssetAnimator, BoxedTweenable, Lens, RepeatCount, RepeatStrategy,
+    AnimationSystem, Animator, AssetAnimator, Lens,
     Targetable, Tracks, Tween, TweenCompleted, asset_animator_system, component_animator_system,
-    lens::{ColorMaterialColorLens, TransformRotationLens, TransformScaleLens},
+    lens::{TransformRotationLens, TransformScaleLens},
 };
 
 use crate::CameraShake;
@@ -162,7 +162,7 @@ fn on_add_ship_asteroid_collider(
                     return;
                 };
 
-                println!("collision");
+                debug!("collision");
 
                 commands.entity(trigger.collider).despawn();
 
@@ -209,7 +209,7 @@ fn on_add_ship_asteroid_collider(
                 // let pressure_plate = trigger.target();
                 // let other_entity = trigger.collider;
                 // if player_query.contains(other_entity) {
-                //     println!("Player {other_entity} stepped on pressure plate {pressure_plate}");
+                //     debug!("Player {other_entity} stepped on pressure plate {pressure_plate}");
                 // }
             },
         );

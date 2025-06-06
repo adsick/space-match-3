@@ -8,19 +8,16 @@ mod audio;
 // #[cfg(feature = "dev")]
 mod asteroids;
 mod dev_tools;
-mod gas;
 mod menus;
 mod player;
 mod screens;
 mod space;
 mod theme;
 
-use asteroids::AsteroidMaterial;
 use avian2d::prelude::*;
 use bevy::{
     asset::AssetMetaCheck, color::palettes::css::WHITE, core_pipeline::bloom::Bloom,
-    diagnostic::FrameTimeDiagnosticsPlugin, pbr::ExtendedMaterial, prelude::*,
-    render::camera::SubCameraView,
+    diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, render::camera::SubCameraView,
 };
 use bevy_framepace::FramepacePlugin;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
@@ -76,7 +73,6 @@ impl Plugin for AppPlugin {
             theme::plugin,
             player::plugin,
             space::plugin,
-            gas::plugin,
             FrameTimeDiagnosticsPlugin::default(),
         ));
 

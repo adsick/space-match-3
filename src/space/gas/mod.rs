@@ -1,17 +1,18 @@
 use std::time::Duration;
 
-use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_spatial::{
     AutomaticUpdate, SpatialAccess, SpatialStructure, TransformMode, kdtree::KDTree2,
 };
 
 use crate::{
-    PausableSystems, gas::assets::OrbAssets, player::movement::CurrentGas, screens::Screen,
-    space::orb_explosion::propagate_explosion,
+    PausableSystems, player::movement::CurrentGas, screens::Screen, space::gas::assets::OrbAssets,
 };
 
 pub mod assets;
+pub mod burn;
+
+use burn::propagate_explosion;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
@@ -20,6 +21,7 @@ pub(super) fn plugin(app: &mut App) {
             .with_frequency(Duration::from_secs_f32(0.3))
             .with_transform(TransformMode::GlobalTransform),
         assets::plugin,
+        burn::plugin,
     ))
     .add_observer(setup)
     .add_systems(
@@ -53,7 +55,6 @@ fn setup(trigger: Trigger<OnAdd, GasOrb>, mut cmds: Commands, gas_assets: Res<Or
 
 pub fn pickup_gas(
     cmds: Commands,
-    // mut q_picked_up_orbs: Query<(Entity, &mut Transform, &mut AttractedGasOrb)>,
     q_orbs: Query<&GasOrb>,
     q_ship: Single<(&Transform, &mut CurrentGas)>,
     tree: Res<KDTree2<GasOrb>>,

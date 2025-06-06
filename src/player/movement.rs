@@ -5,9 +5,10 @@ use bevy::prelude::*;
 // use bevy::diagnostic::{DiagnosticPath, DiagnosticsStore};
 
 use crate::PausableSystems;
-use crate::gas::pickup_gas;
 use crate::screens::Screen;
-use crate::space::{GasGenerator, orb_explosion::OrbExplosion};
+use crate::space::GasGenerator;
+use crate::space::gas::burn::OrbExplosion;
+use crate::space::gas::pickup_gas;
 
 use super::Player;
 
@@ -55,8 +56,7 @@ fn thrust(
     >,
     time: Res<Time<Physics>>,
     gas: Res<GasGenerator>,
-    mut expl_ev: EventWriter<OrbExplosion>, // gas_orb_query: Query<(Entity, &Transform), With<GasOrb>>,
-                                            // diagnostics: Res<DiagnosticsStore>,
+    mut expl_ev: EventWriter<OrbExplosion>,
 ) {
     let left = keyboard_input.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]);
     let right = keyboard_input.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]);
@@ -104,26 +104,6 @@ fn thrust(
 
         expl_ev.write(OrbExplosion { pos: player_pos });
     }
-
-    // velocity.0 += (thrust_force + gas_boost) * time.delta_secs();
-
-    // TODO: not framerate-independent
-    // let speed = velocity.0.length();
-    // debug!("{speed:.2}");
-
-    // we don't need additional speed limiting as avian's dampening will do it for us anyway
-    // if speed > **max_speed {
-    //     let fps = diagnostics
-    //         .get(&DiagnosticPath::const_new("fps"))
-    //         .and_then(|fps| fps.smoothed())
-    //         .unwrap_or(60.0);
-
-    //     Dir2::try_from(velocity.0)
-    //         .map(|dir| {
-    //             velocity.0 = velocity.lerp(dir * max_speed.0, time.delta_secs() * fps as f32 / 1000.0);
-    //         })
-    //         .ok();
-    // }
     current_gas.0 *= 0.01f32.powf(time.delta_secs());
 }
 

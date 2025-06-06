@@ -11,8 +11,8 @@ use bevy_spatial::{SpatialAccess, kdtree::KDTree2};
 
 use crate::{
     PausableSystems,
-    gas::{BurningGasOrb, assets::OrbAssets, pickup_gas},
     screens::Screen,
+    space::gas::{BurningGasOrb, assets::OrbAssets, pickup_gas},
 };
 
 use super::GasOrb;
@@ -99,7 +99,6 @@ pub fn propagate_explosion(
             }
 
             if !burnt_orbs {
-                // debug!("no orbs burnt");
                 return false;
             }
 
@@ -121,7 +120,7 @@ pub fn propagate_explosion(
                     });
                 }
             }
-            false // here I delete the explosion
+            false
         } else {
             true
         }
@@ -130,19 +129,13 @@ pub fn propagate_explosion(
     let new_len = new_explosions.len();
     let free_space = MAX_COUNT.saturating_sub(explosion_queue.len() as u32);
 
-    // debug!("free: {free_space}, {}", (variation[i % variation.len()] * new_len as f32));
     for explosion in new_explosions {
         i += 1;
 
-        // you can think of it as `variation[i] < free_space / new_explosions.len()`
         if (variation[i % variation.len()] * new_len as f32) < free_space as f32 {
             explosion_queue.push_back(explosion);
         }
     }
-
-    // for _ in 0..explosion_queue.len().saturating_sub(MAX_COUNT as usize) {
-    //     explosion_queue.pop_front();
-    // }
 }
 
 fn update_burning_orbs(
@@ -173,19 +166,4 @@ fn update_burning_orbs(
                 .min(Vec3::splat(100.0));
         }
     });
-}
-
-// reference
-fn animate_materials(
-    material_handles: Query<&MeshMaterial3d<StandardMaterial>>,
-    time: Res<Time<Physics>>, // * physics time if bullet-time is gonna slow this down too, otherwise normal time
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    for material_handle in material_handles.iter() {
-        if let Some(material) = materials.get_mut(material_handle) {
-            if let Color::Hsla(ref mut hsla) = material.base_color {
-                *hsla = hsla.rotate_hue(time.delta_secs() * 100.0);
-            }
-        }
-    }
 }

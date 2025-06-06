@@ -20,7 +20,7 @@ pub struct OrbAssets {
 
 impl FromWorld for OrbAssets {
     fn from_world(world: &mut World) -> Self {
-        println!("initing orb assets");
+        debug!("initing orb assets");
         let assets = world.resource::<AssetServer>();
 
         let mut orb_materials = vec![];
@@ -63,7 +63,7 @@ impl FromWorld for OrbAssets {
 }
 
 pub(super) fn plugin(app: &mut App) {
-    println!("registering orb assets");
+    debug!("registering orb assets");
     app.register_type::<OrbAssets>()
         .load_resource::<OrbAssets>();
 }
