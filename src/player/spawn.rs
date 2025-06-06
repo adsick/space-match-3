@@ -1,7 +1,10 @@
 use avian2d::prelude::*;
 use bevy::{color::palettes::css::VIOLET, prelude::*};
 
-use crate::{player::movement::CurrentGas, screens::Screen};
+use crate::{
+    meteorites::ShipMeteoriteCollider, player::movement::CurrentGas,
+    screens::Screen,
+};
 
 use super::{
     Player,
@@ -37,6 +40,8 @@ fn spawn_player_with_movement(
                 Player,
                 Name::new("Player"),
                 RigidBody::Dynamic,
+                Collider::circle(5.),
+                ShipMeteoriteCollider {},
                 LinearVelocity::ZERO,
                 AngularVelocity(0.0),
                 Mass(1.0),
@@ -59,7 +64,7 @@ fn spawn_player_with_movement(
                 children![(engine::EngineFire {
                     power: 0.5,
                     color: Vec4::default()
-                },)],
+                },),],
             ),
         ))
         .id()

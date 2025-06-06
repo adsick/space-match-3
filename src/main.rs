@@ -9,6 +9,7 @@ mod audio;
 mod dev_tools;
 mod gas;
 mod menus;
+mod meteorites;
 mod player;
 mod screens;
 mod space;
@@ -70,6 +71,7 @@ impl Plugin for AppPlugin {
             player::plugin,
             space::plugin,
             gas::plugin,
+            meteorites::plugin,
             FrameTimeDiagnosticsPlugin::default(),
         ));
 

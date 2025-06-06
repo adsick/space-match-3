@@ -8,7 +8,7 @@ use avian2d::parry::utils::hashmap::HashMap;
 use bevy::prelude::*;
 use noiz::{Noise, SampleableFor, prelude::common_noise::Perlin, rng::NoiseRng};
 
-use crate::{gas::GasOrb, player::Player};
+use crate::{gas::GasOrb, meteorites::Meteorite, player::Player};
 
 pub mod orb_explosion;
 
@@ -33,7 +33,8 @@ pub const CHUNK_SIZE: f32 = 64.0; // TODO: Increase this
 /// Number of orbs per m²
 pub const MAX_CLOUD_DENSITY: f32 = 0.03;
 pub const RENDER_DISTANCE: i32 = 12;
-pub const THRESHOLD: f32 = 0.1;
+pub const ORB_THRESHOLD: f32 = 0.1;
+pub const METEORITE_THRESHOLD: f32 = 0.99;
 
 pub const MIN_ORB_SIZE: f32 = 0.4;
 pub const ORB_SCALE: f32 = 4.0;
@@ -124,6 +125,10 @@ fn trigger_chunk_population(
 #[derive(Debug, Event)]
 pub struct PopulateChunk(IVec2);
 
+fn meteorite_distribution(r: f32) -> f32 {
+    -4. * r * (r - 1.)
+}
+
 /// Observer that populates a chunk with orb clouds.
 /// The chunk is first subdivided into `CHUNK_SUBDIV` parts along each axis,
 /// then each cell may spawn an orb depending on randomness and underlying space parameters.
@@ -145,24 +150,37 @@ fn populate_chunk(
             let r = gas.sample(cell_pos);
             // let r = 0.5;
 
-            if r < THRESHOLD {
-                continue;
+            if r > ORB_THRESHOLD {
+                // The actual orb position is slightly offset to avoid a grid-like look
+                // TODO: improve random generation perf
+                let pos = cell_pos
+                    + Vec2::new(rand::random::<f32>(), rand::random::<f32>()) * CHUNK_SIZE
+                        / CHUNK_SUBDIV as f32;
+
+                cmds.spawn((
+                    GasOrb(r),
+                    Transform::from_translation(
+                        pos.extend((rand::random::<f32>() - 0.5) * CLOUD_Z_SCALE * r),
+                    ) // todo: we can vary that 0.5 with another noise for more depth effect
+                    .with_scale(Vec3::splat(MIN_ORB_SIZE + ORB_SCALE * r)),
+                    ChildOf(trigger.target()),
+                ));
             }
 
-            // The actual orb position is slightly offset to avoid a grid-like look
-            // TODO: improve random generation perf
-            let pos = cell_pos
-                + Vec2::new(rand::random::<f32>(), rand::random::<f32>()) * CHUNK_SIZE
-                    / CHUNK_SUBDIV as f32;
+            let mut meteorite_r = meteorite_distribution(r);
+            meteorite_r -= rand::random::<f32>() * 0.5;
+            if meteorite_r > METEORITE_THRESHOLD {
+                let pos = cell_pos
+                    + Vec2::new(rand::random::<f32>(), rand::random::<f32>()) * CHUNK_SIZE
+                        / CHUNK_SUBDIV as f32;
 
-            cmds.spawn((
-                GasOrb(r),
-                Transform::from_translation(
-                    pos.extend((rand::random::<f32>() - 0.5) * CLOUD_Z_SCALE * r),
-                ) // todo: we can vary that 0.5 with another noise for more depth effect
-                .with_scale(Vec3::splat(MIN_ORB_SIZE + ORB_SCALE * r)),
-                ChildOf(trigger.target()),
-            ));
+                cmds.spawn((
+                    Meteorite {
+                        pos,
+                    },
+                    ChildOf(trigger.target()),
+                ));
+            }
         }
     }
 
