@@ -10,12 +10,12 @@ use avian2d::parry::utils::hashmap::HashMap;
 use bevy::prelude::*;
 use noiz::{Noise, SampleableFor, prelude::common_noise::Perlin, rng::NoiseRng};
 
-use crate::{asteroids::Asteroid, gas::GasOrb, player::Player};
+use crate::{asteroids::Asteroid, player::Player, space::gas::GasOrb};
 
-pub mod orb_explosion;
+pub mod gas;
 
 pub fn plugin(app: &mut App) {
-    app.add_plugins(orb_explosion::plugin)
+    app.add_plugins(gas::plugin)
         .insert_resource(GasGenerator {
             noise: Noise {
                 noise: Perlin::default(),

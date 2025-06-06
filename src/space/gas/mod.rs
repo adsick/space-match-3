@@ -6,11 +6,13 @@ use bevy_spatial::{
 };
 
 use crate::{
-    PausableSystems, gas::assets::OrbAssets, player::movement::CurrentGas, screens::Screen,
-    space::orb_explosion::propagate_explosion,
+    player::movement::CurrentGas, screens::Screen, space::gas::assets::OrbAssets, PausableSystems
 };
 
 pub mod assets;
+pub mod orb_explosion;
+
+use orb_explosion::propagate_explosion;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
@@ -19,6 +21,7 @@ pub(super) fn plugin(app: &mut App) {
             .with_frequency(Duration::from_secs_f32(0.3))
             .with_transform(TransformMode::GlobalTransform),
         assets::plugin,
+        orb_explosion::plugin,
     ))
     .add_observer(setup)
     .add_systems(

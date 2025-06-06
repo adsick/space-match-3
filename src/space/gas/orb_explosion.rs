@@ -11,8 +11,8 @@ use bevy_spatial::{SpatialAccess, kdtree::KDTree2};
 
 use crate::{
     PausableSystems,
-    gas::{BurningGasOrb, assets::OrbAssets, pickup_gas},
     screens::Screen,
+    space::gas::{BurningGasOrb, assets::OrbAssets, pickup_gas},
 };
 
 use super::GasOrb;

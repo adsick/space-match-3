@@ -5,9 +5,10 @@ use bevy::prelude::*;
 // use bevy::diagnostic::{DiagnosticPath, DiagnosticsStore};
 
 use crate::PausableSystems;
-use crate::gas::pickup_gas;
 use crate::screens::Screen;
-use crate::space::{GasGenerator, orb_explosion::OrbExplosion};
+use crate::space::GasGenerator;
+use crate::space::gas::orb_explosion::OrbExplosion;
+use crate::space::gas::pickup_gas;
 
 use super::Player;
 
