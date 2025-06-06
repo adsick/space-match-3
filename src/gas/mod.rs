@@ -61,9 +61,10 @@ pub fn pickup_gas(
 
     let mut total_gas = 0.0;
 
-    for (orb_pos, e) in tree.within_distance(ship_tr_2d, 10.0) {
-        let k = orb_pos.dot(backward).clamp(0.0, 1.0);
 
+    // this code is responsible for detecting gas that is behind the ship
+    for (orb_pos, e) in tree.within_distance(ship_tr_2d, 10.0) {
+        let k = (orb_pos - ship_tr_2d).normalize().dot(backward).clamp(0.0, 1.0);
         if let Some(e) = e {
             q_orbs.get(e).map(|g| total_gas += k * g.0).ok();
         }
