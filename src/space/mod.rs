@@ -4,6 +4,8 @@
 //! that are populated on the fly as the player moves around.
 //!
 
+use std::cmp;
+
 use avian2d::parry::utils::hashmap::HashMap;
 use bevy::prelude::*;
 use noiz::{Noise, SampleableFor, prelude::common_noise::Perlin, rng::NoiseRng};
@@ -130,7 +132,10 @@ fn trigger_chunk_population(
 pub struct PopulateChunk(IVec2);
 
 fn meteorite_distribution(r: f32) -> f32 {
-    -4. * r * (r - 1.)
+    let a = smoothstep(0.1, 0.2, r);
+    let b = smoothstep(0.3, 0.2, r);
+
+    a.min(b)
 }
 
 /// Observer that populates a chunk with orb clouds.

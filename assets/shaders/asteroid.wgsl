@@ -23,28 +23,39 @@ struct VertexInput {
     @location(0) position: vec3<f32>,
     @location(1) normal: vec3<f32>,
     @location(2) uv: vec2<f32>,
+    // @location(3) terrain_seed: vec4f,
+
     // @location(3) tangent: vec4<f32>,
 }
 
 
-const HEIGHT_SCALE: f32 = 0.1;
+
+@group(2) @binding(100)
+var<uniform> terrain_seed: vec4f;
+@group(2) @binding(101)
+var<uniform> radius: vec4f;
+
+
+const HEIGHT_SCALE: f32 = 0.5;
 
 @vertex
 fn vertex(in: VertexInput) -> VertexOutput {
-    let terrain_height = snoise(in.position);
-    let displaced_pos = in.position + in.normal * terrain_height * HEIGHT_SCALE;
+    let radius = radius.x;
+
+    let world_from_local = mesh_functions::get_world_from_local(in.instance_index);
+    let world_position = mesh_functions::mesh_position_local_to_world(world_from_local, vec4f(in.position, 1.0));
+
+    let terrain_height = snoise(in.position  / 50. + terrain_seed.xyz) * 2. - 1.;
+    let displaced_pos = in.position + in.normal * terrain_height * radius * HEIGHT_SCALE;
     let local_position = vec4(displaced_pos, 1.0);
 
     var out: VertexOutput;
 
-    let world_from_local = mesh_functions::get_world_from_local(in.instance_index);
     out.world_position = mesh_functions::mesh_position_local_to_world(world_from_local, local_position);
+
     out.position = position_world_to_clip(out.world_position.xyz);
-
     out.world_normal = mesh_functions::mesh_normal_local_to_world(in.normal, in.instance_index);
-
     out.uv = in.uv;
-
     out.instance_index = in.instance_index;
 
     return out;

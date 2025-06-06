@@ -6,7 +6,7 @@ use avian2d::prelude::{
 use bevy::{
     app::App,
     asset::Assets,
-    color::palettes::css::{GOLD, GREEN, RED},
+    color::palettes::css::{GOLD, GREEN, RED, WHEAT},
     ecs::relationship::RelatedSpawnerCommands,
     math::{Quat, Vec3},
     pbr::{ExtendedMaterial, MaterialExtension, MeshMaterial3d, StandardMaterial},
@@ -28,7 +28,10 @@ use bevy_tweening::{
 const ASTEROID_SHADER_PATH: &str = "shaders/asteroid.wgsl";
 
 pub fn plugin(app: &mut App) {
-    app.add_observer(on_add_asteroid)
+    app.add_plugins((MaterialPlugin::<
+        ExtendedMaterial<StandardMaterial, AsteroidMaterial>,
+    >::default(),))
+        .add_observer(on_add_asteroid)
         .add_observer(on_add_ship_asteroid_collider)
         .add_systems(
             Update,
@@ -67,8 +70,8 @@ fn on_add_asteroid(
     asteroids: Query<&Asteroid>,
 
     mut meshes: ResMut<Assets<Mesh>>,
-    // mut asteroid_materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, AsteroidMaterial>>>,
-    mut asteroid_materials: ResMut<Assets<StandardMaterial>>,
+    mut asteroid_materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, AsteroidMaterial>>>,
+    // mut asteroid_materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let entity = trigger.target();
     let Ok(asteroid) = asteroids.get(entity) else {
@@ -85,27 +88,19 @@ fn on_add_asteroid(
         Transform::from_translation(asteroid.pos),
         // .with_scale(Vec3::splat(meteorite_size)),
         Mesh3d(meshes.add(Sphere::new(asteroid.radius))),
-        MeshMaterial3d(asteroid_materials.add(StandardMaterial {
-            base_color: GREEN.into(),
-            emissive: GREEN.into(),
-            ..Default::default()
+        MeshMaterial3d(asteroid_materials.add(ExtendedMaterial {
+            base: StandardMaterial {
+                base_color: WHEAT.into(),
+                // emissive: GREEN.into(),
+                ..Default::default()
+            },
+
+            extension: AsteroidMaterial {
+                terrain_seed: Vec4::new(rand::random::<f32>(), rand::random::<f32>(), 0.0, 0.0)
+                    * 10.,
+                radius: Vec4::splat(asteroid.radius),
+            },
         })),
-        // MeshMaterial3d(asteroid_materials.add(ExtendedMaterial {
-        //     base: StandardMaterial {
-        //         base_color: GREEN.into(),
-        //         emissive: GREEN.into(),
-        //         ..Default::default()
-        //     },
-        //
-        //     extension: AsteroidMaterial {},
-        // })),
-        // MeshMaterial3d(explosion_materials.add(ExtendedMaterial {
-        //     base: StandardMaterial {
-        //         alpha_mode: AlphaMode::Blend,
-        //         ..Default::default()
-        //     },
-        //     extension: FireMaterialExtension::default(),
-        // })),
     ));
 }
 
@@ -288,7 +283,13 @@ fn spawn_animated_explosion(
 }
 
 #[derive(Asset, AsBindGroup, Reflect, Debug, Clone)]
-pub struct AsteroidMaterial {}
+pub struct AsteroidMaterial {
+    #[uniform(100)]
+    terrain_seed: Vec4,
+
+    #[uniform(101)]
+    radius: Vec4,
+}
 
 impl MaterialExtension for AsteroidMaterial {
     fn vertex_shader() -> bevy::render::render_resource::ShaderRef {
