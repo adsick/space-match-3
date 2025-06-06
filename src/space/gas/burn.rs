@@ -37,6 +37,7 @@ const CELL_SIZE: f32 = 16.;
 const MAX_COUNT: u32 = 1000;
 const LIFETIME: u32 = 30;
 const SLOWDOWN: u32 = 10;
+const BASE_DELAY: u32 = 30;
 
 #[derive(SystemSet, Hash, Debug, Eq, PartialEq, Clone)]
 pub struct UpdateGasSet;
@@ -86,7 +87,7 @@ pub fn propagate_explosion(
         i += 1;
 
         // condition of burn propagation. basically the older the explosion is the longer it takes to propagate
-        if curr_time > explosion.time + 10 + SLOWDOWN * (LIFETIME - explosion.life) {
+        if curr_time > explosion.time + BASE_DELAY + SLOWDOWN * (LIFETIME - explosion.life) {
             let mut burnt_orbs = false;
             for (_, entity) in tree.within_distance(explosion.pos, size / 2.0) {
                 if let Some(e) = entity {
