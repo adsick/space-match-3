@@ -6,7 +6,7 @@ use avian2d::prelude::{
 use bevy::{
     app::App,
     asset::Assets,
-    color::palettes::css::{GOLD, GREEN, RED, WHEAT},
+    color::palettes::css::{GOLD, GREEN, RED, WHEAT, WHITE},
     ecs::relationship::RelatedSpawnerCommands,
     math::{Quat, Vec3},
     pbr::{ExtendedMaterial, MaterialExtension, MeshMaterial3d, StandardMaterial},
@@ -90,7 +90,7 @@ fn on_add_asteroid(
         Mesh3d(meshes.add(Sphere::new(asteroid.radius))),
         MeshMaterial3d(asteroid_materials.add(ExtendedMaterial {
             base: StandardMaterial {
-                base_color: WHEAT.into(),
+                base_color: WHITE.into(),
                 // emissive: GREEN.into(),
                 ..Default::default()
             },
@@ -295,6 +295,10 @@ impl MaterialExtension for AsteroidMaterial {
     fn vertex_shader() -> bevy::render::render_resource::ShaderRef {
         ASTEROID_SHADER_PATH.into()
     }
+
+    // fn fragment_shader() -> bevy::render::render_resource::ShaderRef {
+    //     ASTEROID_SHADER_PATH.into()
+    // }
 }
 
 // pub fn meteorite_collider_for_ship() -> impl Bundle {

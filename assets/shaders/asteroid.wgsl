@@ -64,6 +64,31 @@ fn vertex(in: VertexInput) -> VertexOutput {
 
 
 
+@fragment
+fn fragment(
+    in: VertexOutput,
+    @builtin(front_facing) is_front: bool,
+) -> FragmentOutput {
+    var pbr_input = pbr_input_from_standard_material(in, is_front);
+
+    pbr_input.material.base_color = alpha_discard(pbr_input.material, pbr_input.material.base_color);
+
+#ifdef PREPASS_PIPELINE
+    let out = deferred_output(in, pbr_input);
+#else
+    var out: FragmentOutput;
+    out.color = apply_pbr_lighting(pbr_input);
+
+    out.color = smoothstep(vec4f(0.03), vec4f(0.2), out.color);
+    out.color.w = 1.0;
+
+    out.color = main_pass_post_lighting_processing(pbr_input, out.color);
+#endif
+
+    return out;
+}
+
+
 // Translated from Shadertoy: <www.shadertoy.com/view/XsX3zB>
 // by Nikita Miropolskiy
 

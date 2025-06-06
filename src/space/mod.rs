@@ -130,9 +130,9 @@ fn trigger_chunk_population(
 #[derive(Debug, Event)]
 pub struct PopulateChunk(IVec2);
 
-fn meteorite_distribution(r: f32) -> f32 {
-    let a = smoothstep(-0.5, -0.4, r);
-    let b = smoothstep(-0.3, -0.4, r);
+fn asteroid_distribution(r: f32) -> f32 {
+    let a = smoothstep(-0.5, -0.3, r);
+    let b = smoothstep(-0.1, -0.3, r);
 
     a.min(b)
 }
@@ -175,9 +175,9 @@ fn populate_chunk(
                 ));
             }
 
-            let meteorite_r = meteorite_distribution(r);
-            if meteorite_r > 0.90 {
-                if rand::random::<f32>() < 0.99 {
+            let meteorite_r = asteroid_distribution(r);
+            if meteorite_r > 0.60 {
+                if rand::random::<f32>() < 0.999 {
                     continue;
                 }
                 let pos = cell_pos
