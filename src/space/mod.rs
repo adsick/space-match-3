@@ -4,7 +4,6 @@
 //! that are populated on the fly as the player moves around.
 //!
 
-use std::cmp;
 
 use avian2d::parry::utils::hashmap::HashMap;
 use bevy::prelude::*;

@@ -1,12 +1,12 @@
-use std::{process::Child, time::Duration};
+use std::time::Duration;
 
 use avian2d::prelude::{
-    Collider, CollisionEventsEnabled, CollisionLayers, OnCollisionStart, RigidBody,
+    Collider, CollisionEventsEnabled, OnCollisionStart, RigidBody,
 };
 use bevy::{
     app::App,
     asset::Assets,
-    color::palettes::css::{GOLD, GREEN, RED, WHEAT, WHITE},
+    color::palettes::css::WHITE,
     ecs::relationship::RelatedSpawnerCommands,
     math::{Quat, Vec3},
     pbr::{ExtendedMaterial, MaterialExtension, MeshMaterial3d, StandardMaterial},
@@ -20,9 +20,9 @@ use bevy::{
     },
 };
 use bevy_tweening::{
-    AnimationSystem, Animator, AssetAnimator, BoxedTweenable, Lens, RepeatCount, RepeatStrategy,
+    AnimationSystem, Animator, AssetAnimator, Lens,
     Targetable, Tracks, Tween, TweenCompleted, asset_animator_system, component_animator_system,
-    lens::{ColorMaterialColorLens, TransformRotationLens, TransformScaleLens},
+    lens::{TransformRotationLens, TransformScaleLens},
 };
 
 const ASTEROID_SHADER_PATH: &str = "shaders/asteroid.wgsl";
