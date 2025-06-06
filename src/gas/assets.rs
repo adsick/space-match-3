@@ -1,5 +1,8 @@
 use bevy::{
-    color::palettes::{css::{GOLD, RED, WHEAT, WHITE}, tailwind::GRAY_700},
+    color::palettes::{
+        css::{GOLD, RED, WHEAT, WHITE},
+        tailwind::GRAY_700,
+    },
     prelude::*,
     render::mesh::CircleMeshBuilder,
 };
@@ -36,7 +39,6 @@ impl FromWorld for OrbAssets {
             emissive: (GOLD * 2.0).into(),
             ..Default::default()
         }));
-
 
         orb_materials.push(assets.add(StandardMaterial {
             base_color: RED.with_alpha(0.5).into(),

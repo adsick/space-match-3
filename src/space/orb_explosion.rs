@@ -8,16 +8,27 @@ use bevy::{
 };
 use bevy_spatial::{SpatialAccess, kdtree::KDTree2};
 
-use crate::gas::{BurningGasOrb, assets::OrbAssets};
+use crate::{
+    PausableSystems,
+    gas::{BurningGasOrb, assets::OrbAssets, pickup_gas},
+    screens::Screen,
+};
 
 use super::GasOrb;
 
 pub fn plugin(app: &mut App) {
-    app.add_event::<OrbExplosion>().add_systems(
-        Update,
-        (propagate_explosion, update_burning_orbs).in_set(UpdateGasSet),
-    );
-    // app.add_observer(on_explosion_spawned);
+    app.add_event::<OrbExplosion>()
+        .configure_sets(
+            Update,
+            UpdateGasSet
+                .after(pickup_gas)
+                .run_if(in_state(Screen::Gameplay))
+                .in_set(PausableSystems),
+        )
+        .add_systems(
+            Update,
+            (propagate_explosion, update_burning_orbs).in_set(UpdateGasSet),
+        );
 }
 
 const BURN_TIME: u32 = 670;

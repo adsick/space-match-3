@@ -2,11 +2,18 @@ use std::collections::VecDeque;
 
 use bevy::{
     color::{
-        palettes::{css::{PURPLE, RED}, tailwind::RED_500}, ColorToComponents
+        ColorToComponents,
+        palettes::{
+            css::{PURPLE, RED},
+            tailwind::RED_500,
+        },
     },
     math::{UVec4, Vec2, Vec2Swizzles, Vec3, Vec3Swizzles, Vec4, VectorSpace},
     pbr::{ExtendedMaterial, MaterialExtension, MaterialPlugin, MeshMaterial3d, StandardMaterial},
-    prelude::{AlphaMode, Changed, Commands, Component, GlobalTransform, Local, Mesh, Mesh3d, OnAdd, Query, Rectangle, Res, ResMut, Single, Trigger, With, *},
+    prelude::{
+        AlphaMode, Changed, Commands, Component, GlobalTransform, Local, Mesh, Mesh3d, OnAdd,
+        Query, Rectangle, Res, ResMut, Single, Trigger, With, *,
+    },
     reflect::Reflect,
     render::render_resource::{AsBindGroup, ShaderRef},
 };
@@ -163,10 +170,7 @@ fn update_shader_params(
         let ship_velocity = (curr_position - *prev_position) / 0.03;
         *prev_position = curr_position;
 
-        let new_particle = (
-            curr_position,
-            flame_dir.xy() * 100.0 + ship_velocity,
-        );
+        let new_particle = (curr_position, flame_dir.xy() * 100.0 + ship_velocity);
         particles_queue.push_front(new_particle);
 
         if particles_queue.len() >= NOF_PARTICLES {
