@@ -15,10 +15,11 @@ mod screens;
 mod space;
 mod theme;
 
+use asteroids::AsteroidMaterial;
 use avian2d::prelude::*;
 use bevy::{
     asset::AssetMetaCheck, color::palettes::css::WHITE, core_pipeline::bloom::Bloom,
-    diagnostic::FrameTimeDiagnosticsPlugin, prelude::*,
+    diagnostic::FrameTimeDiagnosticsPlugin, pbr::ExtendedMaterial, prelude::*,
 };
 use bevy_framepace::FramepacePlugin;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
@@ -67,13 +68,13 @@ impl Plugin for AppPlugin {
             audio::plugin,
             // #[cfg(feature = "dev")]
             dev_tools::plugin,
+            asteroids::plugin,
             menus::plugin,
             screens::plugin,
             theme::plugin,
             player::plugin,
             space::plugin,
             gas::plugin,
-            asteroids::plugin,
             FrameTimeDiagnosticsPlugin::default(),
         ));
 

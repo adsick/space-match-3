@@ -9,18 +9,23 @@ use bevy::{
     color::palettes::css::{GOLD, GREEN, RED},
     ecs::relationship::RelatedSpawnerCommands,
     math::{Quat, Vec3},
-    pbr::{MeshMaterial3d, StandardMaterial},
+    pbr::{ExtendedMaterial, MaterialExtension, MeshMaterial3d, StandardMaterial},
     prelude::{
         Commands, EaseFunction, Mesh, Mesh3d, MeshBuilder, OnAdd, Query, ResMut, Sphere, Transform,
         Trigger, *,
     },
-    render::mesh::{SphereKind, SphereMeshBuilder},
+    render::{
+        mesh::{SphereKind, SphereMeshBuilder},
+        render_resource::AsBindGroup,
+    },
 };
 use bevy_tweening::{
     AnimationSystem, Animator, AssetAnimator, BoxedTweenable, Lens, RepeatCount, RepeatStrategy,
     Targetable, Tracks, Tween, TweenCompleted, asset_animator_system, component_animator_system,
     lens::{ColorMaterialColorLens, TransformRotationLens, TransformScaleLens},
 };
+
+const ASTEROID_SHADER_PATH: &str = "shaders/asteroid.wgsl";
 
 pub fn plugin(app: &mut App) {
     app.add_observer(on_add_asteroid)
@@ -62,6 +67,7 @@ fn on_add_asteroid(
     asteroids: Query<&Asteroid>,
 
     mut meshes: ResMut<Assets<Mesh>>,
+    // mut asteroid_materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, AsteroidMaterial>>>,
     mut asteroid_materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let entity = trigger.target();
@@ -81,8 +87,18 @@ fn on_add_asteroid(
         Mesh3d(meshes.add(Sphere::new(asteroid.radius))),
         MeshMaterial3d(asteroid_materials.add(StandardMaterial {
             base_color: GREEN.into(),
+            emissive: GREEN.into(),
             ..Default::default()
         })),
+        // MeshMaterial3d(asteroid_materials.add(ExtendedMaterial {
+        //     base: StandardMaterial {
+        //         base_color: GREEN.into(),
+        //         emissive: GREEN.into(),
+        //         ..Default::default()
+        //     },
+        //
+        //     extension: AsteroidMaterial {},
+        // })),
         // MeshMaterial3d(explosion_materials.add(ExtendedMaterial {
         //     base: StandardMaterial {
         //         alpha_mode: AlphaMode::Blend,
@@ -269,6 +285,15 @@ fn spawn_animated_explosion(
         .observe(|trigger: Trigger<TweenCompleted>, mut commands: Commands| {
             commands.entity(trigger.target()).despawn();
         });
+}
+
+#[derive(Asset, AsBindGroup, Reflect, Debug, Clone)]
+pub struct AsteroidMaterial {}
+
+impl MaterialExtension for AsteroidMaterial {
+    fn vertex_shader() -> bevy::render::render_resource::ShaderRef {
+        ASTEROID_SHADER_PATH.into()
+    }
 }
 
 // pub fn meteorite_collider_for_ship() -> impl Bundle {
