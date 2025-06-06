@@ -1,6 +1,5 @@
 use std::time::Duration;
 
-use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_spatial::{
     AutomaticUpdate, SpatialAccess, SpatialStructure, TransformMode, kdtree::KDTree2,
@@ -53,7 +52,6 @@ fn setup(trigger: Trigger<OnAdd, GasOrb>, mut cmds: Commands, gas_assets: Res<Or
 
 pub fn pickup_gas(
     cmds: Commands,
-    // mut q_picked_up_orbs: Query<(Entity, &mut Transform, &mut AttractedGasOrb)>,
     q_orbs: Query<&GasOrb>,
     q_ship: Single<(&Transform, &mut CurrentGas)>,
     tree: Res<KDTree2<GasOrb>>,
