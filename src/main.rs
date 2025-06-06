@@ -129,7 +129,8 @@ struct CameraShake {
     max_angle: f32,
     max_offset: f32,
     trauma: f32,
-    latest_position: Vec2,
+    last_position: Vec2,
+    current_position: Vec2,
     until: f32, // physics time in seconds
 }
 
@@ -141,11 +142,6 @@ fn spawn_camera(mut commands: Commands) {
         Name::new("Camera"),
         Camera {
             hdr: true,
-            sub_camera_view: Some(SubCameraView {
-                full_size: UVec2::new(1000, 700),
-                offset: Vec2::new(0.0, 0.0),
-                size: UVec2::new(1000, 700),
-            }),
             ..default()
         },
         Camera3d::default(),
@@ -168,14 +164,14 @@ fn spawn_camera(mut commands: Commands) {
 fn screen_shake(
     time: Res<Time<Physics>>,
     mut screen_shake: ResMut<CameraShake>,
-    mut query: Query<(&mut Camera, &mut Transform)>,
+    mut query: Query<&mut Transform, With<Camera>>,
 ) {
     if time.elapsed_secs() < screen_shake.until {
         // * maybe tweak these
         screen_shake.max_angle = 0.5;
         screen_shake.max_offset = 500.0;
         screen_shake.trauma = (screen_shake.trauma + 1.0 * time.delta_secs()).clamp(0.0, 1.0);
-        screen_shake.latest_position = Vec2::new(0.0, 0.0);
+        screen_shake.last_position = Vec2::new(0.0, 0.0);
     }
 
     let mut rng = rand::thread_rng();
@@ -185,17 +181,20 @@ fn screen_shake(
     let offset_y = screen_shake.max_offset * shake * rng.gen_range(-1.0..1.0);
 
     if shake > 0.0 {
-        for (mut camera, mut transform) in query.iter_mut() {
+        for mut transform in query.iter_mut() {
             // Position
-            let sub_view = camera.sub_camera_view.as_mut().unwrap();
-            let target = sub_view.offset
+            let target = screen_shake.current_position
                 + Vec2 {
                     x: offset_x,
                     y: offset_y,
                 };
-            sub_view
-                .offset
-                .smooth_nudge(&target, CAMERA_DECAY_RATE, time.delta_secs());
+            screen_shake.current_position.smooth_nudge(
+                &target,
+                CAMERA_DECAY_RATE,
+                time.delta_secs(),
+            );
+
+            transform.translation += target.extend(0.0) * time.delta_secs() * 5.0; // * maybe change 5.0 here and below to a different value for strength
 
             // Rotation
             let rotation = Quat::from_rotation_z(angle);
@@ -203,16 +202,15 @@ fn screen_shake(
                 .rotation
                 .interpolate_stable(&(transform.rotation.mul_quat(rotation)), CAMERA_DECAY_RATE);
         }
-    } else {
-        // return camera to the latest position of player (it's fixed in this example case)
-        if let Ok((mut camera, mut transform)) = query.single_mut() {
-            let sub_view = camera.sub_camera_view.as_mut().unwrap();
-            let target = screen_shake.latest_position;
-            sub_view
-                .offset
-                .smooth_nudge(&target, 1.0, time.delta_secs());
-            transform.rotation = transform.rotation.interpolate_stable(&Quat::IDENTITY, 0.1);
-        }
+    } else if let Ok(mut transform) = query.single_mut() {
+        let target = screen_shake.last_position;
+        screen_shake
+            .current_position
+            .smooth_nudge(&target, 1.0, time.delta_secs());
+
+        transform.translation += target.extend(0.0) * time.delta_secs() * 5.0;
+
+        transform.rotation = transform.rotation.interpolate_stable(&Quat::IDENTITY, 0.1);
     }
     // Decay the trauma over time
     screen_shake.trauma -= TRAUMA_DECAY_SPEED * time.delta_secs();
