@@ -36,7 +36,7 @@ var<uniform> terrain_seed: vec4f;
 var<uniform> radius: vec4f;
 
 
-const HEIGHT_SCALE: f32 = 0.5;
+const HEIGHT_SCALE: f32 = 0.2;
 
 @vertex
 fn vertex(in: VertexInput) -> VertexOutput {

@@ -36,10 +36,9 @@ pub const CHUNK_SIZE: f32 = 64.0; // TODO: Increase this
 pub const MAX_CLOUD_DENSITY: f32 = 0.03;
 pub const RENDER_DISTANCE: i32 = 12;
 pub const ORB_THRESHOLD: f32 = 0.1;
-pub const METEORITE_THRESHOLD: f32 = 0.99;
 
-const MIN_ASTEROID_SIZE: f32 = 10.0;
-const ASTEROID_SIZE_VARIATION: f32 = 15.0;
+const MIN_ASTEROID_SIZE: f32 = 20.0;
+const ASTEROID_SIZE_VARIATION: f32 = 25.0;
 const ASTEROID_CLOUD_Z_SCALE: f32 = 10.0;
 
 pub const MIN_ORB_SIZE: f32 = 0.4;
@@ -132,8 +131,8 @@ fn trigger_chunk_population(
 pub struct PopulateChunk(IVec2);
 
 fn meteorite_distribution(r: f32) -> f32 {
-    let a = smoothstep(0.1, 0.2, r);
-    let b = smoothstep(0.3, 0.2, r);
+    let a = smoothstep(-0.5, -0.4, r);
+    let b = smoothstep(-0.3, -0.4, r);
 
     a.min(b)
 }
@@ -176,9 +175,11 @@ fn populate_chunk(
                 ));
             }
 
-            let mut meteorite_r = meteorite_distribution(r);
-            meteorite_r -= rand::random::<f32>() * 0.5;
-            if meteorite_r > METEORITE_THRESHOLD {
+            let meteorite_r = meteorite_distribution(r);
+            if meteorite_r > 0.90 {
+                if rand::random::<f32>() < 0.99 {
+                    continue;
+                }
                 let pos = cell_pos
                     + Vec2::new(rand::random::<f32>(), rand::random::<f32>()) * CHUNK_SIZE
                         / CHUNK_SUBDIV as f32;
