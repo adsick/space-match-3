@@ -42,9 +42,9 @@ impl FromWorld for OrbAssets {
         }));
 
         orb_materials.push(assets.add(StandardMaterial {
-            base_color: RED.with_alpha(0.5).into(),
+            base_color: RED.with_alpha(0.7).into(),
             alpha_mode: AlphaMode::Blend,
-            emissive: (RED * 0.3).mix(&GOLD, 0.3).into(),
+            emissive: (RED * 0.5).mix(&GOLD, 0.3).into(),
             ..Default::default()
         }));
 
