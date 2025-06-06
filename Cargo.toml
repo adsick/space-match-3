@@ -26,6 +26,7 @@ bevy_vector_shapes = "0.10.0"
 bevy_framepace = "0.19.1"
 iyes_perf_ui = "0.5.0"
 bevy_spatial = { version = "0.11.0", default-features = false }
+bevy_tweening = "0.13.0"
 
 # Your web builds will start failing if you add a dependency that pulls in `getrandom` v0.3+.
 # To fix this, you should tell `getrandom` to use the `wasm_js` backend on Wasm.

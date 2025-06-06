@@ -6,6 +6,7 @@
 mod asset_tracking;
 mod audio;
 // #[cfg(feature = "dev")]
+mod asteroids;
 mod dev_tools;
 mod gas;
 mod menus;
@@ -14,13 +15,15 @@ mod screens;
 mod space;
 mod theme;
 
+use asteroids::AsteroidMaterial;
 use avian2d::prelude::*;
 use bevy::{
     asset::AssetMetaCheck, color::palettes::css::WHITE, core_pipeline::bloom::Bloom,
-    diagnostic::FrameTimeDiagnosticsPlugin, prelude::*,
+    diagnostic::FrameTimeDiagnosticsPlugin, pbr::ExtendedMaterial, prelude::*,
 };
 use bevy_framepace::FramepacePlugin;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
+use bevy_tweening::TweeningPlugin;
 use bevy_vector_shapes::Shape2dPlugin;
 
 fn main() -> AppExit {
@@ -56,6 +59,7 @@ impl Plugin for AppPlugin {
             },
             FramepacePlugin,
             Shape2dPlugin::default(), // bevy_vector_shapes
+            TweeningPlugin,
         ));
 
         // Add other plugins.
@@ -64,6 +68,7 @@ impl Plugin for AppPlugin {
             audio::plugin,
             // #[cfg(feature = "dev")]
             dev_tools::plugin,
+            asteroids::plugin,
             menus::plugin,
             screens::plugin,
             theme::plugin,

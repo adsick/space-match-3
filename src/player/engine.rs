@@ -1,18 +1,24 @@
-use std::{collections::VecDeque, time::Duration};
+use std::collections::VecDeque;
 
-use avian2d::prelude::LinearVelocity;
 use bevy::{
     color::{
-        palettes::{css::{PURPLE, RED}, tailwind::{PURPLE_800, RED_300, RED_400, RED_500}}, ColorToComponents
+        ColorToComponents,
+        palettes::{
+            css::{PURPLE, RED},
+            tailwind::RED_500,
+        },
     },
     math::{UVec4, Vec2, Vec2Swizzles, Vec3, Vec3Swizzles, Vec4, VectorSpace},
     pbr::{ExtendedMaterial, MaterialExtension, MaterialPlugin, MeshMaterial3d, StandardMaterial},
-    prelude::{AlphaMode, Changed, Commands, Component, GlobalTransform, Local, Mesh, Mesh3d, OnAdd, Query, Rectangle, Res, ResMut, Single, Transform, Trigger, With, *},
+    prelude::{
+        AlphaMode, Changed, Commands, Component, GlobalTransform, Local, Mesh, Mesh3d, OnAdd,
+        Query, Rectangle, Res, ResMut, Single, Trigger, With, *,
+    },
     reflect::Reflect,
     render::render_resource::{AsBindGroup, ShaderRef},
 };
 
-use crate::player::{Player, movement::CurrentGas};
+use crate::player::movement::CurrentGas;
 
 const FIRE_SHADER_PATH: &str = "shaders/rocket_fire.wgsl";
 const NOF_PARTICLES: usize = 20;
@@ -164,11 +170,7 @@ fn update_shader_params(
         let ship_velocity = (curr_position - *prev_position) / 0.03;
         *prev_position = curr_position;
 
-        let new_particle = (
-            curr_position,
-            flame_dir.xy() * 100.0 + ship_velocity,
-            // flame_dir.xy() * fire_params.power,
-        );
+        let new_particle = (curr_position, flame_dir.xy() * 100.0 + ship_velocity);
         particles_queue.push_front(new_particle);
 
         if particles_queue.len() >= NOF_PARTICLES {
@@ -179,7 +181,8 @@ fn update_shader_params(
     }
 
     for (pos, vel) in &mut particles_queue {
-        *pos += *vel * td * 0.9;
+        *pos += *vel * td;
+        *vel *= 0.9;
     }
 
     for (i, (pos, _)) in particles_queue.iter().enumerate() {

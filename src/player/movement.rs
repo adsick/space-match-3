@@ -7,7 +7,7 @@ use bevy::prelude::*;
 use crate::PausableSystems;
 use crate::gas::pickup_gas;
 use crate::screens::Screen;
-use crate::space::GasGenerator;
+use crate::space::{GasGenerator, orb_explosion::OrbExplosion};
 
 use super::Player;
 
@@ -44,7 +44,9 @@ fn thrust(
             &mut ExternalForce,
             &mut ExternalTorque,
             &mut CurrentGas,
+            &Transform,
             &Rotation,
+            &LinearVelocity,
             &MovementAcceleration,
             &RotationSpeed,
             &GasBoost,
@@ -52,23 +54,34 @@ fn thrust(
         With<Player>,
     >,
     time: Res<Time>,
-    // gas_orb_query: Query<(Entity, &Transform), With<GasOrb>>,
-    // diagnostics: Res<DiagnosticsStore>,
+    gas: Res<GasGenerator>,
+    mut expl_ev: EventWriter<OrbExplosion>, // gas_orb_query: Query<(Entity, &Transform), With<GasOrb>>,
+                                            // diagnostics: Res<DiagnosticsStore>,
 ) {
     let left = keyboard_input.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]);
     let right = keyboard_input.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]);
     let brake = keyboard_input.pressed(KeyCode::Space);
 
-    let (mut force, mut torque, mut current_gas, rotation, acceleration, rotation_speed, gas_boost) =
-        player_query.into_inner();
+    let (
+        mut force,
+        mut torque,
+        mut current_gas,
+        transform,
+        rotation,
+        velocity,
+        acceleration,
+        rotation_speed,
+        gas_boost,
+    ) = player_query.into_inner();
 
     force.persistent = false;
     torque.persistent = false;
+    let tq = rotation_speed.0 / velocity.length().max(100.0);
     if left {
-        torque.apply_torque(**rotation_speed);
+        torque.apply_torque(tq);
     }
     if right {
-        torque.apply_torque(-**rotation_speed);
+        torque.apply_torque(-tq);
     }
 
     let forward_dir = rotation * Vec2::Y;
@@ -84,6 +97,33 @@ fn thrust(
     force.apply_force(thrust_force);
     force.apply_force(gas_boost_force); // TODO: test this properly
 
+    let gas_density = gas.sample(transform.translation.truncate());
+
+    if gas_density > 0.0 {
+        let player_pos = transform.translation.truncate();
+
+        expl_ev.write(OrbExplosion { pos: player_pos });
+    }
+
+    // velocity.0 += (thrust_force + gas_boost) * time.delta_secs();
+
+    // TODO: not framerate-independent
+    // let speed = velocity.0.length();
+    // debug!("{speed:.2}");
+
+    // we don't need additional speed limiting as avian's dampening will do it for us anyway
+    // if speed > **max_speed {
+    //     let fps = diagnostics
+    //         .get(&DiagnosticPath::const_new("fps"))
+    //         .and_then(|fps| fps.smoothed())
+    //         .unwrap_or(60.0);
+
+    //     Dir2::try_from(velocity.0)
+    //         .map(|dir| {
+    //             velocity.0 = velocity.lerp(dir * max_speed.0, time.delta_secs() * fps as f32 / 1000.0);
+    //         })
+    //         .ok();
+    // }
     current_gas.0 *= 0.01f32.powf(time.delta_secs());
 }
 
