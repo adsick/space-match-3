@@ -158,7 +158,7 @@ fn on_add_ship_asteroid_collider(
                     return;
                 };
 
-                println!("collision");
+                debug!("collision");
 
                 commands.entity(trigger.collider).despawn();
 
@@ -203,7 +203,7 @@ fn on_add_ship_asteroid_collider(
                 // let pressure_plate = trigger.target();
                 // let other_entity = trigger.collider;
                 // if player_query.contains(other_entity) {
-                //     println!("Player {other_entity} stepped on pressure plate {pressure_plate}");
+                //     debug!("Player {other_entity} stepped on pressure plate {pressure_plate}");
                 // }
             },
         );
