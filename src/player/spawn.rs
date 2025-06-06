@@ -2,7 +2,7 @@ use avian2d::prelude::*;
 use bevy::{color::palettes::css::VIOLET, prelude::*};
 
 use crate::{
-    meteorites::ShipMeteoriteCollider, player::movement::CurrentGas,
+    asteroids::ShipAsteroidCollider, player::movement::CurrentGas,
     screens::Screen,
 };
 
@@ -41,7 +41,7 @@ fn spawn_player_with_movement(
                 Name::new("Player"),
                 RigidBody::Dynamic,
                 Collider::circle(5.),
-                ShipMeteoriteCollider {},
+                ShipAsteroidCollider {},
                 LinearVelocity::ZERO,
                 AngularVelocity(0.0),
                 Mass(1.0),

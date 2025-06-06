@@ -8,7 +8,7 @@ use avian2d::parry::utils::hashmap::HashMap;
 use bevy::prelude::*;
 use noiz::{Noise, SampleableFor, prelude::common_noise::Perlin, rng::NoiseRng};
 
-use crate::{gas::GasOrb, meteorites::Meteorite, player::Player};
+use crate::{asteroids::Asteroid, gas::GasOrb, player::Player};
 
 pub mod orb_explosion;
 
@@ -35,6 +35,10 @@ pub const MAX_CLOUD_DENSITY: f32 = 0.03;
 pub const RENDER_DISTANCE: i32 = 12;
 pub const ORB_THRESHOLD: f32 = 0.1;
 pub const METEORITE_THRESHOLD: f32 = 0.99;
+
+const MIN_ASTEROID_SIZE: f32 = 10.0;
+const ASTEROID_SIZE_VARIATION: f32 = 15.0;
+const ASTEROID_CLOUD_Z_SCALE: f32 = 10.0;
 
 pub const MIN_ORB_SIZE: f32 = 0.4;
 pub const ORB_SCALE: f32 = 4.0;
@@ -174,9 +178,12 @@ fn populate_chunk(
                     + Vec2::new(rand::random::<f32>(), rand::random::<f32>()) * CHUNK_SIZE
                         / CHUNK_SUBDIV as f32;
 
+                let r = rand::random::<f32>();
+                let asteroid_size = MIN_ASTEROID_SIZE + ASTEROID_SIZE_VARIATION * r;
                 cmds.spawn((
-                    Meteorite {
-                        pos,
+                    Asteroid {
+                        pos: pos.extend((rand::random::<f32>() - 0.5) * ASTEROID_CLOUD_Z_SCALE),
+                        radius: asteroid_size,
                     },
                     ChildOf(trigger.target()),
                 ));
