@@ -1,10 +1,7 @@
 use avian2d::prelude::*;
 use bevy::{color::palettes::css::VIOLET, prelude::*};
 
-use crate::{
-    asteroids::ShipAsteroidCollider, player::movement::CurrentGas,
-    screens::Screen,
-};
+use crate::{asteroids::ShipAsteroidCollider, player::movement::CurrentGas, screens::Screen};
 
 use super::{
     Player,
@@ -54,6 +51,13 @@ fn spawn_player_with_movement(
                 RotationSpeed(2000.0),
             ),
             (
+                PointLight {
+                    color: VIOLET.into(),
+                    intensity: 1000000000.,
+                    range: 400.,
+
+                    ..default()
+                },
                 Mesh3d(player_assets.ship.clone()),
                 MeshMaterial3d(materials.add(StandardMaterial {
                     base_color: VIOLET.into(),

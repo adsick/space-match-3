@@ -98,7 +98,7 @@ fn on_add_fire(
         Mesh3d(meshes.add(Rectangle::from_length(2000.))),
         MeshMaterial3d(explosion_materials.add(ExtendedMaterial {
             base: StandardMaterial {
-                alpha_mode: AlphaMode::Blend,
+                alpha_mode: AlphaMode::Multiply,
                 ..Default::default()
             },
             extension: FireMaterialExtension::default(),
