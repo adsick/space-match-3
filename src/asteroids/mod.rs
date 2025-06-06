@@ -106,16 +106,17 @@ fn on_add_asteroid(
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct StandardMaterialColorLens {
-    /// Start color.
-    pub start: Color,
-    /// End color.
-    pub end: Color,
+    pub color_start: Color,
+    pub color_end: Color,
+
+    pub emissive_start: Color,
+    pub emissive_end: Color,
 }
 
 impl Lens<StandardMaterial> for StandardMaterialColorLens {
     fn lerp(&mut self, target: &mut dyn Targetable<StandardMaterial>, ratio: f32) {
-        target.base_color = self.start.mix(&self.end, ratio);
-        target.emissive = self.start.mix(&self.end, ratio).into();
+        target.base_color = self.color_start.mix(&self.color_end, ratio);
+        target.emissive = self.emissive_start.mix(&self.emissive_end, ratio).into();
     }
 }
 
@@ -176,26 +177,26 @@ fn on_add_ship_asteroid_collider(
                             asteroid.radius,
                             Srgba::new(1.0, 0.7, 0.7, 1.0),
                             Srgba::new(1.0, 0.1, 0.1, 0.0),
-                            Duration::from_millis(600),
+                            Duration::from_millis(1200),
                         );
                         spawn_animated_explosion(
                             builder,
                             &mut meshes,
                             &mut materials,
-                            asteroid.radius * 0.6,
+                            asteroid.radius * 0.5,
                             Srgba::new(1.0, 0.7, 0.7, 1.0),
                             Srgba::new(1.0, 0.7, 0.7, 0.0),
-                            Duration::from_millis(500),
+                            Duration::from_millis(900),
                         );
 
                         spawn_animated_explosion(
                             builder,
                             &mut meshes,
                             &mut materials,
-                            asteroid.radius * 0.3,
+                            asteroid.radius * 0.2,
                             Srgba::new(1.0, 0.7, 0.7, 1.0),
                             Srgba::new(1.0, 0.9, 0.9, 0.6),
-                            Duration::from_millis(300),
+                            Duration::from_millis(700),
                         )
                     });
 
@@ -232,8 +233,8 @@ fn spawn_animated_explosion(
             EaseFunction::QuinticOut,
             duration,
             TransformScaleLens {
-                start: Vec3::splat(0.5),
-                end: Vec3::splat(3.5),
+                start: Vec3::splat(1.0),
+                end: Vec3::splat(5.5),
             },
         ),
     ]);
@@ -244,7 +245,7 @@ fn spawn_animated_explosion(
         PointLightLens {
             color_start: color_start.into(),
             color_end: color_end.into(),
-            intensity_start: 1000000000000.,
+            intensity_start: 10000000000000.,
             intensity_end: 0.,
         },
     )
@@ -254,8 +255,10 @@ fn spawn_animated_explosion(
         EaseFunction::QuinticOut,
         duration,
         StandardMaterialColorLens {
-            start: color_start.into(),
-            end: color_end.into(),
+            color_start: color_start.into(),
+            color_end: color_end.into(),
+            emissive_start: (color_start * 10.).into(),
+            emissive_end: (color_end * 10.).into(),
         },
     )
     .with_completed_event(0);
@@ -267,13 +270,12 @@ fn spawn_animated_explosion(
             AssetAnimator::new(color_tween),
             Mesh3d(meshes.add(sphere)),
             MeshMaterial3d(materials.add(StandardMaterial {
-                base_color: color_start.into(),
                 alpha_mode: AlphaMode::Blend,
-                emissive: color_start.into(),
                 ..Default::default()
             })),
             PointLight {
                 color: color_start.into(),
+                radius: 1000.,
                 ..default()
             },
         ))
