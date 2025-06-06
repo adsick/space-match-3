@@ -1,8 +1,6 @@
 use std::time::Duration;
 
-use avian2d::prelude::{
-    Collider, CollisionEventsEnabled, OnCollisionStart, RigidBody,
-};
+use avian2d::prelude::{Collider, CollisionEventsEnabled, OnCollisionStart, Physics, RigidBody};
 use bevy::{
     app::App,
     asset::Assets,
@@ -20,8 +18,8 @@ use bevy::{
     },
 };
 use bevy_tweening::{
-    AnimationSystem, Animator, AssetAnimator, Lens,
-    Targetable, Tracks, Tween, TweenCompleted, asset_animator_system, component_animator_system,
+    AnimationSystem, Animator, AssetAnimator, Lens, Targetable, Tracks, Tween, TweenCompleted,
+    asset_animator_system, component_animator_system,
     lens::{TransformRotationLens, TransformScaleLens},
 };
 
