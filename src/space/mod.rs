@@ -148,8 +148,6 @@ fn populate_chunk(
     // Calculate how many subdivisions along each axis is required to get the desired maximum cloud density.
     const CHUNK_SUBDIV: usize = ((MAX_CLOUD_DENSITY * CHUNK_SIZE * CHUNK_SIZE) as usize).isqrt();
 
-    // let inst = Instant::now(); // ! panic on wasm
-
     for y in 0..CHUNK_SUBDIV {
         for x in 0..CHUNK_SUBDIV {
             let cell_pos = trigger.0.as_vec2() * CHUNK_SIZE
@@ -195,11 +193,6 @@ fn populate_chunk(
             }
         }
     }
-
-    // cmds.entity(trigger.target())
-    //     .insert(Children::spawn(SpawnIter(entities.into_iter())));
-
-    // let t = inst.elapsed();
 
     // debug!("chunk generation took {t:.2?}");
 

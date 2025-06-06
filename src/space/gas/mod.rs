@@ -6,7 +6,10 @@ use bevy_spatial::{
 };
 
 use crate::{
-    PausableSystems, player::movement::CurrentGas, screens::Screen, space::gas::assets::OrbAssets,
+    PausableSystems,
+    player::movement::CurrentGas,
+    screens::Screen,
+    space::gas::{assets::OrbAssets, burn::OrbExplosion},
 };
 
 pub mod assets;
@@ -26,7 +29,7 @@ pub(super) fn plugin(app: &mut App) {
     .add_observer(setup)
     .add_systems(
         Update,
-        pickup_gas
+        ignite_gas
             .before(propagate_explosion)
             .run_if(in_state(Screen::Gameplay))
             .in_set(PausableSystems),
@@ -53,12 +56,12 @@ fn setup(trigger: Trigger<OnAdd, GasOrb>, mut cmds: Commands, gas_assets: Res<Or
     ));
 }
 
-pub fn pickup_gas(
-    cmds: Commands,
+// we can accelerate right here I guess... no need we already run before thrust. maybe pipe them then?
+pub fn ignite_gas(
     q_orbs: Query<&GasOrb>,
     q_ship: Single<(&Transform, &mut CurrentGas)>,
     tree: Res<KDTree2<GasOrb>>,
-    time: Res<Time>,
+    mut ignite_gas_tx: EventWriter<OrbExplosion>,
 ) {
     let (ship_tr, mut gas) = q_ship.into_inner();
 
@@ -67,18 +70,28 @@ pub fn pickup_gas(
 
     let mut total_gas = 0.0;
 
+    let mut count = 0;
     // this code is responsible for detecting gas that is behind the ship
-    for (orb_pos, e) in tree.within_distance(ship_tr_2d, 10.0) {
+    for (orb_pos, e) in tree.within_distance(ship_tr_2d, 20.0) {
         let k = (orb_pos - ship_tr_2d)
             .normalize()
             .dot(backward)
             .clamp(0.0, 1.0);
         if let Some(e) = e {
+            count += 1;
             q_orbs.get(e).map(|g| total_gas += k * g.0).ok();
         }
     }
 
-    debug!("{total_gas}");
+    if total_gas > 0.0 {
+        ignite_gas_tx.write(OrbExplosion {
+            pos: ship_tr_2d + 10.0 * backward,
+        });
+    }
+
+    if count > 0 {
+        debug!("count: {count}, gas: {total_gas:.2}");
+    }
 
     gas.0 = (gas.0 + total_gas).min(1.0);
 }

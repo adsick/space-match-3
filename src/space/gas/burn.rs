@@ -12,7 +12,7 @@ use bevy_spatial::{SpatialAccess, kdtree::KDTree2};
 use crate::{
     PausableSystems,
     screens::Screen,
-    space::gas::{BurningGasOrb, assets::OrbAssets, pickup_gas},
+    space::gas::{BurningGasOrb, assets::OrbAssets, ignite_gas},
 };
 
 use super::GasOrb;
@@ -22,7 +22,7 @@ pub fn plugin(app: &mut App) {
         .configure_sets(
             Update,
             UpdateGasSet
-                .after(pickup_gas)
+                .after(ignite_gas)
                 .run_if(in_state(Screen::Gameplay))
                 .in_set(PausableSystems),
         )

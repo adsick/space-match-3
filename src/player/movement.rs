@@ -7,8 +7,7 @@ use bevy::prelude::*;
 use crate::PausableSystems;
 use crate::screens::Screen;
 use crate::space::GasGenerator;
-use crate::space::gas::burn::OrbExplosion;
-use crate::space::gas::pickup_gas;
+use crate::space::gas::ignite_gas;
 
 use super::Player;
 
@@ -31,7 +30,7 @@ pub(super) fn plugin(app: &mut App) {
         .register_type::<CurrentGas>()
         .add_systems(
             Update,
-            (thrust.after(pickup_gas), glide)
+            (thrust.after(ignite_gas), glide)
                 .run_if(in_state(Screen::Gameplay))
                 .in_set(PausableSystems),
         );
@@ -55,8 +54,6 @@ fn thrust(
         With<Player>,
     >,
     time: Res<Time<Physics>>,
-    gas: Res<GasGenerator>,
-    mut expl_ev: EventWriter<OrbExplosion>,
 ) {
     let left = keyboard_input.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]);
     let right = keyboard_input.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]);
@@ -97,13 +94,6 @@ fn thrust(
     force.apply_force(thrust_force);
     force.apply_force(gas_boost_force); // TODO: test this properly
 
-    let gas_density = gas.sample(transform.translation.truncate());
-
-    if gas_density > 0.0 {
-        let player_pos = transform.translation.truncate();
-
-        expl_ev.write(OrbExplosion { pos: player_pos });
-    }
     current_gas.0 *= 0.01f32.powf(time.delta_secs());
 }
 
