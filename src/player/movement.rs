@@ -53,7 +53,7 @@ fn thrust(
         ),
         With<Player>,
     >,
-    time: Res<Time>,
+    time: Res<Time<Physics>>,
     gas: Res<GasGenerator>,
     mut expl_ev: EventWriter<OrbExplosion>, // gas_orb_query: Query<(Entity, &Transform), With<GasOrb>>,
                                             // diagnostics: Res<DiagnosticsStore>,

@@ -1,4 +1,4 @@
-use avian2d::prelude::LinearVelocity;
+use avian2d::prelude::{LinearVelocity, Physics, PhysicsTime};
 use bevy::{ecs::query::QueryFilter, prelude::*};
 
 pub mod assets;
@@ -13,7 +13,7 @@ pub(super) fn plugin(app: &mut App) {
         assets::plugin,
         engine::plugin,
     ))
-    .add_systems(Update, camera_follow_player);
+    .add_systems(Update, (camera_follow_player, bullet_time));
 }
 
 #[derive(Component, QueryFilter)]
@@ -44,4 +44,12 @@ fn camera_follow_player(
     // cam_transform.translation.y += -vel_len / 4.0;
 
     // cam_transform.rotation = Quat::from_rotation_x(vel_len / 70.0);
+}
+
+fn bullet_time(keys: Res<ButtonInput<KeyCode>>, mut time: ResMut<Time<Physics>>) {
+    if keys.pressed(KeyCode::Tab) {
+        time.set_relative_speed(0.25);
+    } else {
+        time.set_relative_speed(1.0);
+    }
 }

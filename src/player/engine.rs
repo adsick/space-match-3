@@ -1,5 +1,6 @@
 use std::collections::VecDeque;
 
+use avian2d::prelude::Physics;
 use bevy::{
     color::{
         ColorToComponents,
@@ -150,7 +151,7 @@ fn update_shader_params(
     mut last_particle_spawned: Local<u128>,
     mut prev_position: Local<Option<Vec2>>,
 
-    time: Res<Time>,
+    time: Res<Time<Physics>>,
 ) {
     let Some(fire_material) = materials.get_mut(*fire_material) else {
         return;

@@ -70,7 +70,7 @@ features = ["bevy_spatial/default"]
 [package.metadata.bevy_cli.web]
 # Disable native features for web builds.
 default-features = false
-features = ["bevy_spatial/kdtree"]
+features = ["bevy_spatial/kdtree"] # TODO: add bevy/webgpu for better web perf (doesn't work for me)
 
 [package.metadata.bevy_cli.web.dev]
 features = ["dev"]

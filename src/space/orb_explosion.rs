@@ -1,5 +1,6 @@
 use std::collections::VecDeque;
 
+use avian2d::prelude::Physics;
 use bevy::{
     app::{App, Update},
     math::Vec2,
@@ -56,7 +57,7 @@ pub fn propagate_explosion(
     mut commands: Commands,
     tree: Res<KDTree2<GasOrb>>,
 
-    time: Res<Time>,
+    time: Res<Time<Physics>>,
     mut explosion_queue: Local<VecDeque<OrbExplosionCell>>,
 ) {
     let curr_time = time.elapsed().as_millis() as u32;
@@ -151,9 +152,10 @@ fn update_burning_orbs(
         &BurningGasOrb,
     )>,
     orb_assets: Res<OrbAssets>,
-    time: Res<Time>,
+    time: Res<Time<Physics>>,
 ) {
     let ct = time.elapsed().as_millis() as u32;
+    let delta = time.delta_secs();
 
     orb_q.par_iter_mut().for_each(|(mut tr, mut mat, time)| {
         let dt = ct - time.0;
@@ -162,11 +164,13 @@ fn update_burning_orbs(
             mat.0 = orb_assets.orb_materials[3].clone();
         } else if dt > BURN_TIME {
             mat.0 = orb_assets.orb_materials[2].clone();
-            tr.scale *= 0.996;
+            tr.scale = tr.scale.lerp(tr.scale * 0.996, 60.0 * delta);
         } else {
             mat.0 = orb_assets.orb_materials[1].clone();
-            tr.scale *= 1.011;
-            tr.scale = tr.scale.min(Vec3::splat(100.0))
+            tr.scale = tr
+                .scale
+                .lerp(tr.scale * 1.011, 60.0 * delta)
+                .min(Vec3::splat(100.0));
         }
     });
 }
@@ -174,7 +178,7 @@ fn update_burning_orbs(
 // reference
 fn animate_materials(
     material_handles: Query<&MeshMaterial3d<StandardMaterial>>,
-    time: Res<Time>,
+    time: Res<Time<Physics>>, // * physics time if bullet-time is gonna slow this down too, otherwise normal time
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     for material_handle in material_handles.iter() {
