@@ -25,7 +25,7 @@ pub struct GasBoost(pub Scalar);
 pub struct CurrentGas(pub Scalar);
 
 pub const GLIDE_FORCE: f32 = 80.0;
-pub const DRAG_FORCE: f32 = 0.3;
+// pub const DRAG_FORCE: f32 = 0.05;
 pub const SPEED_LOCK_IN: f32 = 20.0;
 
 pub(super) fn plugin(app: &mut App) {
@@ -137,15 +137,15 @@ fn glide(
     let forward = ship_tr.up().truncate();
     let ship_pos = ship_tr.translation.truncate();
 
-    let side_vel = linvel.0 - linvel.0.project_onto(forward);
+    // let side_vel = linvel.0 - linvel.0.project_onto(forward);
 
-    let amount = gas.sample(ship_pos).clamp(0.0, 1.0);
+    let amount = gas.sample(ship_pos).clamp(0.0, 1.0) + 0.3;
 
-    let drag = -side_vel * amount * DRAG_FORCE;
+    // let drag = -side_vel * amount * DRAG_FORCE;
     let glide = (forward - forward.project_onto(linvel.0)) * amount * GLIDE_FORCE; // basically we want to rotate the linvel by applying a perpendicular force...
 
-    gizmos.ray_2d(ship_pos, drag * 1.0, RED);
+    // gizmos.ray_2d(ship_pos, drag * 1.0, RED);
     gizmos.ray_2d(ship_pos, glide * 1.0, GREEN_YELLOW);
 
-    force.apply_force(drag + glide);
+    force.apply_force(glide);
 }

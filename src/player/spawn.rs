@@ -36,7 +36,7 @@ fn spawn_player(
                 Mass(1.0),
                 AngularInertia(1.0),
                 MovementAcceleration(20.0),
-                GasBoost(30.0),
+                GasBoost(10.0),
                 CurrentGas(1.0),
                 AngularDamping(10.0),
                 LinearDamping(0.2),
