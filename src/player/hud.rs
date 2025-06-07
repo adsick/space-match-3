@@ -18,7 +18,7 @@ fn setup_hud(mut commands: Commands) {
             ..default()
         },
         children![(
-            widget::label("Score: "),
+            widget::label("Score:\nAura:"),
             Node {
                 left: Val::Px(10.0),
                 top: Val::Px(10.0),
@@ -32,8 +32,8 @@ fn setup_hud(mut commands: Commands) {
 
 fn update_hud(player: Single<&Player>, mut text: Single<&mut Text, With<HudScores>>) {
     text.0 = format!(
-        "Score: {}\nStyle Points: {}",
-        player.score as u32, player.style_points
+        "Score: {}\nAura: {}",
+        player.score as i32, player.aura_points as i32
     );
 }
 

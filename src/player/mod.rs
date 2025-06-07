@@ -29,12 +29,13 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Player {
     pub score: f32,                      // given based on survival time
-    pub style_points: u32, // given based on style (flying by objects at high speeds, etc.) // * maybe change this to a float too
+    pub aura_points: f32, // given based on style (flying by objects at high speeds, etc.) // * maybe change this to a float too
     pub bullet_time_until: f32, // seconds
     pub bullet_time_cooldown_until: f32, // seconds
+    pub near_asteroids: bool,
 }
 
 // TODO: ensure it runs in the right schedule
@@ -88,12 +89,12 @@ fn go_into_bullet_time(
 
     if rt < player.bullet_time_until
         || rt < player.bullet_time_cooldown_until
-        || player.style_points < 1000
+        || player.aura_points < 1000.0
     {
         return;
     }
     physics_time.set_relative_speed(0.25);
     player.bullet_time_until = rt + BULLET_TIME_DURATION;
     player.bullet_time_cooldown_until = rt + BULLET_TIME_DURATION + BULLET_TIME_COOLDOWN;
-    player.style_points -= 1000;
+    player.aura_points -= 1000.0
 }

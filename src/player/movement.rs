@@ -84,12 +84,13 @@ fn thrust(
     ) = player_query.into_inner();
 
     player.score += velocity.length() * time.delta_secs() / 250.0;
+    player.aura_points += 100.0 * time.delta_secs() * player.near_asteroids as u32 as f32; // boolean to binary
 
     force.persistent = false;
     torque.persistent = false;
 
     let speed_sqrt = velocity.length().sqrt();
-    debug!("sqrt(speed) = {speed_sqrt:.2}", );
+    debug!("sqrt(speed) = {speed_sqrt:.2}",);
     let tq = rotation_speed.0 / speed_sqrt.max(SPEED_LOCK_IN);
     if left && controlls.enabled {
         torque.apply_torque(tq);

@@ -24,7 +24,7 @@ use bevy_tweening::{
 };
 
 use crate::utils::{PointLightLens, StandardMaterialLens};
-use crate::CameraShake;
+use crate::{CameraShake, player::Player};
 
 const ASTEROID_SHADER_PATH: &str = "shaders/asteroid.wgsl";
 
@@ -96,7 +96,6 @@ fn on_add_asteroid(
     ));
 }
 
-
 fn on_add_ship_asteroid_collider(
     trigger: Trigger<OnAdd, ShipAsteroidCollider>,
     mut commands: Commands,
@@ -109,6 +108,7 @@ fn on_add_ship_asteroid_collider(
         .observe(
             |trigger: Trigger<OnCollisionStart>,
              mut commands: Commands,
+             mut player: Single<&mut Player>,
              asteroids: Query<(&Asteroid, &Transform)>,
 
              mut meshes: ResMut<Assets<Mesh>>,
@@ -124,6 +124,9 @@ fn on_add_ship_asteroid_collider(
                 debug!("collision");
 
                 commands.entity(trigger.collider).despawn();
+
+                player.aura_points -= 1000.0;
+                player.near_asteroids = false;
 
                 // tween.with_completed
 
