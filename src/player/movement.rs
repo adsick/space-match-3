@@ -1,5 +1,6 @@
 use avian2d::math::Scalar;
 use avian2d::prelude::*;
+use bevy::color::palettes::css::{GREEN_YELLOW, RED};
 use bevy::prelude::*;
 
 // use bevy::diagnostic::{DiagnosticPath, DiagnosticsStore};
@@ -23,6 +24,9 @@ pub struct GasBoost(pub Scalar);
 #[derive(Component, Deref, DerefMut, Reflect)]
 pub struct CurrentGas(pub Scalar);
 
+pub const GLIDE_FORCE: f32 = 30.0;
+pub const DRAG_FORCE: f32 = 0.5;
+
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<MovementAcceleration>()
         .register_type::<RotationSpeed>()
@@ -44,7 +48,6 @@ fn thrust(
             &mut ExternalForce,
             &mut ExternalTorque,
             &mut CurrentGas,
-            &Transform,
             &Rotation,
             &LinearVelocity,
             &MovementAcceleration,
@@ -63,7 +66,6 @@ fn thrust(
         mut force,
         mut torque,
         mut current_gas,
-        transform,
         rotation,
         velocity,
         acceleration,
@@ -94,31 +96,30 @@ fn thrust(
     force.apply_force(thrust_force);
     force.apply_force(gas_boost_force); // TODO: test this properly
 
+    let before = current_gas.0;
     current_gas.0 *= 0.01f32.powf(time.delta_secs());
+    debug!("current_gas: {before:.2} -> {:.2}", current_gas.0);
 }
 
 fn glide(
     player_query: Single<(&LinearVelocity, &mut ExternalForce, &Transform), With<Player>>,
-    // mut gizmos: Gizmos,
+    mut gizmos: Gizmos,
     gas: Res<GasGenerator>,
 ) {
-    let (linvel, mut force, transform) = player_query.into_inner();
+    let (linvel, mut force, ship_tr) = player_query.into_inner();
 
-    let forward_dir = (transform.rotation * Vec3::Y).truncate();
+    let forward = ship_tr.up().truncate();
+    let ship_pos = ship_tr.translation.truncate();
 
-    let drag_angle = 1.0 - forward_dir.dot(linvel.normalize_or_zero()).abs();
+    let side_vel = linvel.0 - linvel.0.project_onto(forward);
 
-    let amount = gas.sample(transform.translation.truncate()).clamp(0.0, 1.0);
+    let amount = gas.sample(ship_pos).clamp(0.0, 1.0);
 
-    let drag_force = -linvel.0 * drag_angle * amount * 5.0;
-    let glide_force =
-        drag_force.length() * forward_dir.dot(linvel.normalize_or_zero()).signum() * forward_dir;
+    let drag = -side_vel * amount * DRAG_FORCE;
+    let glide = (forward - forward.project_onto(linvel.0)) * amount * GLIDE_FORCE; // basically we want to rotate the linvel by applying a perpendicular force...
 
-    // gizmos.ray_2d(
-    //     transform.translation.xy(),
-    //     (drag_force + glide_force) * 10.0,
-    //     bevy::color::palettes::css::LIGHT_CYAN,
-    // );
-    force.apply_force(drag_force);
-    force.apply_force(glide_force);
+    gizmos.ray_2d(ship_pos, drag * 5.0, RED);
+    gizmos.ray_2d(ship_pos, glide * 5.0, GREEN_YELLOW);
+
+    force.apply_force(drag + glide);
 }
