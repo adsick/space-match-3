@@ -21,6 +21,7 @@ fn spawn_player(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let transform = Transform::from_xyz(0.0, -1500.0, 0.0);
+
     commands.spawn((
         (
             Player {
@@ -33,6 +34,7 @@ fn spawn_player(
             RigidBody::Dynamic,
             Collider::circle(5.),
             ShipAsteroidCollider {},
+            // LinearVelocity(Vec2::ZERO),
             LinearVelocity(Vec2::new(0., 600.)),
             AngularVelocity(0.0),
             Mass(1.0),
@@ -46,6 +48,7 @@ fn spawn_player(
         ),
         (
             PlayerControls { enabled: true },
+            GravityScale(0.001),
             PointLight {
                 color: VIOLET.into(),
                 intensity: 1000000000.,
