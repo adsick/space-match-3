@@ -8,7 +8,9 @@ mod audio;
 // #[cfg(feature = "dev")]
 mod asteroids;
 mod dev_tools;
+mod explosive_gas;
 mod gas;
+mod intro_scene;
 mod menus;
 mod player;
 mod screens;
@@ -74,7 +76,9 @@ impl Plugin for AppPlugin {
             theme::plugin,
             player::plugin,
             space::plugin,
+            explosive_gas::plugin,
             gas::plugin,
+            intro_scene::plugin,
             FrameTimeDiagnosticsPlugin::default(),
         ));
 
