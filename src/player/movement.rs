@@ -41,7 +41,7 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 #[derive(Component)]
-pub struct PlayerControlls {
+pub struct PlayerControls {
     pub enabled: bool,
 }
 
@@ -50,6 +50,7 @@ fn thrust(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     player_query: Single<
         (
+            &mut Player,
             &mut ExternalForce,
             &mut ExternalTorque,
             &mut CurrentGas,
@@ -58,7 +59,7 @@ fn thrust(
             &MovementAcceleration,
             &RotationSpeed,
             &GasBoost,
-            &PlayerControlls,
+            &PlayerControls,
         ),
         With<Player>,
     >,
@@ -69,6 +70,7 @@ fn thrust(
     let brake = keyboard_input.pressed(KeyCode::KeyS);
 
     let (
+        mut player,
         mut force,
         mut torque,
         mut current_gas,
@@ -79,6 +81,8 @@ fn thrust(
         gas_boost,
         controlls,
     ) = player_query.into_inner();
+
+    player.score += velocity.length() * time.delta_secs() / 250.0;
 
     force.persistent = false;
     torque.persistent = false;

@@ -5,7 +5,7 @@ use bevy::{
 };
 
 use crate::{
-    player::{Player, movement::PlayerControlls},
+    player::{Player, movement::PlayerControls},
     screens::Screen,
 };
 
@@ -15,6 +15,6 @@ pub fn plugin(app: &mut App) {
 
 fn start_intro_scene(
     mut commands: Commands,
-    player: Query<(&Player, &LinearVelocity, &PlayerControlls)>,
+    player: Query<(&Player, &LinearVelocity, &PlayerControls)>,
 ) {
 }

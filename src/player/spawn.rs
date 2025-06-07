@@ -1,17 +1,13 @@
 use avian2d::prelude::*;
 use bevy::{color::palettes::css::VIOLET, prelude::*};
 
-use crate::{
-    asteroids::ShipAsteroidCollider,
-    player::{Powers, movement::CurrentGas},
-    screens::Screen,
-};
+use crate::{asteroids::ShipAsteroidCollider, player::movement::CurrentGas, screens::Screen};
 
 use super::{
     Player,
     assets::PlayerAssets,
     engine,
-    movement::{GasBoost, MovementAcceleration, PlayerControlls, RotationSpeed},
+    movement::{GasBoost, MovementAcceleration, PlayerControls, RotationSpeed},
 };
 
 pub(crate) fn plugin(app: &mut App) {
@@ -27,7 +23,12 @@ fn spawn_player(
     let transform = Transform::from_xyz(0.0, -1500.0, 0.0);
     commands.spawn((
         (
-            Player,
+            Player {
+                score: 0.0,
+                style_points: 0,
+                bullet_time_until: 0.0,
+                bullet_time_cooldown_until: 0.0,
+            },
             Name::new("Player"),
             RigidBody::Dynamic,
             Collider::circle(5.),
@@ -44,12 +45,7 @@ fn spawn_player(
             RotationSpeed(2000.0),
         ),
         (
-            PlayerControlls { enabled: true },
-            Powers {
-                style_points: 0,
-                bullet_time_until: 0.0,
-                bullet_time_cooldown_until: 0.0,
-            },
+            PlayerControls { enabled: true },
             PointLight {
                 color: VIOLET.into(),
                 intensity: 1000000000.,
