@@ -8,7 +8,7 @@ use bevy::{
             tailwind::{PURPLE_50, RED_300, RED_50, RED_500},
         }, ColorToComponents
     },
-    math::{UVec4, Vec2, Vec2Swizzles, Vec3, Vec3Swizzles, Vec4, VectorSpace},
+    math::{UVec4, Vec2, Vec3, Vec3Swizzles, Vec4, VectorSpace},
     pbr::{ExtendedMaterial, MaterialExtension, MaterialPlugin, MeshMaterial3d, StandardMaterial},
     prelude::{
         AlphaMode, Changed, Commands, Component, GlobalTransform, Local, Mesh, Mesh3d, OnAdd,
@@ -59,7 +59,7 @@ impl Default for FireMaterialExtension {
             center: Vec4::new(0.0, 0.0, 0.0, 0.0),
             nof_particles: UVec4::new(NOF_PARTICLES as u32, 0, 0, 0),
             particles: [Vec4::ZERO; 32],
-            dir: Vec3::Y.extend(0.0),
+            dir: Vec4::X,
             power: Vec4::new(1.0, 0., 0., 0.),
         }
     }

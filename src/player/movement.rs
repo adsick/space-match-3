@@ -66,7 +66,7 @@ fn thrust(
 ) {
     let left = keyboard_input.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]);
     let right = keyboard_input.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]);
-    let brake = keyboard_input.pressed(KeyCode::Space);
+    let brake = keyboard_input.pressed(KeyCode::KeyS);
 
     let (
         mut force,

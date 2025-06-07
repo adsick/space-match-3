@@ -1,5 +1,7 @@
 use avian2d::prelude::{LinearVelocity, Physics, PhysicsTime};
-use bevy::{ecs::query::QueryFilter, prelude::*};
+use bevy::{ecs::query::QueryFilter, input::common_conditions::input_just_pressed, prelude::*};
+
+use crate::screens::Screen;
 
 pub mod assets;
 pub mod engine;
@@ -13,7 +15,16 @@ pub(super) fn plugin(app: &mut App) {
         assets::plugin,
         engine::plugin,
     ))
-    .add_systems(Update, (camera_follow_player, bullet_time));
+    .add_systems(
+        Update,
+        (
+            camera_follow_player,
+            player_powers,
+            go_into_bullet_time
+                .run_if(input_just_pressed(KeyCode::Space))
+                .run_if(in_state(Screen::Gameplay)),
+        ),
+    );
 }
 
 #[derive(Component, QueryFilter)]
@@ -46,11 +57,43 @@ fn camera_follow_player(
 
     // cam_transform.rotation = Quat::from_rotation_x(vel_len / 70.0);
 }
+#[derive(Component)]
+pub struct Powers {
+    pub style_points: u32,
+    pub bullet_time_until: f32,          // seconds
+    pub bullet_time_cooldown_until: f32, // seconds
+}
 
-fn bullet_time(keys: Res<ButtonInput<KeyCode>>, mut time: ResMut<Time<Physics>>) {
-    if keys.pressed(KeyCode::Tab) {
-        time.set_relative_speed(0.25);
-    } else {
-        time.set_relative_speed(1.0);
+const BULLET_TIME_DURATION: f32 = 5.0;
+const BULLET_TIME_COOLDOWN: f32 = 15.0; // seconds
+
+fn player_powers(
+    powers: Single<&Powers, With<Player>>,
+    real_time: Res<Time>,
+    mut physics_time: ResMut<Time<Physics>>,
+) {
+    if real_time.elapsed_secs() > powers.bullet_time_until {
+        physics_time.set_relative_speed(1.0);
     }
+}
+
+fn go_into_bullet_time(
+    real_time: Res<Time>,
+    mut physics_time: ResMut<Time<Physics>>,
+    mut powers: Single<&mut Powers, With<Player>>,
+) {
+    // TODO: PLAY SOUND HERE
+
+    let rt = real_time.elapsed_secs();
+
+    if rt < powers.bullet_time_until
+        || rt < powers.bullet_time_cooldown_until
+        || powers.style_points < 1000
+    {
+        return;
+    }
+    physics_time.set_relative_speed(0.25);
+    powers.bullet_time_until = rt + BULLET_TIME_DURATION;
+    powers.bullet_time_cooldown_until = rt + BULLET_TIME_DURATION + BULLET_TIME_COOLDOWN;
+    powers.style_points -= 1000;
 }

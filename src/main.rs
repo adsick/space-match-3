@@ -20,7 +20,7 @@ mod utils;
 use avian2d::prelude::*;
 use bevy::{
     asset::AssetMetaCheck, color::palettes::css::WHITE, core_pipeline::bloom::Bloom,
-    diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, render::camera::SubCameraView,
+    diagnostic::FrameTimeDiagnosticsPlugin, prelude::*,
 };
 use bevy_framepace::FramepacePlugin;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
