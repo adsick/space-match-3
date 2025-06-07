@@ -7,7 +7,7 @@ use super::{
     Player,
     assets::PlayerAssets,
     engine,
-    movement::{GasBoost, MovementAcceleration, RotationSpeed},
+    movement::{GasBoost, MovementAcceleration, PlayerControlls, RotationSpeed},
 };
 
 pub(crate) fn plugin(app: &mut App) {
@@ -18,60 +18,51 @@ pub(crate) fn plugin(app: &mut App) {
 fn spawn_player(
     mut commands: Commands,
     player_assets: Res<PlayerAssets>,
-    materials: ResMut<Assets<StandardMaterial>>,
-) {
-    let transform = Transform::from_xyz(0.0, 0.0, 0.0);
-
-    spawn_player_with_movement(&mut commands, transform, player_assets, materials);
-}
-
-fn spawn_player_with_movement(
-    commands: &mut Commands,
-    transform: Transform,
-    player_assets: Res<PlayerAssets>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-) -> Entity {
-    commands
-        .spawn((
-            (
-                Player,
-                Name::new("Player"),
-                RigidBody::Dynamic,
-                Collider::circle(5.),
-                ShipAsteroidCollider {},
-                LinearVelocity::ZERO,
-                AngularVelocity(0.0),
-                Mass(1.0),
-                AngularInertia(1.0),
-                MovementAcceleration(20.0),
-                GasBoost(17.0),
-                CurrentGas(1.0),
-                AngularDamping(10.0),
-                LinearDamping(0.3),
-                RotationSpeed(2000.0),
-            ),
-            (
-                PointLight {
-                    color: VIOLET.into(),
-                    intensity: 1000000000.,
-                    range: 400.,
+) {
+    let transform = Transform::from_xyz(0.0, -1500.0, 0.0);
 
-                    ..default()
-                },
-                Mesh3d(player_assets.ship.clone()),
-                MeshMaterial3d(materials.add(StandardMaterial {
-                    base_color: VIOLET.into(),
-                    emissive: (VIOLET * 4.0).into(),
-                    ..Default::default()
-                })),
-                transform,
-                children![(engine::EngineFire {
-                    power: 0.5,
-                    color: Vec4::default()
-                },),],
-            ),
-        ))
-        .id()
+    commands.spawn((
+        (
+            Player,
+            Name::new("Player"),
+            RigidBody::Dynamic,
+            Collider::circle(5.),
+            ShipAsteroidCollider {},
+            // LinearVelocity(Vec2::ZERO),
+            LinearVelocity(Vec2::new(0., 600.)),
+            AngularVelocity(0.0),
+            Mass(1.0),
+            AngularInertia(1.0),
+            MovementAcceleration(20.0),
+            GasBoost(50.0),
+            CurrentGas(1.0),
+            AngularDamping(10.0),
+            LinearDamping(0.3),
+            RotationSpeed(2000.0),
+        ),
+        (
+            PlayerControlls { enabled: true },
+            PointLight {
+                color: VIOLET.into(),
+                intensity: 1000000000.,
+                range: 400.,
+
+                ..default()
+            },
+            Mesh3d(player_assets.ship.clone()),
+            MeshMaterial3d(materials.add(StandardMaterial {
+                base_color: VIOLET.into(),
+                emissive: (VIOLET * 4.0).into(),
+                ..Default::default()
+            })),
+            transform,
+            children![(engine::EngineFire {
+                power: 0.5,
+                color: Vec4::default()
+            },),],
+        ),
+    ));
 }
 
 fn despawn_player(mut commands: Commands, player_query: Single<Entity, With<Player>>) {

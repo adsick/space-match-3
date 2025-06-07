@@ -40,6 +40,11 @@ pub(super) fn plugin(app: &mut App) {
         );
 }
 
+#[derive(Component)]
+pub struct PlayerControlls {
+    pub enabled: bool,
+}
+
 // *maybe rename this function
 fn thrust(
     keyboard_input: Res<ButtonInput<KeyCode>>,
@@ -53,6 +58,7 @@ fn thrust(
             &MovementAcceleration,
             &RotationSpeed,
             &GasBoost,
+            &PlayerControlls,
         ),
         With<Player>,
     >,
@@ -71,15 +77,16 @@ fn thrust(
         acceleration,
         rotation_speed,
         gas_boost,
+        controlls,
     ) = player_query.into_inner();
 
     force.persistent = false;
     torque.persistent = false;
     let tq = rotation_speed.0 / velocity.length().max(100.0);
-    if left {
+    if left && controlls.enabled {
         torque.apply_torque(tq);
     }
-    if right {
+    if right && controlls.enabled {
         torque.apply_torque(-tq);
     }
 
@@ -87,7 +94,7 @@ fn thrust(
 
     let mut thrust_force = forward_dir * **acceleration;
 
-    if brake {
+    if brake && controlls.enabled {
         thrust_force *= 0.15;
     }
 

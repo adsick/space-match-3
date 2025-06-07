@@ -7,9 +7,10 @@
 
 use avian2d::parry::utils::hashmap::HashMap;
 use bevy::prelude::*;
+use gas::GasOrb;
 use noiz::{Noise, SampleableFor, prelude::common_noise::Perlin, rng::NoiseRng};
 
-use crate::{asteroids::Asteroid, player::Player, space::gas::GasOrb};
+use crate::{asteroids::Asteroid, red_gas::RedGasOrb, player::Player};
 
 pub mod gas;
 
@@ -40,6 +41,10 @@ const MIN_ASTEROID_SIZE: f32 = 20.0;
 const ASTEROID_SIZE_VARIATION: f32 = 25.0;
 const ASTEROID_CLOUD_Z_SCALE: f32 = 10.0;
 
+const MIN_EXPLOSIVE_ORB_SIZE: f32 = 2.0;
+const EXPLOSIVE_ORB_SIZE_VARIATION: f32 = 5.0;
+const EXPLOSIVE_ORB_CLOUD_Z_SCALE: f32 = 60.0;
+
 pub const MIN_ORB_SIZE: f32 = 0.4;
 pub const ORB_SCALE: f32 = 4.0;
 pub const CLOUD_Z_SCALE: f32 = 90.0;
@@ -62,16 +67,22 @@ impl GasGenerator {
     pub fn sample(&self, p: Vec2) -> f32 {
         // // No orbs should be spawned near the start (0, 0) in order to free up space for the intro
         // // scene.
-        // let dist_sq = p.length_squared();
-        // const START_RADIUS: f32 = 500.;
-        // const START_RADIUS_SQ: f32 = START_RADIUS * START_RADIUS;
-        // let start_mask = smoothstep(0., START_RADIUS_SQ, dist_sq);
+        let dist_sq = p.length_squared();
+        const START_RADIUS: f32 = 1000.;
+        const START_RADIUS_SQ: f32 = START_RADIUS * START_RADIUS;
+        let mut start_mask = smoothstep(0., START_RADIUS_SQ, dist_sq);
+        start_mask *= smoothstep(0., 10., p.y);
 
         let offset: Vec2 = Vec2::new(
             self.noise.sample(p * 2.0 + 100.0),
             self.noise.sample(p * 2.0 + 200.0),
         ) * 100.0;
-        self.noise.sample(p + offset)
+        let mut n = SampleableFor::<Vec2, f32>::sample(&self.noise, p + offset);
+        n *= start_mask;
+
+        let big_cloud = smoothstep(1.0, 0.5, dist_sq / START_RADIUS_SQ * 10.);
+
+        n + big_cloud
     }
 }
 
@@ -136,6 +147,13 @@ fn asteroid_distribution(r: f32) -> f32 {
     a.min(b)
 }
 
+fn explosive_orb_distribution(r: f32) -> f32 {
+    let a = smoothstep(0.3, 0.35, r);
+    let b = smoothstep(0.5, 0.35, r);
+
+    a.min(b)
+}
+
 /// Observer that populates a chunk with orb clouds.
 /// The chunk is first subdivided into `CHUNK_SUBDIV` parts along each axis,
 /// then each cell may spawn an orb depending on randomness and underlying space parameters.
@@ -187,6 +205,30 @@ fn populate_chunk(
                     Asteroid {
                         pos: pos.extend((rand::random::<f32>() - 0.5) * ASTEROID_CLOUD_Z_SCALE),
                         radius: asteroid_size,
+                    },
+                    ChildOf(trigger.target()),
+                ));
+            }
+
+            let explosive_orb_r = explosive_orb_distribution(r);
+
+            if explosive_orb_r > 0.70 {
+                if rand::random::<f32>() < 0.99 {
+                    continue;
+                }
+                let pos = cell_pos
+                    + Vec2::new(rand::random::<f32>(), rand::random::<f32>()) * CHUNK_SIZE
+                        / CHUNK_SUBDIV as f32;
+
+
+                let r = rand::random::<f32>();
+                let orb_size =
+                    MIN_EXPLOSIVE_ORB_SIZE + EXPLOSIVE_ORB_SIZE_VARIATION * r;
+                cmds.spawn((
+                    RedGasOrb {
+                        pos: pos
+                            .extend((rand::random::<f32>() - 0.5) * EXPLOSIVE_ORB_CLOUD_Z_SCALE),
+                        radius: orb_size,
                     },
                     ChildOf(trigger.target()),
                 ));

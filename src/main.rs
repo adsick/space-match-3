@@ -8,11 +8,14 @@ mod audio;
 // #[cfg(feature = "dev")]
 mod asteroids;
 mod dev_tools;
+mod intro_scene;
 mod menus;
 mod player;
+mod red_gas;
 mod screens;
 mod space;
 mod theme;
+mod utils;
 
 use avian2d::prelude::*;
 use bevy::{
@@ -73,6 +76,9 @@ impl Plugin for AppPlugin {
             theme::plugin,
             player::plugin,
             space::plugin,
+            red_gas::plugin,
+            utils::plugin,
+            intro_scene::plugin,
             FrameTimeDiagnosticsPlugin::default(),
         ));
 
@@ -158,6 +164,14 @@ fn spawn_camera(mut commands: Commands) {
         },
         Transform::default().looking_at(Vec3::new(0.0, 10.0, -2.0), Dir3::Y),
     ));
+}
+
+#[derive(PhysicsLayer, Default)]
+pub enum PhysicsLayers {
+    #[default]
+    Default,
+    RedOrbs,
+    RedOrbExplosions,
 }
 
 // TODO: move this somewhere else?
