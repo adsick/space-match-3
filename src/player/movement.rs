@@ -24,8 +24,9 @@ pub struct GasBoost(pub Scalar);
 #[derive(Component, Deref, DerefMut, Reflect)]
 pub struct CurrentGas(pub Scalar);
 
-pub const GLIDE_FORCE: f32 = 30.0;
-pub const DRAG_FORCE: f32 = 0.5;
+pub const GLIDE_FORCE: f32 = 80.0;
+pub const DRAG_FORCE: f32 = 0.3;
+pub const SPEED_LOCK_IN: f32 = 20.0;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<MovementAcceleration>()
@@ -86,7 +87,10 @@ fn thrust(
 
     force.persistent = false;
     torque.persistent = false;
-    let tq = rotation_speed.0 / velocity.length().max(100.0);
+
+    let speed_sqrt = velocity.length().sqrt();
+    debug!("sqrt(speed) = {speed_sqrt:.2}", );
+    let tq = rotation_speed.0 / speed_sqrt.max(SPEED_LOCK_IN);
     if left && controlls.enabled {
         torque.apply_torque(tq);
     }
@@ -105,7 +109,7 @@ fn thrust(
     let gas_boost_force = forward_dir * current_gas.0 * gas_boost.0;
 
     force.apply_force(thrust_force);
-    force.apply_force(gas_boost_force); // TODO: test this properly
+    force.apply_force(gas_boost_force);
 
     let before = current_gas.0;
     current_gas.0 *= 0.01f32.powf(time.delta_secs());
@@ -129,8 +133,8 @@ fn glide(
     let drag = -side_vel * amount * DRAG_FORCE;
     let glide = (forward - forward.project_onto(linvel.0)) * amount * GLIDE_FORCE; // basically we want to rotate the linvel by applying a perpendicular force...
 
-    gizmos.ray_2d(ship_pos, drag * 5.0, RED);
-    gizmos.ray_2d(ship_pos, glide * 5.0, GREEN_YELLOW);
+    gizmos.ray_2d(ship_pos, drag * 1.0, RED);
+    gizmos.ray_2d(ship_pos, glide * 1.0, GREEN_YELLOW);
 
     force.apply_force(drag + glide);
 }
