@@ -1,12 +1,13 @@
 use std::collections::VecDeque;
 
-use avian2d::prelude::Physics;
+use avian2d::prelude::{LinearVelocity, Physics, PhysicsSet};
 use bevy::{
     color::{
+        ColorToComponents,
         palettes::{
             css::{PURPLE, RED},
-            tailwind::{PURPLE_50, RED_300, RED_50, RED_500},
-        }, ColorToComponents
+            tailwind::{PURPLE_50, RED_50, RED_300, RED_500},
+        },
     },
     math::{UVec4, Vec2, Vec3, Vec3Swizzles, Vec4, VectorSpace},
     pbr::{ExtendedMaterial, MaterialExtension, MaterialPlugin, MeshMaterial3d, StandardMaterial},
@@ -18,7 +19,10 @@ use bevy::{
     render::render_resource::{AsBindGroup, ShaderRef},
 };
 
-use crate::player::movement::CurrentGas;
+use crate::player::{
+    Player, camera_follow_player,
+    movement::{CurrentGas, thrust},
+};
 
 const FIRE_SHADER_PATH: &str = "shaders/rocket_fire.wgsl";
 const NOF_PARTICLES: usize = 20;
@@ -134,11 +138,14 @@ fn update_engine_power(
         let Ok(current_gas) = ship_query.get(child_of.parent()) else {
             return;
         };
-        fire_params.color = ( Srgba::new(252. / 255., 10./255., 113. / 255., 1.0)  * 2.0 ).lerp(PURPLE * 2.0, current_gas.0).to_vec4();
+        fire_params.color = (Srgba::new(252. / 255., 10. / 255., 113. / 255., 1.0) * 2.0)
+            .lerp(PURPLE * 2.0, current_gas.0)
+            .to_vec4();
     }
 }
 
 fn update_shader_params(
+    ship: Single<&LinearVelocity, With<Player>>,
     fire: Single<(&GlobalTransform, &EngineFire)>,
     mut materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, FireMaterialExtension>>>,
     fire_material: Single<
@@ -148,7 +155,6 @@ fn update_shader_params(
 
     mut particles_queue: Local<VecDeque<(Vec2, Vec2)>>,
     mut last_particle_spawned: Local<u128>,
-    mut prev_position: Local<Option<Vec2>>,
 
     time: Res<Time<Physics>>,
 ) {
@@ -156,33 +162,32 @@ fn update_shader_params(
         return;
     };
 
-    let (ship_transform, fire_params) = *fire;
+    let (fire_tr, fire_params) = *fire;
+    let ship_velocity = ship.into_inner();
 
-    let flame_dir = ship_transform.rotation().mul_vec3(-Vec3::Y);
+    let flame_dir = fire_tr.down();
     let curr_time = time.elapsed().as_millis();
 
     let td = time.delta_secs();
 
-    let curr_position = ship_transform.translation().xy();
+    let origin = fire_tr.translation().xy();
 
-    if curr_time - *last_particle_spawned > 30 {
-        let prev_position = prev_position.get_or_insert(Vec2::ZERO);
-        let ship_velocity = (curr_position - *prev_position) / 0.03;
-        *prev_position = curr_position;
+    for (pos, vel) in &mut particles_queue {
+        *pos += *vel * td;
+        *vel *= 0.9;
+    }
 
-        let new_particle = (curr_position, flame_dir.xy() * 100.0 + ship_velocity);
+    // there is some kind of inconsistency going on which causes the start of the fire to flicker on turns.
+    // idk why is that happening.
+
+    if curr_time - *last_particle_spawned > 0 {
+        let new_particle = (origin, flame_dir.xy() * 100.0); // this particle velocity can be turned into a resource/component
         particles_queue.push_front(new_particle);
 
         if particles_queue.len() >= NOF_PARTICLES {
             particles_queue.pop_back();
         }
-
         *last_particle_spawned = curr_time;
-    }
-
-    for (pos, vel) in &mut particles_queue {
-        *pos += *vel * td;
-        *vel *= 0.9;
     }
 
     for (i, (pos, _)) in particles_queue.iter().enumerate() {
@@ -193,7 +198,7 @@ fn update_shader_params(
 
     fire_material.extension.dir = -flame_dir.extend(0.0);
 
-    fire_material.extension.center = curr_position.extend(0.0).extend(0.0);
+    fire_material.extension.center = origin.extend(0.0).extend(0.0);
 
     // let color = RED.lerp(PURPLE, fire_params.power);
     fire_material.extension.color = fire_params.color;

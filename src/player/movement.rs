@@ -47,7 +47,7 @@ pub struct PlayerControls {
 }
 
 // *maybe rename this function
-fn thrust(
+pub fn thrust(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     player_query: Single<
         (
