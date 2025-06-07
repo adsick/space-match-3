@@ -19,6 +19,7 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Component, QueryFilter)]
 pub struct Player;
 
+
 // TODO: ensure it runs in the right schedule
 fn camera_follow_player(
     q_camera: Single<&mut Transform, With<Camera>>,

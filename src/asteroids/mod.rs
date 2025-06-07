@@ -1,12 +1,10 @@
-use std::{process::Child, time::Duration};
+use std::time::Duration;
 
-use avian2d::prelude::{
-    Collider, CollisionEventsEnabled, CollisionLayers, OnCollisionStart, RigidBody,
-};
+use avian2d::prelude::{Collider, CollisionEventsEnabled, OnCollisionStart, Physics, RigidBody};
 use bevy::{
     app::App,
     asset::Assets,
-    color::palettes::css::{GOLD, GREEN, RED, WHEAT, WHITE},
+    color::palettes::css::WHITE,
     ecs::relationship::RelatedSpawnerCommands,
     math::{Quat, Vec3},
     pbr::{ExtendedMaterial, MaterialExtension, MeshMaterial3d, StandardMaterial},
@@ -20,10 +18,13 @@ use bevy::{
     },
 };
 use bevy_tweening::{
-    AnimationSystem, Animator, AssetAnimator, BoxedTweenable, Lens, RepeatCount, RepeatStrategy,
-    Targetable, Tracks, Tween, TweenCompleted, asset_animator_system, component_animator_system,
-    lens::{ColorMaterialColorLens, TransformRotationLens, TransformScaleLens},
+    AnimationSystem, Animator, AssetAnimator, Lens, Targetable, Tracks, Tween, TweenCompleted,
+    asset_animator_system, component_animator_system,
+    lens::{TransformRotationLens, TransformScaleLens},
 };
+
+use crate::utils::{PointLightLens, StandardMaterialLens};
+use crate::CameraShake;
 
 const ASTEROID_SHADER_PATH: &str = "shaders/asteroid.wgsl";
 
@@ -32,16 +33,7 @@ pub fn plugin(app: &mut App) {
         ExtendedMaterial<StandardMaterial, AsteroidMaterial>,
     >::default(),))
         .add_observer(on_add_asteroid)
-        .add_observer(on_add_ship_asteroid_collider)
-        .add_systems(
-            Update,
-            asset_animator_system::<StandardMaterial, MeshMaterial3d<StandardMaterial>>
-                .in_set(AnimationSystem::AnimationUpdate),
-        )
-        .add_systems(
-            Update,
-            component_animator_system::<PointLight>.in_set(AnimationSystem::AnimationUpdate),
-        );
+        .add_observer(on_add_ship_asteroid_collider);
 }
 
 #[derive(Component)]
@@ -104,36 +96,6 @@ fn on_add_asteroid(
     ));
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub struct StandardMaterialColorLens {
-    /// Start color.
-    pub start: Color,
-    /// End color.
-    pub end: Color,
-}
-
-impl Lens<StandardMaterial> for StandardMaterialColorLens {
-    fn lerp(&mut self, target: &mut dyn Targetable<StandardMaterial>, ratio: f32) {
-        target.base_color = self.start.mix(&self.end, ratio);
-        target.emissive = self.start.mix(&self.end, ratio).into();
-    }
-}
-
-#[derive(Debug, Copy, Clone, PartialEq)]
-struct PointLightLens {
-    color_start: Color,
-    color_end: Color,
-
-    intensity_start: f32,
-    intensity_end: f32,
-}
-
-impl Lens<PointLight> for PointLightLens {
-    fn lerp(&mut self, target: &mut dyn Targetable<PointLight>, ratio: f32) {
-        target.color = self.color_start.mix(&self.color_end, ratio);
-        target.intensity = self.intensity_start.lerp(self.intensity_end, ratio);
-    }
-}
 
 fn on_add_ship_asteroid_collider(
     trigger: Trigger<OnAdd, ShipAsteroidCollider>,
@@ -143,21 +105,23 @@ fn on_add_ship_asteroid_collider(
 
     commands
         .entity(entity)
-        .insert((CollisionEventsEnabled,))
+        .insert(CollisionEventsEnabled)
         .observe(
             |trigger: Trigger<OnCollisionStart>,
              mut commands: Commands,
              asteroids: Query<(&Asteroid, &Transform)>,
 
              mut meshes: ResMut<Assets<Mesh>>,
-             mut materials: ResMut<Assets<StandardMaterial>>| {
+             mut materials: ResMut<Assets<StandardMaterial>>,
+             mut screen_shake: ResMut<CameraShake>,
+             time: Res<Time<Physics>>| {
                 // let meteorite = meteorites.get(trigger.collider);
 
                 let Ok((asteroid, asteroid_transform)) = asteroids.get(trigger.collider) else {
                     return;
                 };
 
-                println!("collision");
+                debug!("collision");
 
                 commands.entity(trigger.collider).despawn();
 
@@ -176,33 +140,35 @@ fn on_add_ship_asteroid_collider(
                             asteroid.radius,
                             Srgba::new(1.0, 0.7, 0.7, 1.0),
                             Srgba::new(1.0, 0.1, 0.1, 0.0),
-                            Duration::from_millis(600),
+                            Duration::from_millis(1200),
                         );
                         spawn_animated_explosion(
                             builder,
                             &mut meshes,
                             &mut materials,
-                            asteroid.radius * 0.6,
+                            asteroid.radius * 0.5,
                             Srgba::new(1.0, 0.7, 0.7, 1.0),
                             Srgba::new(1.0, 0.7, 0.7, 0.0),
-                            Duration::from_millis(500),
+                            Duration::from_millis(900),
                         );
 
                         spawn_animated_explosion(
                             builder,
                             &mut meshes,
                             &mut materials,
-                            asteroid.radius * 0.3,
+                            asteroid.radius * 0.2,
                             Srgba::new(1.0, 0.7, 0.7, 1.0),
                             Srgba::new(1.0, 0.9, 0.9, 0.6),
-                            Duration::from_millis(300),
+                            Duration::from_millis(700),
                         )
                     });
+
+                screen_shake.until = time.elapsed_secs() + 0.5;
 
                 // let pressure_plate = trigger.target();
                 // let other_entity = trigger.collider;
                 // if player_query.contains(other_entity) {
-                //     println!("Player {other_entity} stepped on pressure plate {pressure_plate}");
+                //     debug!("Player {other_entity} stepped on pressure plate {pressure_plate}");
                 // }
             },
         );
@@ -232,8 +198,8 @@ fn spawn_animated_explosion(
             EaseFunction::QuinticOut,
             duration,
             TransformScaleLens {
-                start: Vec3::splat(0.5),
-                end: Vec3::splat(3.5),
+                start: Vec3::splat(1.0),
+                end: Vec3::splat(5.5),
             },
         ),
     ]);
@@ -244,7 +210,7 @@ fn spawn_animated_explosion(
         PointLightLens {
             color_start: color_start.into(),
             color_end: color_end.into(),
-            intensity_start: 1000000000000.,
+            intensity_start: 10000000000000.,
             intensity_end: 0.,
         },
     )
@@ -253,9 +219,11 @@ fn spawn_animated_explosion(
     let color_tween = Tween::new(
         EaseFunction::QuinticOut,
         duration,
-        StandardMaterialColorLens {
-            start: color_start.into(),
-            end: color_end.into(),
+        StandardMaterialLens {
+            color_start: color_start.into(),
+            color_end: color_end.into(),
+            emissive_start: (color_start * 10.).into(),
+            emissive_end: (color_end * 10.).into(),
         },
     )
     .with_completed_event(0);
@@ -267,18 +235,17 @@ fn spawn_animated_explosion(
             AssetAnimator::new(color_tween),
             Mesh3d(meshes.add(sphere)),
             MeshMaterial3d(materials.add(StandardMaterial {
-                base_color: color_start.into(),
                 alpha_mode: AlphaMode::Blend,
-                emissive: color_start.into(),
                 ..Default::default()
             })),
             PointLight {
                 color: color_start.into(),
+                radius: 1000.,
                 ..default()
             },
         ))
         .observe(|trigger: Trigger<TweenCompleted>, mut commands: Commands| {
-            commands.entity(trigger.target()).despawn();
+            commands.entity(trigger.target()).try_despawn();
         });
 }
 

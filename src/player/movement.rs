@@ -1,13 +1,14 @@
 use avian2d::math::Scalar;
 use avian2d::prelude::*;
+use bevy::color::palettes::css::{GREEN_YELLOW, RED};
 use bevy::prelude::*;
 
 // use bevy::diagnostic::{DiagnosticPath, DiagnosticsStore};
 
 use crate::PausableSystems;
-use crate::gas::pickup_gas;
 use crate::screens::Screen;
-use crate::space::{GasGenerator, orb_explosion::OrbExplosion};
+use crate::space::GasGenerator;
+use crate::space::gas::ignite_gas;
 
 use super::Player;
 
@@ -23,6 +24,9 @@ pub struct GasBoost(pub Scalar);
 #[derive(Component, Deref, DerefMut, Reflect)]
 pub struct CurrentGas(pub Scalar);
 
+pub const GLIDE_FORCE: f32 = 30.0;
+pub const DRAG_FORCE: f32 = 0.5;
+
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<MovementAcceleration>()
         .register_type::<RotationSpeed>()
@@ -30,10 +34,15 @@ pub(super) fn plugin(app: &mut App) {
         .register_type::<CurrentGas>()
         .add_systems(
             Update,
-            (thrust.after(pickup_gas), glide)
+            (thrust.after(ignite_gas), glide)
                 .run_if(in_state(Screen::Gameplay))
                 .in_set(PausableSystems),
         );
+}
+
+#[derive(Component)]
+pub struct PlayerControlls {
+    pub enabled: bool,
 }
 
 // *maybe rename this function
@@ -44,19 +53,16 @@ fn thrust(
             &mut ExternalForce,
             &mut ExternalTorque,
             &mut CurrentGas,
-            &Transform,
             &Rotation,
             &LinearVelocity,
             &MovementAcceleration,
             &RotationSpeed,
             &GasBoost,
+            &PlayerControlls,
         ),
         With<Player>,
     >,
     time: Res<Time<Physics>>,
-    gas: Res<GasGenerator>,
-    mut expl_ev: EventWriter<OrbExplosion>, // gas_orb_query: Query<(Entity, &Transform), With<GasOrb>>,
-                                            // diagnostics: Res<DiagnosticsStore>,
 ) {
     let left = keyboard_input.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]);
     let right = keyboard_input.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]);
@@ -66,21 +72,21 @@ fn thrust(
         mut force,
         mut torque,
         mut current_gas,
-        transform,
         rotation,
         velocity,
         acceleration,
         rotation_speed,
         gas_boost,
+        controlls,
     ) = player_query.into_inner();
 
     force.persistent = false;
     torque.persistent = false;
     let tq = rotation_speed.0 / velocity.length().max(100.0);
-    if left {
+    if left && controlls.enabled {
         torque.apply_torque(tq);
     }
-    if right {
+    if right && controlls.enabled {
         torque.apply_torque(-tq);
     }
 
@@ -88,7 +94,7 @@ fn thrust(
 
     let mut thrust_force = forward_dir * **acceleration;
 
-    if brake {
+    if brake && controlls.enabled {
         thrust_force *= 0.15;
     }
 
@@ -97,58 +103,30 @@ fn thrust(
     force.apply_force(thrust_force);
     force.apply_force(gas_boost_force); // TODO: test this properly
 
-    let gas_density = gas.sample(transform.translation.truncate());
-
-    if gas_density > 0.0 {
-        let player_pos = transform.translation.truncate();
-
-        expl_ev.write(OrbExplosion { pos: player_pos });
-    }
-
-    // velocity.0 += (thrust_force + gas_boost) * time.delta_secs();
-
-    // TODO: not framerate-independent
-    // let speed = velocity.0.length();
-    // debug!("{speed:.2}");
-
-    // we don't need additional speed limiting as avian's dampening will do it for us anyway
-    // if speed > **max_speed {
-    //     let fps = diagnostics
-    //         .get(&DiagnosticPath::const_new("fps"))
-    //         .and_then(|fps| fps.smoothed())
-    //         .unwrap_or(60.0);
-
-    //     Dir2::try_from(velocity.0)
-    //         .map(|dir| {
-    //             velocity.0 = velocity.lerp(dir * max_speed.0, time.delta_secs() * fps as f32 / 1000.0);
-    //         })
-    //         .ok();
-    // }
+    let before = current_gas.0;
     current_gas.0 *= 0.01f32.powf(time.delta_secs());
+    debug!("current_gas: {before:.2} -> {:.2}", current_gas.0);
 }
 
 fn glide(
     player_query: Single<(&LinearVelocity, &mut ExternalForce, &Transform), With<Player>>,
-    // mut gizmos: Gizmos,
+    mut gizmos: Gizmos,
     gas: Res<GasGenerator>,
 ) {
-    let (linvel, mut force, transform) = player_query.into_inner();
+    let (linvel, mut force, ship_tr) = player_query.into_inner();
 
-    let forward_dir = (transform.rotation * Vec3::Y).truncate();
+    let forward = ship_tr.up().truncate();
+    let ship_pos = ship_tr.translation.truncate();
 
-    let drag_angle = 1.0 - forward_dir.dot(linvel.normalize_or_zero()).abs();
+    let side_vel = linvel.0 - linvel.0.project_onto(forward);
 
-    let amount = gas.sample(transform.translation.truncate()).clamp(0.0, 1.0);
+    let amount = gas.sample(ship_pos).clamp(0.0, 1.0);
 
-    let drag_force = -linvel.0 * drag_angle * amount * 5.0;
-    let glide_force =
-        drag_force.length() * forward_dir.dot(linvel.normalize_or_zero()).signum() * forward_dir;
+    let drag = -side_vel * amount * DRAG_FORCE;
+    let glide = (forward - forward.project_onto(linvel.0)) * amount * GLIDE_FORCE; // basically we want to rotate the linvel by applying a perpendicular force...
 
-    // gizmos.ray_2d(
-    //     transform.translation.xy(),
-    //     (drag_force + glide_force) * 10.0,
-    //     bevy::color::palettes::css::LIGHT_CYAN,
-    // );
-    force.apply_force(drag_force);
-    force.apply_force(glide_force);
+    gizmos.ray_2d(ship_pos, drag * 5.0, RED);
+    gizmos.ray_2d(ship_pos, glide * 5.0, GREEN_YELLOW);
+
+    force.apply_force(drag + glide);
 }

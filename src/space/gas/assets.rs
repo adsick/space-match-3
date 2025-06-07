@@ -20,7 +20,6 @@ pub struct OrbAssets {
 
 impl FromWorld for OrbAssets {
     fn from_world(world: &mut World) -> Self {
-        println!("initing orb assets");
         let assets = world.resource::<AssetServer>();
 
         let mut orb_materials = vec![];
@@ -42,9 +41,9 @@ impl FromWorld for OrbAssets {
         }));
 
         orb_materials.push(assets.add(StandardMaterial {
-            base_color: RED.with_alpha(0.5).into(),
+            base_color: RED.with_alpha(0.7).into(),
             alpha_mode: AlphaMode::Blend,
-            emissive: (RED * 0.3).mix(&GOLD, 0.3).into(),
+            emissive: (RED * 0.5).mix(&GOLD, 0.3).into(),
             ..Default::default()
         }));
 
@@ -63,7 +62,6 @@ impl FromWorld for OrbAssets {
 }
 
 pub(super) fn plugin(app: &mut App) {
-    println!("registering orb assets");
     app.register_type::<OrbAssets>()
         .load_resource::<OrbAssets>();
 }
