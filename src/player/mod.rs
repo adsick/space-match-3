@@ -67,6 +67,7 @@ fn camera_follow_player(
 
 const BULLET_TIME_DURATION: f32 = 5.0;
 const BULLET_TIME_COOLDOWN: f32 = 15.0; // seconds
+const BULLET_TIME_AURA_COST: f32 = 300.0;
 
 fn player_powers(
     player: Single<&Player>,
@@ -89,12 +90,12 @@ fn go_into_bullet_time(
 
     if rt < player.bullet_time_until
         || rt < player.bullet_time_cooldown_until
-        || player.aura_points < 1000.0
+        || player.aura_points < BULLET_TIME_AURA_COST
     {
         return;
     }
     physics_time.set_relative_speed(0.25);
     player.bullet_time_until = rt + BULLET_TIME_DURATION;
     player.bullet_time_cooldown_until = rt + BULLET_TIME_DURATION + BULLET_TIME_COOLDOWN;
-    player.aura_points -= 1000.0
+    player.aura_points -= BULLET_TIME_AURA_COST
 }

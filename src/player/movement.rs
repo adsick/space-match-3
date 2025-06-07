@@ -84,16 +84,17 @@ fn thrust(
     ) = player_query.into_inner();
 
     let vel_length = velocity.length();
-    player.score += vel_length / 250.0 * time.delta_secs();
+    let delta = time.delta_secs();
+    player.score += vel_length / 250.0 * delta;
     player.aura_points +=
-        vel_length * vel_length / 250.0 * time.delta_secs() * player.near_asteroids as u32 as f32; // boolean to binary
+        vel_length * vel_length / 350.0 * delta * player.near_asteroids as u32 as f32; // boolean to binary
 
     if player.aura_points < 1.0 && player.aura_points > -1.0 {
         player.aura_points = 0.0;
     } else if player.aura_points < 0.0 {
-        player.aura_points += 15.0 * time.delta_secs();
+        player.aura_points += 15.0 * delta;
     } else {
-        player.aura_points -= 3.0 * time.delta_secs();
+        player.aura_points -= 3.0 * delta;
     }
 
     force.persistent = false;
@@ -123,7 +124,7 @@ fn thrust(
     force.apply_force(gas_boost_force);
 
     let before = current_gas.0;
-    current_gas.0 *= 0.01f32.powf(time.delta_secs());
+    current_gas.0 *= 0.01f32.powf(delta);
     debug!("current_gas: {before:.2} -> {:.2}", current_gas.0);
 }
 

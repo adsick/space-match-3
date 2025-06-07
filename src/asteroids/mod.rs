@@ -96,6 +96,8 @@ fn on_add_asteroid(
     ));
 }
 
+const ASTEROID_AURA_LOSS: f32 = 300.0;
+
 fn on_add_ship_asteroid_collider(
     trigger: Trigger<OnAdd, ShipAsteroidCollider>,
     mut commands: Commands,
@@ -125,7 +127,7 @@ fn on_add_ship_asteroid_collider(
 
                 commands.entity(trigger.collider).despawn();
 
-                player.aura_points -= 1000.0;
+                player.aura_points -= ASTEROID_AURA_LOSS;
                 player.near_asteroids = false;
 
                 // tween.with_completed

@@ -8,7 +8,10 @@ use bevy::{
     ui::Val::*,
 };
 
-use crate::theme::{interaction::InteractionPalette, palette::*};
+use crate::{
+    player::hud::HudAssets,
+    theme::{interaction::InteractionPalette, palette::*},
+};
 
 /// A root UI node that fills the window and centers its content.
 pub fn ui_root(name: impl Into<Cow<'static, str>>) -> impl Bundle {
@@ -21,6 +24,22 @@ pub fn ui_root(name: impl Into<Cow<'static, str>>) -> impl Bundle {
             align_items: AlignItems::Center,
             justify_content: JustifyContent::Center,
             flex_direction: FlexDirection::Column,
+            row_gap: Px(20.0),
+            ..default()
+        },
+        // Don't block picking events for other UI roots.
+        Pickable::IGNORE,
+    )
+}
+
+pub fn ui_root_uncentered(name: impl Into<Cow<'static, str>>) -> impl Bundle {
+    (
+        Name::new(name),
+        Node {
+            position_type: PositionType::Absolute,
+            width: Percent(100.0),
+            height: Percent(100.0),
+            align_items: AlignItems::Center,
             row_gap: Px(20.0),
             ..default()
         },
@@ -45,6 +64,19 @@ pub fn label(text: impl Into<String>) -> impl Bundle {
         Name::new("Label"),
         Text(text.into()),
         TextFont::from_font_size(24.0),
+        TextColor(LABEL_TEXT),
+    )
+}
+
+pub fn emoji_label(text: impl Into<String>, hud_assets: &HudAssets) -> impl Bundle {
+    (
+        Name::new("Emoji Label"),
+        Text(text.into()),
+        TextFont {
+            font: hud_assets.font.clone(),
+            font_size: 24.0,
+            ..default()
+        },
         TextColor(LABEL_TEXT),
     )
 }
