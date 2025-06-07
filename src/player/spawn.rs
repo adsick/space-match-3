@@ -28,7 +28,7 @@ fn spawn_player(
                 Player::default(),
                 Name::new("Player"),
                 RigidBody::Dynamic,
-                Collider::circle(5.),
+                Collider::circle(3.),
                 ShipAsteroidCollider {},
                 // LinearVelocity(Vec2::ZERO),
                 LinearVelocity(Vec2::new(0., 600.)),
