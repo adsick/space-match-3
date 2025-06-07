@@ -1,12 +1,10 @@
-use std::{process::Child, time::Duration};
+use std::time::Duration;
 
-use avian2d::prelude::{
-    Collider, CollisionEventsEnabled, CollisionLayers, OnCollisionStart, RigidBody,
-};
+use avian2d::prelude::{Collider, CollisionEventsEnabled, OnCollisionStart, Physics, RigidBody};
 use bevy::{
     app::App,
     asset::Assets,
-    color::palettes::css::{GOLD, GREEN, RED, WHEAT, WHITE},
+    color::palettes::css::WHITE,
     ecs::relationship::RelatedSpawnerCommands,
     math::{Quat, Vec3},
     pbr::{ExtendedMaterial, MaterialExtension, MeshMaterial3d, StandardMaterial},
@@ -20,12 +18,13 @@ use bevy::{
     },
 };
 use bevy_tweening::{
-    AnimationSystem, Animator, AssetAnimator, BoxedTweenable, Lens, RepeatCount, RepeatStrategy,
-    Targetable, Tracks, Tween, TweenCompleted, asset_animator_system, component_animator_system,
-    lens::{ColorMaterialColorLens, TransformRotationLens, TransformScaleLens},
+    AnimationSystem, Animator, AssetAnimator, Lens, Targetable, Tracks, Tween, TweenCompleted,
+    asset_animator_system, component_animator_system,
+    lens::{TransformRotationLens, TransformScaleLens},
 };
 
 use crate::utils::{PointLightLens, StandardMaterialLens};
+use crate::CameraShake;
 
 const ASTEROID_SHADER_PATH: &str = "shaders/asteroid.wgsl";
 
@@ -106,21 +105,23 @@ fn on_add_ship_asteroid_collider(
 
     commands
         .entity(entity)
-        .insert((CollisionEventsEnabled,))
+        .insert(CollisionEventsEnabled)
         .observe(
             |trigger: Trigger<OnCollisionStart>,
              mut commands: Commands,
              asteroids: Query<(&Asteroid, &Transform)>,
 
              mut meshes: ResMut<Assets<Mesh>>,
-             mut materials: ResMut<Assets<StandardMaterial>>| {
+             mut materials: ResMut<Assets<StandardMaterial>>,
+             mut screen_shake: ResMut<CameraShake>,
+             time: Res<Time<Physics>>| {
                 // let meteorite = meteorites.get(trigger.collider);
 
                 let Ok((asteroid, asteroid_transform)) = asteroids.get(trigger.collider) else {
                     return;
                 };
 
-                println!("collision");
+                debug!("collision");
 
                 commands.entity(trigger.collider).despawn();
 
@@ -162,10 +163,12 @@ fn on_add_ship_asteroid_collider(
                         )
                     });
 
+                screen_shake.until = time.elapsed_secs() + 0.5;
+
                 // let pressure_plate = trigger.target();
                 // let other_entity = trigger.collider;
                 // if player_query.contains(other_entity) {
-                //     println!("Player {other_entity} stepped on pressure plate {pressure_plate}");
+                //     debug!("Player {other_entity} stepped on pressure plate {pressure_plate}");
                 // }
             },
         );

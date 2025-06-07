@@ -62,7 +62,6 @@ impl FromWorld for OrbAssets {
 }
 
 pub(super) fn plugin(app: &mut App) {
-    println!("registering orb assets");
     app.register_type::<OrbAssets>()
         .load_resource::<OrbAssets>();
 }

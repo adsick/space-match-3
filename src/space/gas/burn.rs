@@ -11,9 +11,9 @@ use bevy_spatial::{SpatialAccess, kdtree::KDTree2};
 
 use crate::{
     PausableSystems,
-    gas::{BurningGasOrb, assets::OrbAssets, pickup_gas},
     red_gas::{RedGasOrb, RedOrbExplosionEvent},
     screens::Screen,
+    space::gas::{BurningGasOrb, assets::OrbAssets, ignite_gas},
 };
 
 use super::GasOrb;
@@ -23,7 +23,7 @@ pub fn plugin(app: &mut App) {
         .configure_sets(
             Update,
             UpdateGasSet
-                .after(pickup_gas)
+                .after(ignite_gas)
                 .run_if(in_state(Screen::Gameplay))
                 .in_set(PausableSystems),
         )
@@ -38,6 +38,7 @@ const CELL_SIZE: f32 = 16.;
 const MAX_COUNT: u32 = 1000;
 const LIFETIME: u32 = 30;
 const SLOWDOWN: u32 = 10;
+const BASE_DELAY: u32 = 30;
 
 #[derive(SystemSet, Hash, Debug, Eq, PartialEq, Clone)]
 pub struct UpdateGasSet;
@@ -90,7 +91,7 @@ pub fn propagate_explosion(
         i += 1;
 
         // condition of burn propagation. basically the older the explosion is the longer it takes to propagate
-        if curr_time > explosion.time + 10 + SLOWDOWN * (LIFETIME - explosion.life) {
+        if curr_time > explosion.time + BASE_DELAY + SLOWDOWN * (LIFETIME - explosion.life) {
             let mut burnt_orbs = false;
             for (_, entity) in orb_tree.within_distance(explosion.pos, size / 2.0) {
                 if let Some(e) = entity {
@@ -113,7 +114,6 @@ pub fn propagate_explosion(
             }
 
             if !burnt_orbs {
-                // debug!("no orbs burnt");
                 return false;
             }
 
@@ -135,7 +135,7 @@ pub fn propagate_explosion(
                     });
                 }
             }
-            false // here I delete the explosion
+            false
         } else {
             true
         }
@@ -144,19 +144,13 @@ pub fn propagate_explosion(
     let new_len = new_explosions.len();
     let free_space = MAX_COUNT.saturating_sub(explosion_queue.len() as u32);
 
-    // debug!("free: {free_space}, {}", (variation[i % variation.len()] * new_len as f32));
     for explosion in new_explosions {
         i += 1;
 
-        // you can think of it as `variation[i] < free_space / new_explosions.len()`
         if (variation[i % variation.len()] * new_len as f32) < free_space as f32 {
             explosion_queue.push_back(explosion);
         }
     }
-
-    // for _ in 0..explosion_queue.len().saturating_sub(MAX_COUNT as usize) {
-    //     explosion_queue.pop_front();
-    // }
 }
 
 fn update_burning_orbs(
@@ -187,19 +181,4 @@ fn update_burning_orbs(
                 .min(Vec3::splat(100.0));
         }
     });
-}
-
-// reference
-fn animate_materials(
-    material_handles: Query<&MeshMaterial3d<StandardMaterial>>,
-    time: Res<Time<Physics>>, // * physics time if bullet-time is gonna slow this down too, otherwise normal time
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    for material_handle in material_handles.iter() {
-        if let Some(material) = materials.get_mut(material_handle) {
-            if let Color::Hsla(ref mut hsla) = material.base_color {
-                *hsla = hsla.rotate_hue(time.delta_secs() * 100.0);
-            }
-        }
-    }
 }

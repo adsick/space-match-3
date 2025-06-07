@@ -4,18 +4,18 @@
 //! that are populated on the fly as the player moves around.
 //!
 
-use std::cmp;
 
 use avian2d::parry::utils::hashmap::HashMap;
 use bevy::prelude::*;
+use gas::GasOrb;
 use noiz::{Noise, SampleableFor, prelude::common_noise::Perlin, rng::NoiseRng};
 
-use crate::{asteroids::Asteroid, red_gas::RedGasOrb, gas::GasOrb, player::Player};
+use crate::{asteroids::Asteroid, red_gas::RedGasOrb, player::Player};
 
-pub mod orb_explosion;
+pub mod gas;
 
 pub fn plugin(app: &mut App) {
-    app.add_plugins(orb_explosion::plugin)
+    app.add_plugins(gas::plugin)
         .insert_resource(GasGenerator {
             noise: Noise {
                 noise: Perlin::default(),
@@ -34,7 +34,7 @@ pub fn plugin(app: &mut App) {
 pub const CHUNK_SIZE: f32 = 64.0; // TODO: Increase this
 /// Number of orbs per m²
 pub const MAX_CLOUD_DENSITY: f32 = 0.03;
-pub const RENDER_DISTANCE: i32 = 12;
+pub const RENDER_DISTANCE: i32 = 10;
 pub const ORB_THRESHOLD: f32 = 0.1;
 
 const MIN_ASTEROID_SIZE: f32 = 20.0;
@@ -166,8 +166,6 @@ fn populate_chunk(
     // Calculate how many subdivisions along each axis is required to get the desired maximum cloud density.
     const CHUNK_SUBDIV: usize = ((MAX_CLOUD_DENSITY * CHUNK_SIZE * CHUNK_SIZE) as usize).isqrt();
 
-    // let inst = Instant::now(); // ! panic on wasm
-
     for y in 0..CHUNK_SUBDIV {
         for x in 0..CHUNK_SUBDIV {
             let cell_pos = trigger.0.as_vec2() * CHUNK_SIZE
@@ -237,11 +235,6 @@ fn populate_chunk(
             }
         }
     }
-
-    // cmds.entity(trigger.target())
-    //     .insert(Children::spawn(SpawnIter(entities.into_iter())));
-
-    // let t = inst.elapsed();
 
     // debug!("chunk generation took {t:.2?}");
 
