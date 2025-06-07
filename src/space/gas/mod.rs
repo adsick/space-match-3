@@ -69,7 +69,9 @@ pub fn ignite_gas(
 
     let mut count = 0;
     // this code is responsible for detecting gas that is behind the ship
-    for (orb_pos, e) in tree.within_distance(ship_tr_2d + IGNITION_OFFSET * backward, IGNITION_RADIUS) {
+    for (orb_pos, e) in
+        tree.within_distance(ship_tr_2d + IGNITION_OFFSET * backward, IGNITION_RADIUS)
+    {
         let k = (orb_pos - ship_tr_2d)
             .normalize()
             .dot(backward)

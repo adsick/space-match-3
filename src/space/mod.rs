@@ -4,13 +4,12 @@
 //! that are populated on the fly as the player moves around.
 //!
 
-
 use avian2d::parry::utils::hashmap::HashMap;
 use bevy::prelude::*;
 use gas::GasOrb;
 use noiz::{Noise, SampleableFor, prelude::common_noise::Perlin, rng::NoiseRng};
 
-use crate::{asteroids::Asteroid, red_gas::RedGasOrb, player::Player};
+use crate::{asteroids::Asteroid, player::Player, red_gas::RedGasOrb};
 
 pub mod gas;
 
@@ -220,10 +219,8 @@ fn populate_chunk(
                     + Vec2::new(rand::random::<f32>(), rand::random::<f32>()) * CHUNK_SIZE
                         / CHUNK_SUBDIV as f32;
 
-
                 let r = rand::random::<f32>();
-                let orb_size =
-                    MIN_EXPLOSIVE_ORB_SIZE + EXPLOSIVE_ORB_SIZE_VARIATION * r;
+                let orb_size = MIN_EXPLOSIVE_ORB_SIZE + EXPLOSIVE_ORB_SIZE_VARIATION * r;
                 cmds.spawn((
                     RedGasOrb {
                         pos: pos

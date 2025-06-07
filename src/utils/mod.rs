@@ -1,5 +1,9 @@
 use bevy::{
-    app::{App, Update}, color::{Color, Mix}, math::VectorSpace, pbr::{MeshMaterial3d, PointLight, StandardMaterial}, prelude::IntoScheduleConfigs
+    app::{App, Update},
+    color::{Color, Mix},
+    math::VectorSpace,
+    pbr::{MeshMaterial3d, PointLight, StandardMaterial},
+    prelude::IntoScheduleConfigs,
 };
 use bevy_tweening::{
     AnimationSystem, Lens, Targetable, asset_animator_system, component_animator_system,
