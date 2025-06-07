@@ -1,8 +1,6 @@
 //! Development tools for the game. This plugin is only enabled in dev builds.
 
-use avian2d::prelude::PhysicsDebugPlugin;
 use bevy::{
-    color::palettes::css::WHITE,
     dev_tools::states::log_transitions,
     input::common_conditions::{input_just_pressed, input_pressed},
     prelude::*,
@@ -25,15 +23,13 @@ pub(super) fn plugin(app: &mut App) {
     .add_plugins(bevy::diagnostic::EntityCountDiagnosticsPlugin)
     .add_plugins(bevy::diagnostic::SystemInformationDiagnosticsPlugin)
     .add_plugins(bevy::render::diagnostic::RenderDiagnosticsPlugin)
-    .add_plugins(PhysicsDebugPlugin::default())
     .init_resource::<WorldInspectorEnabled>()
     .add_systems(Startup, spawn_perf_ui)
     .add_systems(
         Update,
         (|mut enabled: ResMut<WorldInspectorEnabled>| enabled.0 = !enabled.0)
             .run_if(input_just_pressed(KeyCode::KeyW).and(input_pressed(KeyCode::ControlLeft))),
-    )
-    .add_systems(Startup, spawn_grid);
+    );
 
     // Log `Screen` state transitions.
     app.add_systems(Update, log_transitions::<Screen>);
@@ -70,23 +66,3 @@ fn spawn_perf_ui(mut commands: Commands) {
 
 #[derive(Default, PartialEq, Resource)]
 pub struct WorldInspectorEnabled(bool);
-
-fn spawn_grid(mut commands: Commands, mut gizmo_assets: ResMut<Assets<GizmoAsset>>) {
-    let mut gizmo = GizmoAsset::default();
-
-    gizmo.grid_2d(
-        Isometry2d::IDENTITY,
-        UVec2::splat(100),
-        Vec2::splat(20.),
-        WHITE.with_alpha(0.02),
-    );
-
-    commands.spawn(Gizmo {
-        handle: gizmo_assets.add(gizmo),
-        line_config: GizmoLineConfig {
-            width: 1.,
-            ..default()
-        },
-        ..default()
-    });
-}
