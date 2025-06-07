@@ -88,8 +88,12 @@ fn thrust(
     player.aura_points +=
         vel_length * vel_length / 250.0 * time.delta_secs() * player.near_asteroids as u32 as f32; // boolean to binary
 
-    if player.aura_points < 0.0 {
+    if player.aura_points < 1.0 && player.aura_points > -1.0 {
+        player.aura_points = 0.0;
+    } else if player.aura_points < 0.0 {
         player.aura_points += 15.0 * time.delta_secs();
+    } else {
+        player.aura_points -= 3.0 * time.delta_secs();
     }
 
     force.persistent = false;
