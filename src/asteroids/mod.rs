@@ -25,6 +25,8 @@ use bevy_tweening::{
     lens::{ColorMaterialColorLens, TransformRotationLens, TransformScaleLens},
 };
 
+use crate::utils::{PointLightLens, StandardMaterialLens};
+
 const ASTEROID_SHADER_PATH: &str = "shaders/asteroid.wgsl";
 
 pub fn plugin(app: &mut App) {
@@ -32,16 +34,7 @@ pub fn plugin(app: &mut App) {
         ExtendedMaterial<StandardMaterial, AsteroidMaterial>,
     >::default(),))
         .add_observer(on_add_asteroid)
-        .add_observer(on_add_ship_asteroid_collider)
-        .add_systems(
-            Update,
-            asset_animator_system::<StandardMaterial, MeshMaterial3d<StandardMaterial>>
-                .in_set(AnimationSystem::AnimationUpdate),
-        )
-        .add_systems(
-            Update,
-            component_animator_system::<PointLight>.in_set(AnimationSystem::AnimationUpdate),
-        );
+        .add_observer(on_add_ship_asteroid_collider);
 }
 
 #[derive(Component)]
@@ -104,37 +97,6 @@ fn on_add_asteroid(
     ));
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub struct StandardMaterialColorLens {
-    pub color_start: Color,
-    pub color_end: Color,
-
-    pub emissive_start: Color,
-    pub emissive_end: Color,
-}
-
-impl Lens<StandardMaterial> for StandardMaterialColorLens {
-    fn lerp(&mut self, target: &mut dyn Targetable<StandardMaterial>, ratio: f32) {
-        target.base_color = self.color_start.mix(&self.color_end, ratio);
-        target.emissive = self.emissive_start.mix(&self.emissive_end, ratio).into();
-    }
-}
-
-#[derive(Debug, Copy, Clone, PartialEq)]
-struct PointLightLens {
-    color_start: Color,
-    color_end: Color,
-
-    intensity_start: f32,
-    intensity_end: f32,
-}
-
-impl Lens<PointLight> for PointLightLens {
-    fn lerp(&mut self, target: &mut dyn Targetable<PointLight>, ratio: f32) {
-        target.color = self.color_start.mix(&self.color_end, ratio);
-        target.intensity = self.intensity_start.lerp(self.intensity_end, ratio);
-    }
-}
 
 fn on_add_ship_asteroid_collider(
     trigger: Trigger<OnAdd, ShipAsteroidCollider>,
@@ -254,7 +216,7 @@ fn spawn_animated_explosion(
     let color_tween = Tween::new(
         EaseFunction::QuinticOut,
         duration,
-        StandardMaterialColorLens {
+        StandardMaterialLens {
             color_start: color_start.into(),
             color_end: color_end.into(),
             emissive_start: (color_start * 10.).into(),
@@ -280,7 +242,7 @@ fn spawn_animated_explosion(
             },
         ))
         .observe(|trigger: Trigger<TweenCompleted>, mut commands: Commands| {
-            commands.entity(trigger.target()).despawn();
+            commands.entity(trigger.target()).try_despawn();
         });
 }
 

@@ -12,6 +12,7 @@ use bevy_spatial::{SpatialAccess, kdtree::KDTree2};
 use crate::{
     PausableSystems,
     gas::{BurningGasOrb, assets::OrbAssets, pickup_gas},
+    red_gas::{RedGasOrb, RedOrbExplosionEvent},
     screens::Screen,
 };
 
@@ -55,7 +56,10 @@ pub struct OrbExplosionCell {
 pub fn propagate_explosion(
     mut events: EventReader<OrbExplosion>,
     mut commands: Commands,
-    tree: Res<KDTree2<GasOrb>>,
+    orb_tree: Res<KDTree2<GasOrb>>,
+    red_orb_tree: Res<KDTree2<RedGasOrb>>,
+
+    mut red_orb_explosion_events: EventWriter<RedOrbExplosionEvent>,
 
     time: Res<Time<Physics>>,
     mut explosion_queue: Local<VecDeque<OrbExplosionCell>>,
@@ -88,13 +92,23 @@ pub fn propagate_explosion(
         // condition of burn propagation. basically the older the explosion is the longer it takes to propagate
         if curr_time > explosion.time + 10 + SLOWDOWN * (LIFETIME - explosion.life) {
             let mut burnt_orbs = false;
-            for (_, entity) in tree.within_distance(explosion.pos, size / 2.0) {
+            for (_, entity) in orb_tree.within_distance(explosion.pos, size / 2.0) {
                 if let Some(e) = entity {
                     commands
                         .entity(e)
                         .try_remove::<GasOrb>()
                         .try_insert(BurningGasOrb(curr_time));
                     burnt_orbs = true;
+                }
+            }
+            for (_, entity) in red_orb_tree.within_distance(explosion.pos, size / 2.0) {
+                if let Some(e) = entity {
+                    red_orb_explosion_events.write(RedOrbExplosionEvent { entity: e });
+                    // commands
+                    //     .entity(e)
+                    //     .try_remove::<GasOrb>()
+                    //     .try_insert(BurningGasOrb(curr_time));
+                    // burnt_orbs = true;
                 }
             }
 

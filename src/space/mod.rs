@@ -10,7 +10,7 @@ use avian2d::parry::utils::hashmap::HashMap;
 use bevy::prelude::*;
 use noiz::{Noise, SampleableFor, prelude::common_noise::Perlin, rng::NoiseRng};
 
-use crate::{asteroids::Asteroid, explosive_gas::ExplosiveGasOrb, gas::GasOrb, player::Player};
+use crate::{asteroids::Asteroid, red_gas::RedGasOrb, gas::GasOrb, player::Player};
 
 pub mod orb_explosion;
 
@@ -42,7 +42,7 @@ const ASTEROID_SIZE_VARIATION: f32 = 25.0;
 const ASTEROID_CLOUD_Z_SCALE: f32 = 10.0;
 
 const MIN_EXPLOSIVE_ORB_SIZE: f32 = 2.0;
-const EXPLOSIVE_ORB_SIZE_VARIATION: f32 = 10.0;
+const EXPLOSIVE_ORB_SIZE_VARIATION: f32 = 5.0;
 const EXPLOSIVE_ORB_CLOUD_Z_SCALE: f32 = 60.0;
 
 pub const MIN_ORB_SIZE: f32 = 0.4;
@@ -222,10 +222,12 @@ fn populate_chunk(
                     + Vec2::new(rand::random::<f32>(), rand::random::<f32>()) * CHUNK_SIZE
                         / CHUNK_SUBDIV as f32;
 
+
+                let r = rand::random::<f32>();
                 let orb_size =
-                    MIN_EXPLOSIVE_ORB_SIZE + EXPLOSIVE_ORB_SIZE_VARIATION * explosive_orb_r;
+                    MIN_EXPLOSIVE_ORB_SIZE + EXPLOSIVE_ORB_SIZE_VARIATION * r;
                 cmds.spawn((
-                    ExplosiveGasOrb {
+                    RedGasOrb {
                         pos: pos
                             .extend((rand::random::<f32>() - 0.5) * EXPLOSIVE_ORB_CLOUD_Z_SCALE),
                         radius: orb_size,
