@@ -43,7 +43,7 @@ pub struct Asteroid {
 }
 
 #[derive(Component)]
-pub struct ShipAsteroidCollider {}
+pub struct ShipAsteroidCollider;
 
 // pub fn meteorite_bundle(r: f32, pos: Vec2, parent: Entity) -> impl Bundle {
 //     (
@@ -76,7 +76,7 @@ fn on_add_asteroid(
         //     GameCollisionLayers::Meteorites,
         //     GameCollisionLayers::Meteorites,
         // ),
-        Collider::circle(asteroid.radius),
+        Collider::circle(asteroid.radius * 0.85),
         Transform::from_translation(asteroid.pos),
         // .with_scale(Vec3::splat(meteorite_size)),
         Mesh3d(meshes.add(Sphere::new(asteroid.radius))),
