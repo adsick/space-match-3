@@ -1,4 +1,4 @@
-// Support configuring Bevy lints within code.
+// Support configuring Bevy lints withinv code.
 #![cfg_attr(bevy_lint, feature(register_tool), register_tool(bevy))]
 // Disable console on Windows for non-dev builds.
 #![cfg_attr(not(feature = "dev"), windows_subsystem = "windows")]
@@ -19,8 +19,7 @@ mod utils;
 
 use avian2d::prelude::*;
 use bevy::{
-    asset::AssetMetaCheck, color::palettes::css::WHITE, core_pipeline::bloom::Bloom,
-    diagnostic::FrameTimeDiagnosticsPlugin, prelude::*,
+    asset::AssetMetaCheck, color::palettes::css::WHITE, core_pipeline::bloom::Bloom, diagnostic::FrameTimeDiagnosticsPlugin, math::VectorSpace, prelude::*
 };
 use bevy_framepace::FramepacePlugin;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;

@@ -4,31 +4,38 @@ use bevy::{
     app::{App, Update},
     asset::{Asset, AssetServer, Assets, Handle},
     color::{
-        Alpha,
+        Alpha, Srgba,
         palettes::css::{GREEN, RED, WHEAT, WHITE},
     },
+    ecs::relationship::RelatedSpawnerCommands,
     math::{NormedVectorSpace, Vec2, Vec3, Vec3Swizzles},
-    pbr::{MeshMaterial3d, StandardMaterial},
+    pbr::{MeshMaterial3d, PointLight, StandardMaterial},
     prelude::{
-        AlphaMode, Commands, Component, EaseFunction, Entity, Event, EventReader, EventWriter,
-        FromWorld, IntoScheduleConfigs, Mesh, Mesh3d, MeshBuilder, OnAdd, Query, Res, ResMut,
-        Resource, Single, Transform, Trigger, With,
+        AlphaMode, ChildOf, Commands, Component, EaseFunction, Entity, Event, EventReader,
+        EventWriter, FromWorld, IntoScheduleConfigs, Mesh, Mesh3d, MeshBuilder, OnAdd, Query, Res,
+        ResMut, Resource, Single, Transform, Trigger, Visibility, With,
     },
     reflect::Reflect,
     render::mesh::{CircleMeshBuilder, SphereKind, SphereMeshBuilder},
+    utils::default,
 };
 use bevy_spatial::{
     AutomaticUpdate, SpatialAccess, SpatialStructure, TransformMode, kdtree::KDTree2,
 };
 use bevy_tweening::{
-    AnimationSystem, Animator, Lens, Targetable, Tween, TweenCompleted, component_animator_system,
-    lens::TransformScaleLens,
+    AnimationSystem, Animator, AssetAnimator, Lens, Targetable, Tween, TweenCompleted,
+    component_animator_system, lens::TransformScaleLens,
 };
+use log::debug;
 
 use crate::{
     PhysicsLayers,
     player::{self, Player},
+    utils::{PointLightLens, StandardMaterialLens},
 };
+
+const MAX_EXPLOSION_RADIUS: f32 = 600.;
+const EXPLOSION_DURATION_SECS: u64 = 15;
 
 pub fn plugin(app: &mut App) {
     app.add_plugins((AutomaticUpdate::<RedGasOrb>::new()
@@ -54,8 +61,10 @@ pub struct RedGasOrb {
 
 #[derive(Component)]
 struct RedOrbExplosion {
-    pub radius: f32,
-    pub pos: Vec2,
+    radius: f32,
+    pos: Vec2,
+    // The number of other orbs this one has interacted with. For optimization purposes.
+    interactions: usize,
 }
 
 #[derive(Resource, Asset, Clone, Reflect)]
@@ -63,7 +72,7 @@ struct RedOrbAssets {
     mesh: Handle<Mesh>,
     material: Handle<StandardMaterial>,
     explosion_mesh: Handle<Mesh>,
-    explosion_materials: Vec<Handle<StandardMaterial>>,
+    // explosion_materials: Vec<Handle<StandardMaterial>>,
 }
 
 #[derive(Event)]
@@ -101,27 +110,29 @@ impl FromWorld for RedOrbAssets {
             ..Default::default()
         });
 
-        let explosion_materials = vec![
-            assets.add(StandardMaterial {
-                base_color: RED.with_alpha(0.5).into(),
-                alpha_mode: AlphaMode::Blend,
-                emissive: (RED * 1.0).into(),
-                ..Default::default()
-            }),
-            assets.add(StandardMaterial {
-                base_color: RED.with_alpha(0.5).into(),
-                alpha_mode: AlphaMode::Blend,
-                emissive: (RED * 3.0).into(),
-                ..Default::default()
-            }),
-        ];
+        // let explosion_materials = vec![
+        //     assets.add(StandardMaterial {
+        //         base_color: RED.with_alpha(0.5).into(),
+        //         alpha_mode: AlphaMode::Blend,
+        //         emissive: (RED * 1.0).into(),
+        //         fog_enabled: false,
+        //         ..Default::default()
+        //     }),
+        //     assets.add(StandardMaterial {
+        //         base_color: RED.with_alpha(0.5).into(),
+        //         alpha_mode: AlphaMode::Blend,
+        //         emissive: (RED * 3.0).into(),
+        //         fog_enabled: false,
+        //         ..Default::default()
+        //     }),
+        // ];
 
         let explosion_mesh = assets.add(CircleMeshBuilder::new(1.0, 12).build());
 
         RedOrbAssets {
             mesh,
             material,
-            explosion_materials,
+            // explosion_materials,
             explosion_mesh,
         }
     }
@@ -153,8 +164,11 @@ fn on_add_explosive_gas_orb(
 fn explode_orbs(
     mut events: EventReader<RedOrbExplosionEvent>,
     mut commands: Commands,
-    orbs: Query<&RedGasOrb>,
 
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+
+    orbs: Query<&RedGasOrb>,
     orb_assets: Res<RedOrbAssets>,
 ) {
     for event in events.read() {
@@ -164,24 +178,12 @@ fn explode_orbs(
 
         commands.entity(event.entity).try_despawn();
 
-        const MAX_EXPLOSION_RADIUS: f32 = 500.;
-        const EXPLOSION_DURATION_SECS: u64 = 10;
-
         let explosion_radius_tween = Tween::new(
             EaseFunction::QuinticOut,
             Duration::from_secs(EXPLOSION_DURATION_SECS),
             RedOrbExplosionLens {
                 radius_start: orb.radius,
                 radius_end: MAX_EXPLOSION_RADIUS,
-            },
-        );
-
-        let explosion_sphere_tween = Tween::new(
-            EaseFunction::QuinticOut,
-            Duration::from_secs(EXPLOSION_DURATION_SECS),
-            TransformScaleLens {
-                start: Vec3::splat(orb.radius),
-                end: Vec3::splat(MAX_EXPLOSION_RADIUS),
             },
         )
         .with_completed_event(0);
@@ -191,42 +193,145 @@ fn explode_orbs(
                 RedOrbExplosion {
                     pos: orb.pos.xy(),
                     radius: orb.radius,
+                    interactions: 0,
                 },
-                Mesh3d(orb_assets.explosion_mesh.clone()),
-                MeshMaterial3d(orb_assets.explosion_materials[0].clone()),
                 Transform::from_translation(orb.pos),
                 Animator::new(explosion_radius_tween),
-                Animator::new(explosion_sphere_tween),
+                Visibility::Visible,
             ))
+            .with_children(|builder| {
+                spawn_explosion_light(builder);
+                spawn_explosion_mesh(builder, orb_assets.explosion_mesh.clone(), &mut materials);
+            })
             .observe(|trigger: Trigger<TweenCompleted>, mut commands: Commands| {
                 commands.entity(trigger.target()).try_despawn();
             });
     }
 }
 
+fn spawn_explosion_mesh(
+    builder: &mut RelatedSpawnerCommands<'_, ChildOf>,
+
+    mesh: Handle<Mesh>,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+) {
+    let duration = Duration::from_secs(EXPLOSION_DURATION_SECS);
+
+    let transform_tween = Tween::new(
+        EaseFunction::QuinticOut,
+        duration,
+        TransformScaleLens {
+            start: Vec3::splat(1.0),
+            end: Vec3::splat(MAX_EXPLOSION_RADIUS),
+        },
+    );
+
+    let color_start = RED;
+    let color_end = RED.with_alpha(0.2);
+    let color_tween = Tween::new(
+        EaseFunction::QuinticOut,
+        duration,
+        StandardMaterialLens {
+            color_start: color_start.into(),
+            color_end: color_end.into(),
+            emissive_start: (color_start * 10.).into(),
+            emissive_end: (color_end * 4.).into(),
+        },
+    )
+    .with_completed_event(0);
+
+    builder.spawn((
+        Animator::new(transform_tween),
+        AssetAnimator::new(color_tween),
+        Mesh3d(mesh),
+        MeshMaterial3d(materials.add(StandardMaterial {
+            alpha_mode: AlphaMode::Blend,
+            fog_enabled: false,
+            ..Default::default()
+        })),
+    ));
+    // .observe(|trigger: Trigger<TweenCompleted>, mut commands: Commands| {
+    //     commands.entity(trigger.target()).try_despawn();
+    // });
+}
+
+fn spawn_explosion_light(builder: &mut RelatedSpawnerCommands<'_, ChildOf>) {
+    let duration = Duration::from_secs(3);
+
+    let point_light_tween = Tween::new(
+        EaseFunction::QuinticOut,
+        duration,
+        PointLightLens {
+            color_start: RED.into(),
+            color_end: RED.into(),
+            intensity_start: 1000000000000000.,
+            intensity_end: 0.,
+        },
+    )
+    .with_completed_event(0);
+
+    builder
+        .spawn((
+            Animator::new(point_light_tween),
+            PointLight {
+                color: RED.into(),
+                radius: 5000.,
+                ..default()
+            },
+        ))
+        .observe(|trigger: Trigger<TweenCompleted>, mut commands: Commands| {
+            commands.entity(trigger.target()).try_despawn();
+        });
+}
+
 fn check_explosion_interactions(
     mut commands: Commands,
-    explosions: Query<(Entity, &RedOrbExplosion)>,
+    mut explosions: Query<(Entity, &mut RedOrbExplosion)>,
     red_orb_tree: Res<KDTree2<RedGasOrb>>,
     player_transform: Single<&Transform, With<Player>>,
     mut red_orb_explosion_events: EventWriter<RedOrbExplosionEvent>,
 ) {
-    for (entity, explosion) in explosions {
-        const EXPLOSION_CLEANUP_RADIUS: f32 = 1500.;
+    let mut i = 0;
+    for (entity, mut explosion) in &mut explosions {
+        i += 1;
+        let Ok(mut entity_commands) = commands.get_entity(entity) else {
+            continue;
+        };
+
+        if explosion.interactions > 2 {
+            entity_commands.despawn();
+            continue;
+        }
+
+        let r = rand::random::<f32>();
+        if r > 0.999 {
+            entity_commands.despawn();
+            continue;
+        }
+
+        const EXPLOSION_CLEANUP_RADIUS: f32 = 1000.;
         if player_transform
             .translation
             .xy()
             .distance_squared(explosion.pos)
             > EXPLOSION_CLEANUP_RADIUS * EXPLOSION_CLEANUP_RADIUS
         {
-            commands.entity(entity).try_despawn();
+            // commands.entity(entity).try_despawn();
+            entity_commands.despawn();
             continue;
         }
 
         for (_, entity) in red_orb_tree.within_distance(explosion.pos, explosion.radius) {
-            if let Some(e) = entity {
-                red_orb_explosion_events.write(RedOrbExplosionEvent { entity: e });
+            if let Some(entity) = entity {
+                if commands.get_entity(entity).is_err() {
+                    continue;
+                }
+
+                explosion.interactions += 1;
+                red_orb_explosion_events.write(RedOrbExplosionEvent { entity });
             }
         }
     }
+
+    debug!("explosion count: {i}");
 }
