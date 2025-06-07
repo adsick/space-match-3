@@ -3,6 +3,7 @@
 // Disable console on Windows for non-dev builds.
 #![cfg_attr(not(feature = "dev"), windows_subsystem = "windows")]
 
+#![allow(unused_imports)]
 mod asset_tracking;
 mod audio;
 // #[cfg(feature = "dev")]
