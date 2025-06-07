@@ -3,10 +3,11 @@ use std::collections::VecDeque;
 use avian2d::prelude::Physics;
 use bevy::{
     color::{
+        ColorToComponents,
         palettes::{
             css::{PURPLE, RED},
-            tailwind::{PURPLE_50, RED_300, RED_50, RED_500},
-        }, ColorToComponents
+            tailwind::RED_500,
+        },
     },
     math::{UVec4, Vec2, Vec2Swizzles, Vec3, Vec3Swizzles, Vec4, VectorSpace},
     pbr::{ExtendedMaterial, MaterialExtension, MaterialPlugin, MeshMaterial3d, StandardMaterial},
@@ -97,7 +98,7 @@ fn on_add_fire(
         Mesh3d(meshes.add(Rectangle::from_length(2000.))),
         MeshMaterial3d(explosion_materials.add(ExtendedMaterial {
             base: StandardMaterial {
-                alpha_mode: AlphaMode::Blend,
+                alpha_mode: AlphaMode::Multiply,
                 ..Default::default()
             },
             extension: FireMaterialExtension::default(),
@@ -134,7 +135,7 @@ fn update_engine_power(
         let Ok(current_gas) = ship_query.get(child_of.parent()) else {
             return;
         };
-        fire_params.color = ( Srgba::new(252. / 255., 10./255., 113. / 255., 1.0)  * 2.0 ).lerp(PURPLE * 2.0, current_gas.0).to_vec4();
+        fire_params.color = RED_500.lerp(PURPLE * 2.0, current_gas.0).to_vec4();
     }
 }
 

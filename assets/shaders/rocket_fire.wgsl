@@ -120,7 +120,7 @@ fn fragment(
     if (density > 0.4) {
         out.color = vec4f(5.0);
     } else if (density > 0.2) {
-        out.color = vec4f(color, 1.0);
+        out.color = vec4f(color, 1.0) * 2.;
     } else if (density > 0.1) {
         out.color = mix(vec4f(1.0), vec4f(color, 1.0), density * 5.);
     } else {
