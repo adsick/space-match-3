@@ -2,7 +2,7 @@
 #![cfg_attr(bevy_lint, feature(register_tool), register_tool(bevy))]
 // Disable console on Windows for non-dev builds.
 #![cfg_attr(not(feature = "dev"), windows_subsystem = "windows")]
-// #![allow(unused_imports)]
+#![allow(unused_imports)]
 mod asset_tracking;
 mod asteroids;
 mod audio;
