@@ -18,10 +18,7 @@ use bevy::{
 
 use crate::{
     PausableSystems,
-    player::{
-        Player,
-        movement::CurrentGas,
-    },
+    player::{Player, movement::CurrentGas},
     screens::Screen,
 };
 

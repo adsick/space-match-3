@@ -30,4 +30,3 @@ pub enum Screen {
     Gameplay,
     Dead,
 }
-

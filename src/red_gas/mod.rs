@@ -4,18 +4,15 @@ use avian2d::prelude::{Physics, PhysicsTime};
 use bevy::{
     app::{App, Update},
     asset::{Asset, AssetServer, Assets, Handle},
-    color::{
-        Alpha,
-        palettes::css::RED,
-    },
+    color::{Alpha, palettes::css::RED},
     ecs::{entity::EntityHashSet, relationship::RelatedSpawnerCommands},
     math::{NormedVectorSpace, Vec2, Vec3, Vec3Swizzles},
     pbr::{MeshMaterial3d, PointLight, StandardMaterial},
     prelude::{
         AlphaMode, ChildOf, Commands, Component, EaseFunction, Entity, Event, EventReader,
-        EventWriter, FromWorld, IntoScheduleConfigs, Mesh, Mesh3d, MeshBuilder, OnAdd,
-        Query, Res, ResMut, Resource, Single, State, StateScoped, Transform, Trigger, Visibility,
-        With, in_state,
+        EventWriter, FromWorld, IntoScheduleConfigs, Mesh, Mesh3d, MeshBuilder, OnAdd, Query, Res,
+        ResMut, Resource, Single, State, StateScoped, Transform, Trigger, Visibility, With,
+        in_state,
     },
     reflect::Reflect,
     render::mesh::{CircleMeshBuilder, SphereKind, SphereMeshBuilder},
