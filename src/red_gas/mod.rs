@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{collections::HashSet, time::Duration};
 
 use avian2d::prelude::{Physics, PhysicsTime};
 use bevy::{
@@ -8,7 +8,7 @@ use bevy::{
         Alpha, Srgba,
         palettes::css::{GREEN, RED, WHEAT, WHITE},
     },
-    ecs::relationship::RelatedSpawnerCommands,
+    ecs::{entity::EntityHashSet, relationship::RelatedSpawnerCommands},
     math::{NormedVectorSpace, Vec2, Vec3, Vec3Swizzles},
     pbr::{MeshMaterial3d, PointLight, StandardMaterial},
     prelude::{
@@ -342,6 +342,8 @@ fn check_explosion_interactions(
 ) {
     let mut i = 0;
     let mut is_inside_explosion = false;
+    let mut already_exploded = EntityHashSet::default();
+
     for (entity, mut explosion) in &mut explosions {
         i += 1;
         let Ok(mut entity_commands) = commands.get_entity(entity) else {
@@ -370,12 +372,16 @@ fn check_explosion_interactions(
 
         for (_, entity) in red_orb_tree.within_distance(explosion.pos, explosion.radius) {
             if let Some(entity) = entity {
+                if already_exploded.contains(&entity) {
+                    continue;
+                }
                 if commands.get_entity(entity).is_err() {
                     continue;
                 }
 
                 explosion.interactions += 1;
                 red_orb_explosion_events.write(RedOrbExplosionEvent { entity });
+                already_exploded.insert(entity);
             }
         }
     }
