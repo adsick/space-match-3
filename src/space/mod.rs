@@ -181,8 +181,6 @@ fn populate_chunk(
 
     for y in 0..CHUNK_SUBDIV {
         for x in 0..CHUNK_SUBDIV {
-            let is_intro_region = ((x * x + y * y) as f32) < INTRO_SCENE_RADIUS_SQ;
-
             let cell_pos = trigger.0.as_vec2() * CHUNK_SIZE
                 + (Vec2::new(x as f32, y as f32) / (CHUNK_SUBDIV as f32)) * CHUNK_SIZE;
             let r = gas.sample(cell_pos);
@@ -195,6 +193,8 @@ fn populate_chunk(
                 INTRO_CLOUD_RADIUS - 400.,
                 intro_cloud_dist_sq,
             );
+
+            let is_intro_region = cell_pos.length_squared() < INTRO_SCENE_RADIUS_SQ;
 
             // println!("start_mask: {start_mask}");
 

@@ -54,10 +54,8 @@ fn side_dash(
 
     let mut f: Option<Vec2> = None;
     if keyboard_input.pressed(KeyCode::KeyQ) {
-        println!("side dashing!");
         f = Some(rotation * Vec2::X * -DASH_STRENGTH);
     } else if keyboard_input.pressed(KeyCode::KeyE) {
-        println!("side dashing!");
         f = Some(rotation * Vec2::X * DASH_STRENGTH);
     }
 
