@@ -73,7 +73,7 @@ fn render_speed_tracers(
 
         // fade out the further it is from the middle of the range, the more opaque
         let opacity =
-            ((cam_tr.translation().z - pos.z - MIDDLE_Z).abs() / (Z_EXTENT / 2.0)).powf(1.0 / 1.0);
+            ((cam_tr.translation().z - pos.z - MIDDLE_Z).abs() / (Z_EXTENT / 2.0)).powf(1.0);
 
         // gizmos.sphere(*pos, 2.0, *color * opacity);
 

@@ -1,9 +1,10 @@
 use avian2d::prelude::{LinearVelocity, Physics, PhysicsTime};
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 
-use crate::screens::Screen;
+use crate::screens::{GameState, Screen};
 
 pub mod assets;
+pub mod death;
 pub mod engine;
 pub mod hud;
 pub mod movement;
@@ -16,15 +17,21 @@ pub(super) fn plugin(app: &mut App) {
         assets::plugin,
         engine::plugin,
         hud::plugin,
+        death::plugin,
     ))
     .add_systems(
         Update,
         (
-            camera_follow_player,
-            player_powers,
+            camera_follow_player
+                .run_if(in_state(Screen::Gameplay))
+                .run_if(in_state(GameState::Playing)),
+            player_powers
+                .run_if(in_state(Screen::Gameplay))
+                .run_if(in_state(GameState::Playing)),
             go_into_bullet_time
                 .run_if(input_just_pressed(KeyCode::Space))
-                .run_if(in_state(Screen::Gameplay)),
+                .run_if(in_state(Screen::Gameplay))
+                .run_if(in_state(GameState::Playing)),
         ),
     );
 }
@@ -67,7 +74,7 @@ pub fn camera_follow_player(
 
 const BULLET_TIME_DURATION: f32 = 5.0;
 const BULLET_TIME_COOLDOWN: f32 = 15.0; // seconds
-const BULLET_TIME_AURA_COST: f32 = 300.0;
+const BULLET_TIME_AURA_COST: f32 = 0.0;
 
 fn player_powers(
     player: Single<&Player>,

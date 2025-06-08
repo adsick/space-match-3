@@ -9,7 +9,7 @@ use bevy::prelude::*;
 use gas::GasOrb;
 use noiz::{Noise, SampleableFor, prelude::common_noise::Perlin, rng::NoiseRng};
 
-use crate::{asteroids::Asteroid, player::Player, red_gas::RedGasOrb};
+use crate::{asteroids::Asteroid, player::Player, red_gas::RedGasOrb, screens::Screen};
 
 pub mod gas;
 
@@ -130,7 +130,11 @@ fn trigger_chunk_population(
     if let Some(chunk_coords) = closest {
         // let pos = chunk_coords.as_vec2().extend(0.0) * CHUNK_SIZE;
         let chunk_entity = cmds
-            .spawn((Transform::default(), InheritedVisibility::VISIBLE))
+            .spawn((
+                StateScoped(Screen::Gameplay),
+                Transform::default(),
+                InheritedVisibility::VISIBLE,
+            ))
             .id();
         cmds.trigger_targets(PopulateChunk(chunk_coords), chunk_entity);
     }
@@ -252,7 +256,7 @@ fn unload_far_chunks(
             > RENDER_DISTANCE * RENDER_DISTANCE * 6 / 5
         {
             populated.0.remove(chunk_coords);
-            cmds.entity(*chunk_entity).despawn();
+            cmds.entity(*chunk_entity).try_despawn();
         }
     }
 }

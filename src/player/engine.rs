@@ -19,9 +19,13 @@ use bevy::{
     render::render_resource::{AsBindGroup, ShaderRef},
 };
 
-use crate::player::{
-    Player, camera_follow_player,
-    movement::{CurrentGas, thrust},
+use crate::{
+    PausableSystems,
+    player::{
+        Player, camera_follow_player,
+        movement::{CurrentGas, thrust},
+    },
+    screens::Screen,
 };
 
 const FIRE_SHADER_PATH: &str = "shaders/rocket_fire.wgsl";
@@ -33,8 +37,19 @@ pub(crate) fn plugin(app: &mut App) {
         .add_plugins((MaterialPlugin::<
             ExtendedMaterial<StandardMaterial, FireMaterialExtension>,
         >::default(),))
-        .add_systems(Update, check_fire_params_change)
-        .add_systems(Update, (update_engine_power, update_shader_params).chain());
+        .add_systems(
+            Update,
+            check_fire_params_change
+                .run_if(in_state(Screen::Gameplay))
+                .in_set(PausableSystems),
+        )
+        .add_systems(
+            Update,
+            (update_engine_power, update_shader_params)
+                .chain()
+                .run_if(in_state(Screen::Gameplay))
+                .in_set(PausableSystems),
+        );
 }
 
 #[derive(Asset, AsBindGroup, Reflect, Debug, Clone)]

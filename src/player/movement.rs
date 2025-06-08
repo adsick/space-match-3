@@ -6,7 +6,7 @@ use bevy::prelude::*;
 // use bevy::diagnostic::{DiagnosticPath, DiagnosticsStore};
 
 use crate::PausableSystems;
-use crate::screens::Screen;
+use crate::screens::{GameState, Screen};
 use crate::space::GasGenerator;
 use crate::space::gas::ignite_gas;
 
