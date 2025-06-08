@@ -13,8 +13,9 @@ use bevy::{
     pbr::{MeshMaterial3d, PointLight, StandardMaterial},
     prelude::{
         AlphaMode, ChildOf, Commands, Component, EaseFunction, Entity, Event, EventReader,
-        EventWriter, FromWorld, IntoScheduleConfigs, Mesh, Mesh3d, MeshBuilder, OnAdd, Query, Res,
-        ResMut, Resource, Single, State, Transform, Trigger, Visibility, With, in_state,
+        EventWriter, FromWorld, IntoScheduleConfigs, Mesh, Mesh3d, MeshBuilder, OnAdd, OnEnter,
+        Query, Res, ResMut, Resource, Single, State, StateScoped, Transform, Trigger, Visibility,
+        With, in_state,
     },
     reflect::Reflect,
     render::mesh::{CircleMeshBuilder, SphereKind, SphereMeshBuilder},
@@ -205,7 +206,7 @@ fn explode_orbs(
     mut events: EventReader<RedOrbExplosionEvent>,
     mut commands: Commands,
 
-    mut meshes: ResMut<Assets<Mesh>>,
+    // mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 
     orbs: Query<&RedGasOrb>,
@@ -230,6 +231,7 @@ fn explode_orbs(
 
         commands
             .spawn((
+                StateScoped(Screen::Gameplay),
                 RedOrbExplosion {
                     pos: orb.pos.xy(),
                     radius: orb.radius,
@@ -347,7 +349,7 @@ fn check_explosion_interactions(
         };
 
         if explosion.interactions > 20 {
-            entity_commands.despawn();
+            entity_commands.try_despawn();
             continue;
         }
 
@@ -358,7 +360,7 @@ fn check_explosion_interactions(
 
         const EXPLOSION_CLEANUP_RADIUS: f32 = 2000.;
         if player_distance > EXPLOSION_CLEANUP_RADIUS * EXPLOSION_CLEANUP_RADIUS {
-            entity_commands.despawn();
+            entity_commands.try_despawn();
             continue;
         }
 

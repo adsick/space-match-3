@@ -9,8 +9,7 @@ use crate::{
 };
 
 pub(super) fn plugin(app: &mut App) {
-    app.insert_resource(DeathAnimation { t: 0.0 })
-        .add_systems(OnEnter(Screen::Gameplay), spawn_damage_overlay)
+    app.add_systems(OnEnter(Screen::Gameplay), spawn_damage_overlay)
         .add_systems(
             Update,
             check_explosion_damage
@@ -25,11 +24,6 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Component)]
 struct DamageOverlay {}
 
-#[derive(Resource)]
-struct DeathAnimation {
-    t: f32,
-}
-
 fn spawn_damage_overlay(
     mut commands: Commands,
     camera: Single<Entity, With<Camera3d>>,
@@ -40,6 +34,7 @@ fn spawn_damage_overlay(
     let damage_overlay = commands
         .spawn((
             DamageOverlay {},
+            StateScoped(Screen::Gameplay),
             Transform::from_translation(Vec3::new(0.0, 0.0, -10.)),
             Mesh3d(meshes.add(Rectangle::from_length(100.))),
             MeshMaterial3d(materials.add(StandardMaterial {
