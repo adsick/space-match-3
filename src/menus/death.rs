@@ -3,20 +3,16 @@ use bevy::{color::palettes::css::BLACK, input::common_conditions::input_just_pre
 use crate::{menus::Menu, screens::Screen, theme::widget};
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(OnEnter(Menu::Death), spawn_death_menu);
+    app.add_systems(OnEnter(Screen::Dead), spawn_death_menu);
 }
 
 fn spawn_death_menu(mut commands: Commands) {
     commands.spawn((
         widget::ui_root("DEAD"),
-        GlobalZIndex(2),
-        StateScoped(Menu::Death),
+        // GlobalZIndex(1),
+        StateScoped(Screen::Dead),
         children![
-            (
-                Text("DEAD".into()),
-                TextFont::from_font_size(80.0),
-                TextColor(BLACK.into()),
-            ),
+            widget::header("DEAD"),
             // TODO: display the score
             widget::button("Restart", restart),
             widget::button("Quit to title", quit_to_title),
@@ -24,8 +20,8 @@ fn spawn_death_menu(mut commands: Commands) {
     ));
 }
 
-fn restart(_: Trigger<Pointer<Click>>, mut next_menu: ResMut<NextState<Menu>>) {
-    // TODO:
+fn restart(_: Trigger<Pointer<Click>>, mut next_screen: ResMut<NextState<Screen>>) {
+    next_screen.set(Screen::Gameplay);
 }
 
 fn quit_to_title(_: Trigger<Pointer<Click>>, mut next_screen: ResMut<NextState<Screen>>) {

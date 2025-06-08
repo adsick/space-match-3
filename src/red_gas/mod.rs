@@ -387,7 +387,7 @@ fn check_explosion_interactions(
     }
 
     if is_inside_explosion {
-        explosion_damage.0 += time.delta_secs();
+        explosion_damage.0 += time.delta_secs() / 3.0;
     } else {
         explosion_damage.0 = 0.;
     }

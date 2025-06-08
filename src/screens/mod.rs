@@ -29,6 +29,7 @@ pub enum Screen {
     #[cfg_attr(feature = "dev", default)]
     Loading,
     Gameplay,
+    Dead,
 }
 
 
@@ -38,5 +39,4 @@ pub enum GameState {
     Intro,
     #[default]
     Playing,
-    Dead,
 }

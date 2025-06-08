@@ -52,9 +52,10 @@ fn check_explosion_damage(
     explosion_damage: Res<ExplosionDamage>,
     overlay: Single<&MeshMaterial3d<StandardMaterial>, With<DamageOverlay>>,
 
-    mut game_state: ResMut<NextState<Menu>>,
+    mut menu_state: ResMut<NextState<Menu>>,
+    mut screen_state: ResMut<NextState<Screen>>,
+
     mut phys_time: ResMut<Time<Physics>>,
-    mut pause_state: ResMut<NextState<Pause>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let Some(material) = materials.get_mut(*overlay) else {
@@ -66,8 +67,8 @@ fn check_explosion_damage(
 
     if explosion_damage.0 >= 1.0 {
         phys_time.pause();
-        pause_state.set(Pause(true));
-        game_state.set(Menu::Death);
+        // menu_state.set(Menu::Dead);
+        screen_state.set(Screen::Dead);
     }
 }
 
