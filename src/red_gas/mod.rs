@@ -14,7 +14,7 @@ use bevy::{
     prelude::{
         AlphaMode, ChildOf, Commands, Component, EaseFunction, Entity, Event, EventReader,
         EventWriter, FromWorld, IntoScheduleConfigs, Mesh, Mesh3d, MeshBuilder, OnAdd, Query, Res,
-        ResMut, Resource, Single, Transform, Trigger, Visibility, With,
+        ResMut, Resource, Single, State, Transform, Trigger, Visibility, With, in_state,
     },
     reflect::Reflect,
     render::mesh::{CircleMeshBuilder, SphereKind, SphereMeshBuilder},
@@ -31,8 +31,9 @@ use bevy_tweening::{
 use log::debug;
 
 use crate::{
-    PhysicsLayers,
+    PausableSystems, Pause, PhysicsLayers,
     player::{self, Player},
+    screens::{GameState, Screen},
     utils::{PointLightLens, StandardMaterialLens},
 };
 
@@ -46,18 +47,48 @@ pub fn plugin(app: &mut App) {
         .with_transform(TransformMode::GlobalTransform),))
         .add_observer(on_add_explosive_gas_orb)
         .init_resource::<RedOrbAssets>()
+        .insert_resource(ExplosionDamage(0.0))
         .add_event::<RedOrbExplosionEvent>()
-        .add_systems(Update, explode_orbs)
-        .add_systems(Update, check_explosion_interactions)
         .add_systems(
             Update,
-            component_animator_system::<RedOrbExplosion>.in_set(AnimationSystem::AnimationUpdate),
+            explode_orbs
+                .run_if(in_state(Screen::Gameplay))
+                .in_set(PausableSystems),
         )
-        .add_systems(Update, update_component_animator_speed::<PointLight>)
-        .add_systems(Update, update_component_animator_speed::<RedOrbExplosion>)
-        .add_systems(Update, update_component_animator_speed::<Transform>)
-        .add_systems(Update, update_asset_animator_speed::<StandardMaterial>);
+        .add_systems(
+            Update,
+            check_explosion_interactions
+                .run_if(in_state(Screen::Gameplay))
+                .in_set(PausableSystems),
+        )
+        .add_systems(
+            Update,
+            component_animator_system::<RedOrbExplosion>
+                .in_set(AnimationSystem::AnimationUpdate)
+                .run_if(in_state(Screen::Gameplay))
+                .in_set(PausableSystems),
+        )
+        .add_systems(
+            Update,
+            update_component_animator_speed::<PointLight>.run_if(in_state(Screen::Gameplay)),
+        )
+        .add_systems(
+            Update,
+            update_component_animator_speed::<RedOrbExplosion>.run_if(in_state(Screen::Gameplay)),
+        )
+        .add_systems(
+            Update,
+            update_component_animator_speed::<Transform>.run_if(in_state(Screen::Gameplay)),
+        )
+        .add_systems(
+            Update,
+            update_asset_animator_speed::<StandardMaterial>.run_if(in_state(Screen::Gameplay)),
+        );
 }
+
+#[derive(Resource)]
+/// When the damage reaches 1.0, the player must die.
+pub struct ExplosionDamage(pub f32);
 
 #[derive(Component)]
 pub struct RedGasOrb {
@@ -302,8 +333,13 @@ fn check_explosion_interactions(
     red_orb_tree: Res<KDTree2<RedGasOrb>>,
     player_transform: Single<&Transform, With<Player>>,
     mut red_orb_explosion_events: EventWriter<RedOrbExplosionEvent>,
+
+    mut explosion_damage: ResMut<ExplosionDamage>,
+
+    time: Res<Time<Physics>>,
 ) {
     let mut i = 0;
+    let mut is_inside_explosion = false;
     for (entity, mut explosion) in &mut explosions {
         i += 1;
         let Ok(mut entity_commands) = commands.get_entity(entity) else {
@@ -315,22 +351,19 @@ fn check_explosion_interactions(
             continue;
         }
 
-        // let r = rand::random::<f32>();
-        // if r > 0.999 {
-        //     entity_commands.despawn();
-        //     continue;
-        // }
-
-        const EXPLOSION_CLEANUP_RADIUS: f32 = 2000.;
-        if player_transform
+        let player_distance = player_transform
             .translation
             .xy()
-            .distance_squared(explosion.pos)
-            > EXPLOSION_CLEANUP_RADIUS * EXPLOSION_CLEANUP_RADIUS
-        {
-            // commands.entity(entity).try_despawn();
+            .distance_squared(explosion.pos);
+
+        const EXPLOSION_CLEANUP_RADIUS: f32 = 2000.;
+        if player_distance > EXPLOSION_CLEANUP_RADIUS * EXPLOSION_CLEANUP_RADIUS {
             entity_commands.despawn();
             continue;
+        }
+
+        if player_distance < explosion.radius * explosion.radius {
+            is_inside_explosion = true;
         }
 
         for (_, entity) in red_orb_tree.within_distance(explosion.pos, explosion.radius) {
@@ -345,24 +378,41 @@ fn check_explosion_interactions(
         }
     }
 
+    if is_inside_explosion {
+        explosion_damage.0 += time.delta_secs();
+    } else {
+        explosion_damage.0 = 0.;
+    }
+
     debug!("explosion count: {i}");
 }
 
 fn update_component_animator_speed<T: Component>(
     animators: Query<&mut Animator<T>, With<PhysicalTimeAnimator>>,
+    pause_state: Res<State<Pause>>,
     time: Res<Time<Physics>>,
 ) {
+    let paused = pause_state.get().0;
     for mut animator in animators {
-        animator.set_speed(time.relative_speed());
+        if paused {
+            animator.set_speed(0.0);
+        } else {
+            animator.set_speed(time.relative_speed());
+        }
     }
 }
 
 fn update_asset_animator_speed<T: Asset>(
     animators: Query<&mut AssetAnimator<T>, With<PhysicalTimeAnimator>>,
+    current_state: Res<State<Pause>>,
     time: Res<Time<Physics>>,
 ) {
-    println!("time: {}", time.relative_speed());
+    let paused = current_state.get().0;
     for mut animator in animators {
-        animator.set_speed(time.relative_speed());
+        if paused {
+            animator.set_speed(0.0);
+        } else {
+            animator.set_speed(time.relative_speed());
+        }
     }
 }
