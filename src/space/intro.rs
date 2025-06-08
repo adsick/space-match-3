@@ -82,7 +82,6 @@ fn camera_follow_player(
     *cam_transform = cam_transform.looking_at(player_transform.translation(), Vec3::Y);
 
     progress.t += time.delta_secs() / 4.0;
-    println!("intro progress: {}", progress.t);
     if progress.t >= 1.0 {
         progress.t = 0.0;
         intro_state.set(IntroState(false));
