@@ -8,6 +8,7 @@ use crate::space::intro::IntroState;
 use crate::{player::movement::DashTimer, screens::Screen};
 
 pub mod assets;
+pub mod dash;
 pub mod death;
 pub mod engine;
 pub mod hud;
@@ -22,16 +23,17 @@ pub(super) fn plugin(app: &mut App) {
         engine::plugin,
         hud::plugin,
         death::plugin,
+        dash::plugin,
     ))
     .add_systems(
         Update,
         (
             camera_follow_player.run_if(in_state(IntroState(false))),
             go_into_bullet_time.run_if(input_just_pressed(KeyCode::Space)),
-            player_powers,
-            // side_dash,
+            player_powers
         )
             .run_if(in_state(Screen::Gameplay)),
+
     );
 }
 
@@ -76,7 +78,6 @@ const BULLET_TIME_DURATION: f32 = 5.0;
 const BULLET_TIME_COOLDOWN: f32 = 15.0; // seconds
 const BULLET_TIME_AURA_COST: f32 = 0.0;
 
-const DASH_STRENGTH: f32 = 200.0;
 
 fn player_powers(
     player: Single<&Player>,
@@ -113,22 +114,3 @@ fn go_into_bullet_time(
     player.aura_points -= BULLET_TIME_AURA_COST
 }
 
-fn side_dash(
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    player_query: Single<(&mut ExternalImpulse, &Rotation, &mut Player)>,
-    time: Res<Time>,
-) {
-    let (mut impulse, rotation, mut player) = player_query.into_inner();
-
-    if !player.dash_timer.tick(time.delta()).finished() {
-        return;
-    }
-
-    if keyboard_input.pressed(KeyCode::KeyQ) {
-        impulse.apply_impulse(rotation * Vec2::X * -DASH_STRENGTH);
-        player.dash_timer.reset();
-    } else if keyboard_input.pressed(KeyCode::KeyE) {
-        impulse.apply_impulse(rotation * Vec2::X * DASH_STRENGTH);
-        player.dash_timer.reset();
-    }
-}
