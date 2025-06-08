@@ -41,11 +41,11 @@ fn side_dash(
     let (mut force, rotation, mut player, mut dash_data) = player_query.into_inner();
 
     let elapsed_millis = time.elapsed().as_millis();
-    if let Some(dash) = &dash_data.curr_dash
-        && elapsed_millis > dash.start_t_millis + DASH_DURATION_MILLIS
-    {
-        force.apply_force(-dash.force);
-        dash_data.curr_dash = None;
+    if let Some(dash) = &dash_data.curr_dash {
+        if elapsed_millis > dash.start_t_millis + DASH_DURATION_MILLIS {
+            force.apply_force(-dash.force);
+            dash_data.curr_dash = None;
+        }
     }
 
     if !player.dash_timer.tick(time.delta()).finished() {
