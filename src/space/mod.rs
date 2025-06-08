@@ -196,7 +196,7 @@ fn populate_chunk(
                 intro_cloud_dist_sq,
             );
 
-            // println!("start_mask: {start_mask}");
+            // debug!("start_mask: {start_mask}");
 
             if r > ORB_THRESHOLD {
                 // The actual orb position is slightly offset to avoid a grid-like look

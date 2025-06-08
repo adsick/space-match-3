@@ -35,7 +35,7 @@ fn setup_intro(
     mut player_controls: ResMut<PlayerControls>,
     mut intro_state: ResMut<NextState<IntroState>>,
 ) {
-    println!("disabling controls");
+    debug!("disabling controls");
     player_controls.enabled = false;
     intro_state.set(IntroState(true));
 }
@@ -44,7 +44,7 @@ fn on_intro_finished(
     mut player_controls: ResMut<PlayerControls>,
     mut ship_velocity: Single<&mut LinearVelocity, With<Player>>,
 ) {
-    println!("enabling controls");
+    debug!("enabling controls");
     player_controls.enabled = true;
 
     ship_velocity.0 = Vec2::new(0.0, 400.);
