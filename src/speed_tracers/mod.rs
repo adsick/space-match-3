@@ -15,7 +15,6 @@ const RENDER_STRIDE: usize = 1; // Reduces rendering cost at the risk of making 
 const MIN_Z: f32 = 0.0;
 const MAX_Z: f32 = 1000.0;
 const Z_EXTENT: f32 = MAX_Z - MIN_Z;
-const MIDDLE_Z: f32 = (MIN_Z + MAX_Z) / 2.0;
 
 fn render_speed_tracers(
     q_player: Single<&Transform, With<Player>>,
@@ -71,11 +70,8 @@ fn render_speed_tracers(
             pos.z -= Z_EXTENT;
         }
 
-        // fade out the further it is from the middle of the range, the more opaque
-        // let opacity = (1.0 - (cam_tr.translation().z - pos.z - MIDDLE_Z).abs() / (Z_EXTENT / 2.0))
-        //     .powf(1.0 / 2.0);
-
-        let offset_z = (cam_tr.translation().z - pos.z) / Z_EXTENT;
+        // make the lines less opaque if they are very close or very far away
+        let offset_z = (cam_tr.translation().z - pos.z) / Z_EXTENT; // within [0, 1] range
         let opacity = crate::space::smoothstep(0.0, 0.2, offset_z)
             .min(1.0 - crate::space::smoothstep(0.2, 1.0, offset_z));
 

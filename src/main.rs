@@ -84,7 +84,8 @@ impl Plugin for AppPlugin {
             FrameTimeDiagnosticsPlugin::default(),
         ));
 
-        app.insert_resource(ClearColor(Color::srgb(0.12, 0.1, 0.14)));
+        app.insert_resource(ClearColor(Color::srgb(0.12, 0.1, 0.14)))
+            .insert_resource(Gravity(Vec2::ZERO));
 
         // Order new `AppSystems` variants by adding them here:
         app.configure_sets(
@@ -100,6 +101,7 @@ impl Plugin for AppPlugin {
         // Set up the `Pause` state.
         app.init_state::<Pause>();
         app.configure_sets(Update, PausableSystems.run_if(in_state(Pause(false))));
+        app.configure_sets(FixedUpdate, PausableSystems.run_if(in_state(Pause(false))));
 
         // Spawn the main camera.
         app.add_systems(Startup, spawn_camera);
