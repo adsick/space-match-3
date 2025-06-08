@@ -14,6 +14,7 @@ mod player;
 mod red_gas;
 mod screens;
 mod space;
+mod speed_tracers;
 mod theme;
 mod utils;
 
@@ -79,6 +80,7 @@ impl Plugin for AppPlugin {
             red_gas::plugin,
             utils::plugin,
             intro_scene::plugin,
+            speed_tracers::plugin,
             FrameTimeDiagnosticsPlugin::default(),
         ));
 
