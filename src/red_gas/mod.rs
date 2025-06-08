@@ -19,6 +19,8 @@ use logic::*;
 
 const MAX_EXPLOSION_RADIUS: f32 = 1500.;
 const EXPLOSION_DURATION_SECS: u64 = 10;
+const EXPLOSION_CLEANUP_RADIUS: f32 = 3000.;
+
 
 pub fn plugin(app: &mut App) {
     app.add_plugins((AutomaticUpdate::<RedGasOrb>::new()

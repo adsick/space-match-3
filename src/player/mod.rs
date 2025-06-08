@@ -1,4 +1,6 @@
-use avian2d::prelude::{ExternalForce, LinearVelocity, Physics, PhysicsTime, Rotation};
+use avian2d::prelude::{
+    ExternalForce, ExternalImpulse, LinearVelocity, Physics, PhysicsTime, Rotation,
+};
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_kira_audio::{Audio, AudioControl};
 
@@ -24,15 +26,12 @@ pub(super) fn plugin(app: &mut App) {
     .add_systems(
         Update,
         (
-            camera_follow_player
-                .run_if(in_state(Screen::Gameplay))
-                .run_if(in_state(IntroState(false))),
-            player_powers.run_if(in_state(Screen::Gameplay)),
-            go_into_bullet_time
-                .run_if(input_just_pressed(KeyCode::Space))
-                .run_if(in_state(Screen::Gameplay)),
-            side_dash.run_if(in_state(Screen::Gameplay)),
-        ),
+            camera_follow_player.run_if(in_state(IntroState(false))),
+            go_into_bullet_time.run_if(input_just_pressed(KeyCode::Space)),
+            player_powers,
+            // side_dash,
+        )
+            .run_if(in_state(Screen::Gameplay)),
     );
 }
 
@@ -77,7 +76,7 @@ const BULLET_TIME_DURATION: f32 = 5.0;
 const BULLET_TIME_COOLDOWN: f32 = 15.0; // seconds
 const BULLET_TIME_AURA_COST: f32 = 0.0;
 
-const DASH_STRENGTH: f32 = 20000.0;
+const DASH_STRENGTH: f32 = 200.0;
 
 fn player_powers(
     player: Single<&Player>,
@@ -116,20 +115,20 @@ fn go_into_bullet_time(
 
 fn side_dash(
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    player_query: Single<(&mut ExternalForce, &Rotation, &mut Player)>,
+    player_query: Single<(&mut ExternalImpulse, &Rotation, &mut Player)>,
     time: Res<Time>,
 ) {
-    let (mut force, rotation, mut player) = player_query.into_inner();
+    let (mut impulse, rotation, mut player) = player_query.into_inner();
 
     if !player.dash_timer.tick(time.delta()).finished() {
         return;
     }
 
     if keyboard_input.pressed(KeyCode::KeyQ) {
-        force.apply_force(rotation * Vec2::X * -DASH_STRENGTH);
+        impulse.apply_impulse(rotation * Vec2::X * -DASH_STRENGTH);
         player.dash_timer.reset();
     } else if keyboard_input.pressed(KeyCode::KeyE) {
-        force.apply_force(rotation * Vec2::X * DASH_STRENGTH);
+        impulse.apply_impulse(rotation * Vec2::X * DASH_STRENGTH);
         player.dash_timer.reset();
     }
 }

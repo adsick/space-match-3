@@ -18,15 +18,9 @@ use bevy_tweening::{
 use log::debug;
 
 use crate::{
-    Pause,
-    player::Player,
-    red_gas::{
-        EXPLOSION_DURATION_SECS, ExplosionDamage, MAX_EXPLOSION_RADIUS, PhysicalTimeAnimator,
-        RedGasOrb, RedOrbExplosion, RedOrbExplosionEvent, RedOrbExplosionLens,
-        assets::RedOrbAssets,
-    },
-    screens::Screen,
-    utils::{PointLightLens, StandardMaterialLens},
+    player::Player, red_gas::{
+        assets::RedOrbAssets, ExplosionDamage, PhysicalTimeAnimator, RedGasOrb, RedOrbExplosion, RedOrbExplosionEvent, RedOrbExplosionLens, EXPLOSION_CLEANUP_RADIUS, EXPLOSION_DURATION_SECS, MAX_EXPLOSION_RADIUS
+    }, screens::Screen, utils::{PointLightLens, StandardMaterialLens}, Pause
 };
 
 
@@ -211,7 +205,6 @@ pub fn check_explosion_interactions(
             .xy()
             .distance_squared(explosion.pos);
 
-        const EXPLOSION_CLEANUP_RADIUS: f32 = 3000.;
         if player_distance > EXPLOSION_CLEANUP_RADIUS * EXPLOSION_CLEANUP_RADIUS {
             entity_commands.try_despawn();
             continue;
