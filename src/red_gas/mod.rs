@@ -301,7 +301,7 @@ fn check_explosion_interactions(
             continue;
         };
 
-        if explosion.interactions > 20 {
+        if explosion.interactions > 7 {
             entity_commands.try_despawn();
             continue;
         }
@@ -311,7 +311,7 @@ fn check_explosion_interactions(
             .xy()
             .distance_squared(explosion.pos);
 
-        const EXPLOSION_CLEANUP_RADIUS: f32 = 2000.;
+        const EXPLOSION_CLEANUP_RADIUS: f32 = 3000.;
         if player_distance > EXPLOSION_CLEANUP_RADIUS * EXPLOSION_CLEANUP_RADIUS {
             entity_commands.try_despawn();
             continue;
