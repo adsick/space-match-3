@@ -9,11 +9,11 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 const TRACER_COUNT: usize = 200;
-const TRACER_LENGTH: usize = 2;
+const TRACER_LENGTH: usize = 5;
 const WRAPPING_HALF_EXTENT: f32 = 1000.0; // Increase this if lines are visibly teleporting
 const RENDER_STRIDE: usize = 1; // Reduces rendering cost at the risk of making lines less smooth
-const MIN_Z: f32 = 100.0;
-const MAX_Z: f32 = 1000.0;
+const MIN_Z: f32 = 0.0;
+const MAX_Z: f32 = 700.0;
 const Z_EXTENT: f32 = MAX_Z - MIN_Z;
 const MIDDLE_Z: f32 = (MIN_Z + MAX_Z) / 2.0;
 
