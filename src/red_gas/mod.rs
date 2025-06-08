@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use avian2d::prelude::{Physics, PhysicsTime};
 use bevy::{
     app::{App, Update},
     asset::{Asset, AssetServer, Assets, Handle},
@@ -17,6 +18,7 @@ use bevy::{
     },
     reflect::Reflect,
     render::mesh::{CircleMeshBuilder, SphereKind, SphereMeshBuilder},
+    time::Time,
     utils::default,
 };
 use bevy_spatial::{
@@ -50,7 +52,11 @@ pub fn plugin(app: &mut App) {
         .add_systems(
             Update,
             component_animator_system::<RedOrbExplosion>.in_set(AnimationSystem::AnimationUpdate),
-        );
+        )
+        .add_systems(Update, update_component_animator_speed::<PointLight>)
+        .add_systems(Update, update_component_animator_speed::<RedOrbExplosion>)
+        .add_systems(Update, update_component_animator_speed::<Transform>)
+        .add_systems(Update, update_asset_animator_speed::<StandardMaterial>);
 }
 
 #[derive(Component)]
@@ -79,6 +85,9 @@ struct RedOrbAssets {
 pub struct RedOrbExplosionEvent {
     pub entity: Entity,
 }
+
+#[derive(Component)]
+struct PhysicalTimeAnimator {}
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 struct RedOrbExplosionLens {
@@ -196,6 +205,7 @@ fn explode_orbs(
                     interactions: 0,
                 },
                 Transform::from_translation(orb.pos),
+                PhysicalTimeAnimator {},
                 Animator::new(explosion_radius_tween),
                 Visibility::Visible,
             ))
@@ -243,6 +253,7 @@ fn spawn_explosion_mesh(
     builder.spawn((
         Animator::new(transform_tween),
         AssetAnimator::new(color_tween),
+        PhysicalTimeAnimator {},
         Mesh3d(mesh),
         MeshMaterial3d(materials.add(StandardMaterial {
             alpha_mode: AlphaMode::Blend,
@@ -272,6 +283,7 @@ fn spawn_explosion_light(builder: &mut RelatedSpawnerCommands<'_, ChildOf>) {
 
     builder
         .spawn((
+            PhysicalTimeAnimator {},
             Animator::new(point_light_tween),
             PointLight {
                 color: RED.into(),
@@ -334,4 +346,23 @@ fn check_explosion_interactions(
     }
 
     debug!("explosion count: {i}");
+}
+
+fn update_component_animator_speed<T: Component>(
+    animators: Query<&mut Animator<T>, With<PhysicalTimeAnimator>>,
+    time: Res<Time<Physics>>,
+) {
+    for mut animator in animators {
+        animator.set_speed(time.relative_speed());
+    }
+}
+
+fn update_asset_animator_speed<T: Asset>(
+    animators: Query<&mut AssetAnimator<T>, With<PhysicalTimeAnimator>>,
+    time: Res<Time<Physics>>,
+) {
+    println!("time: {}", time.relative_speed());
+    for mut animator in animators {
+        animator.set_speed(time.relative_speed());
+    }
 }
