@@ -34,7 +34,7 @@ pub(super) fn plugin(app: &mut App) {
         .register_type::<GasBoost>()
         .register_type::<CurrentGas>()
         .add_systems(
-            Update,
+            FixedUpdate,
             (thrust.after(ignite_gas), glide)
                 .run_if(in_state(Screen::Gameplay))
                 .in_set(PausableSystems),
