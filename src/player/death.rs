@@ -1,7 +1,7 @@
 use avian2d::prelude::{Physics, PhysicsTime};
-use bevy::{color::palettes::css::RED, prelude::*, state::commands};
+use bevy::{color::palettes::css::RED, prelude::*};
 
-use crate::{PausableSystems, Pause, menus::Menu, red_gas::ExplosionDamage, screens::Screen};
+use crate::{PausableSystems, menus::Menu, red_gas::ExplosionDamage, screens::Screen};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(
@@ -53,7 +53,7 @@ fn check_explosion_damage(
     explosion_damage: Res<ExplosionDamage>,
     overlay: Single<&MeshMaterial3d<StandardMaterial>, With<DamageOverlay>>,
 
-    mut menu_state: ResMut<NextState<Menu>>,
+    menu_state: ResMut<NextState<Menu>>,
     mut screen_state: ResMut<NextState<Screen>>,
 
     mut phys_time: ResMut<Time<Physics>>,

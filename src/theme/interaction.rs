@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_kira_audio::{Audio, AudioControl};
 
-use crate::{asset_tracking::LoadResource, audio::AudioAssets};
+use crate::audio::AudioAssets;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<InteractionPalette>();

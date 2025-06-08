@@ -5,11 +5,7 @@
 //!
 
 use avian2d::parry::utils::hashmap::HashMap;
-use bevy::{
-    color::palettes::css::{GREEN, RED},
-    math::VectorSpace,
-    prelude::*,
-};
+use bevy::prelude::*;
 use gas::GasOrb;
 use noiz::{Noise, SampleableFor, prelude::common_noise::Perlin, rng::NoiseRng};
 

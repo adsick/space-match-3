@@ -1,6 +1,6 @@
 use avian2d::math::Scalar;
 use avian2d::prelude::*;
-use bevy::color::palettes::css::{GREEN_YELLOW, RED};
+use bevy::color::palettes::css::GREEN_YELLOW;
 use bevy::prelude::*;
 
 // use bevy::diagnostic::{DiagnosticPath, DiagnosticsStore};

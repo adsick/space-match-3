@@ -1,15 +1,12 @@
 use std::collections::VecDeque;
 
-use avian2d::prelude::{LinearVelocity, Physics, PhysicsSet};
+use avian2d::prelude::{LinearVelocity, Physics};
 use bevy::{
     color::{
         ColorToComponents,
-        palettes::{
-            css::{PURPLE, RED},
-            tailwind::{PURPLE_50, RED_50, RED_300, RED_500},
-        },
+        palettes::css::{PURPLE, RED},
     },
-    math::{UVec4, Vec2, Vec3, Vec3Swizzles, Vec4, VectorSpace},
+    math::{UVec4, Vec2, Vec3Swizzles, Vec4, VectorSpace},
     pbr::{ExtendedMaterial, MaterialExtension, MaterialPlugin, MeshMaterial3d, StandardMaterial},
     prelude::{
         AlphaMode, Changed, Commands, Component, GlobalTransform, Local, Mesh, Mesh3d, OnAdd,
@@ -22,8 +19,8 @@ use bevy::{
 use crate::{
     PausableSystems,
     player::{
-        Player, camera_follow_player,
-        movement::{CurrentGas, thrust},
+        Player,
+        movement::CurrentGas,
     },
     screens::Screen,
 };

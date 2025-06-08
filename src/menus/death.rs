@@ -1,7 +1,7 @@
-use bevy::{color::palettes::css::BLACK, input::common_conditions::input_just_pressed, prelude::*};
+use bevy::prelude::*;
 use bevy_kira_audio::{Audio, AudioControl};
 
-use crate::{audio::AudioAssets, menus::Menu, screens::Screen, theme::widget};
+use crate::{audio::AudioAssets, screens::Screen, theme::widget};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Dead), spawn_death_menu);

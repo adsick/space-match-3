@@ -11,7 +11,7 @@ use super::{
     Player,
     assets::PlayerAssets,
     engine,
-    movement::{GasBoost, MovementAcceleration, PlayerControls, RotationSpeed},
+    movement::{GasBoost, MovementAcceleration, RotationSpeed},
 };
 
 pub(crate) fn plugin(app: &mut App) {

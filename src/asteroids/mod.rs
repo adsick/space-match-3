@@ -19,11 +19,9 @@ use bevy::{
 };
 use bevy_kira_audio::{Audio, AudioControl};
 use bevy_tweening::{
-    AnimationSystem, Animator, AssetAnimator, Lens, Targetable, Tracks, Tween, TweenCompleted,
-    asset_animator_system, component_animator_system,
+    Animator, AssetAnimator, Targetable, Tracks, Tween, TweenCompleted,
     lens::{TransformRotationLens, TransformScaleLens},
 };
-use rand::Rng;
 
 use crate::{CameraShake, player::Player};
 use crate::{

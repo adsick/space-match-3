@@ -1,19 +1,19 @@
-use std::{collections::HashSet, time::Duration};
+use std::time::Duration;
 
 use avian2d::prelude::{Physics, PhysicsTime};
 use bevy::{
     app::{App, Update},
     asset::{Asset, AssetServer, Assets, Handle},
     color::{
-        Alpha, Srgba,
-        palettes::css::{GREEN, RED, WHEAT, WHITE},
+        Alpha,
+        palettes::css::RED,
     },
     ecs::{entity::EntityHashSet, relationship::RelatedSpawnerCommands},
     math::{NormedVectorSpace, Vec2, Vec3, Vec3Swizzles},
     pbr::{MeshMaterial3d, PointLight, StandardMaterial},
     prelude::{
         AlphaMode, ChildOf, Commands, Component, EaseFunction, Entity, Event, EventReader,
-        EventWriter, FromWorld, IntoScheduleConfigs, Mesh, Mesh3d, MeshBuilder, OnAdd, OnEnter,
+        EventWriter, FromWorld, IntoScheduleConfigs, Mesh, Mesh3d, MeshBuilder, OnAdd,
         Query, Res, ResMut, Resource, Single, State, StateScoped, Transform, Trigger, Visibility,
         With, in_state,
     },
@@ -32,9 +32,9 @@ use bevy_tweening::{
 use log::debug;
 
 use crate::{
-    PausableSystems, Pause, PhysicsLayers,
+    PausableSystems, Pause,
     asset_tracking::LoadResource,
-    player::{self, Player},
+    player::Player,
     screens::Screen,
     utils::{PointLightLens, StandardMaterialLens},
 };
