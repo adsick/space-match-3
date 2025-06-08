@@ -127,7 +127,7 @@ impl FromWorld for RedOrbAssets {
         //     }),
         // ];
 
-        let explosion_mesh = assets.add(CircleMeshBuilder::new(1.0, 12).build());
+        let explosion_mesh = assets.add(CircleMeshBuilder::new(1.0, 64).build());
 
         RedOrbAssets {
             mesh,
