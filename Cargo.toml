@@ -25,7 +25,6 @@ bevy_input_prompts = "0.2.2"
 bevy_vector_shapes = "0.10.0"
 bevy_framepace = "0.19.1"
 iyes_perf_ui = "0.5.0"
-bevy_spatial = { version = "0.11.0", default-features = false }
 bevy_tweening = "0.13.0"
 bevy_kira_audio = "0.23.0"
 
@@ -43,7 +42,7 @@ bevy_kira_audio = "0.23.0"
 
 [features]
 # Default to a native dev build.
-default = ["dev_native", "bevy_spatial/default"]
+default = ["dev_native"]
 dev = [
     # Improve compile times for dev builds by linking Bevy as a dynamic library.
     "bevy/dynamic_linking",
@@ -62,16 +61,23 @@ dev_native = [
 wayland = ["bevy/wayland"]
 
 
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+bevy_spatial = { version = "0.11.0", default-features = false, features = ["kdtree"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+bevy_spatial = { version = "0.11.0", default-features = true }
+
+
 [package.metadata.bevy_cli.release]
 # Disable dev features for release builds.
 # TODO: switch to false before publish
 default-features = true
-features = ["bevy_spatial/default"]
+features = []
 
 [package.metadata.bevy_cli.web]
 # Disable native features for web builds.
 default-features = false
-features = ["bevy_spatial/kdtree"] # TODO: add bevy/webgpu for better web perf (doesn't work for me)
+features = [] # TODO: add bevy/webgpu for better web perf (doesn't work for me)
 
 [package.metadata.bevy_cli.web.dev]
 features = ["dev"]
