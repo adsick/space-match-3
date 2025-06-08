@@ -34,7 +34,7 @@ use log::debug;
 use crate::{
     PausableSystems, Pause, PhysicsLayers,
     player::{self, Player},
-    screens::{GameState, Screen},
+    screens::Screen,
     utils::{PointLightLens, StandardMaterialLens},
 };
 

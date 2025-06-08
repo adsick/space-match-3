@@ -16,9 +16,10 @@ use noiz::{Noise, SampleableFor, prelude::common_noise::Perlin, rng::NoiseRng};
 use crate::{asteroids::Asteroid, player::Player, red_gas::RedGasOrb, screens::Screen};
 
 pub mod gas;
+pub mod intro;
 
 pub fn plugin(app: &mut App) {
-    app.add_plugins(gas::plugin)
+    app.add_plugins((intro::plugin, gas::plugin))
         .insert_resource(GasGenerator {
             noise: Noise {
                 noise: Perlin::default(),
@@ -95,7 +96,11 @@ impl GasGenerator {
     /// Returns a value in [0, 1] range
     pub fn sample_intro(&self, p: Vec2) -> f32 {
         let dist_sq = (p - INTRO_CLOUD_POS).length_squared();
-        let start_mask = smoothstep(INTRO_CLOUD_RADIUS_SQ - 600., INTRO_CLOUD_RADIUS_SQ - 400., dist_sq);
+        let start_mask = smoothstep(
+            INTRO_CLOUD_RADIUS_SQ - 600.,
+            INTRO_CLOUD_RADIUS_SQ - 400.,
+            dist_sq,
+        );
 
         let mut generic_clouds = SampleableFor::<Vec2, f32>::sample(&self.noise, p * 3.);
         generic_clouds -= start_mask;
@@ -277,7 +282,7 @@ fn populate_chunk(
                 let explosive_orb_r = explosive_orb_distribution(r);
 
                 if explosive_orb_r > 0.5 {
-                    if rand::random::<f32>() < 0.97 {
+                    if rand::random::<f32>() < 0.95 {
                         continue;
                     }
                     let pos = cell_pos
