@@ -1,5 +1,6 @@
 use avian2d::prelude::{LinearVelocity, Physics, PhysicsTime};
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
+use bevy_kira_audio::{Audio, AudioControl};
 
 use crate::screens::{GameState, Screen};
 
@@ -80,9 +81,11 @@ fn player_powers(
     player: Single<&Player>,
     real_time: Res<Time>,
     mut physics_time: ResMut<Time<Physics>>,
+    audio: Res<Audio>,
 ) {
     if real_time.elapsed_secs() > player.bullet_time_until {
         physics_time.set_relative_speed(1.0);
+        audio.set_playback_rate(1.0);
     }
 }
 
@@ -90,6 +93,7 @@ fn go_into_bullet_time(
     real_time: Res<Time>,
     mut physics_time: ResMut<Time<Physics>>,
     mut player: Single<&mut Player>,
+    audio: Res<Audio>,
 ) {
     // TODO: PLAY SOUND HERE
 
@@ -102,6 +106,7 @@ fn go_into_bullet_time(
         return;
     }
     physics_time.set_relative_speed(0.25);
+    audio.set_playback_rate(0.25);
     player.bullet_time_until = rt + BULLET_TIME_DURATION;
     player.bullet_time_cooldown_until = rt + BULLET_TIME_DURATION + BULLET_TIME_COOLDOWN;
     player.aura_points -= BULLET_TIME_AURA_COST

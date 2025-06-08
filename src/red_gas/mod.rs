@@ -33,6 +33,7 @@ use log::debug;
 
 use crate::{
     PausableSystems, Pause, PhysicsLayers,
+    asset_tracking::LoadResource,
     player::{self, Player},
     screens::{GameState, Screen},
     utils::{PointLightLens, StandardMaterialLens},
@@ -47,7 +48,7 @@ pub fn plugin(app: &mut App) {
         .with_frequency(Duration::from_secs_f32(0.1))
         .with_transform(TransformMode::GlobalTransform),))
         .add_observer(on_add_explosive_gas_orb)
-        .init_resource::<RedOrbAssets>()
+        .load_resource::<RedOrbAssets>()
         .insert_resource(ExplosionDamage(0.0))
         .add_event::<RedOrbExplosionEvent>()
         .add_systems(

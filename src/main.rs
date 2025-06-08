@@ -4,9 +4,9 @@
 #![cfg_attr(not(feature = "dev"), windows_subsystem = "windows")]
 #![allow(unused_imports)]
 mod asset_tracking;
+mod asteroids;
 mod audio;
 // #[cfg(feature = "dev")]
-mod asteroids;
 mod dev_tools;
 mod intro_scene;
 mod menus;
@@ -25,6 +25,7 @@ use bevy::{
 };
 use bevy_framepace::FramepacePlugin;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
+use bevy_kira_audio::AudioPlugin;
 use bevy_tweening::TweeningPlugin;
 use bevy_vector_shapes::Shape2dPlugin;
 use rand::Rng;
@@ -63,6 +64,7 @@ impl Plugin for AppPlugin {
             FramepacePlugin,
             Shape2dPlugin::default(), // bevy_vector_shapes
             TweeningPlugin,
+            AudioPlugin,
         ));
 
         // Add other plugins.
