@@ -2,11 +2,8 @@ use avian2d::prelude::{ExternalForce, LinearVelocity, Physics, PhysicsTime, Rota
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_kira_audio::{Audio, AudioControl};
 
-use crate::{
-    player::movement::DashTimer,
-    screens::{GameState, Screen},
-};
-use crate::{screens::Screen, space::intro::IntroState};
+use crate::space::intro::IntroState;
+use crate::{player::movement::DashTimer, screens::Screen};
 
 pub mod assets;
 pub mod death;
@@ -30,16 +27,11 @@ pub(super) fn plugin(app: &mut App) {
             camera_follow_player
                 .run_if(in_state(Screen::Gameplay))
                 .run_if(in_state(IntroState(false))),
-            player_powers
-                .run_if(in_state(Screen::Gameplay))
-                .run_if(in_state(GameState::Playing)),
+            player_powers.run_if(in_state(Screen::Gameplay)),
             go_into_bullet_time
                 .run_if(input_just_pressed(KeyCode::Space))
-                .run_if(in_state(Screen::Gameplay))
-                .run_if(in_state(GameState::Playing)),
-            side_dash
-                .run_if(in_state(Screen::Gameplay))
                 .run_if(in_state(Screen::Gameplay)),
+            side_dash.run_if(in_state(Screen::Gameplay)),
         ),
     );
 }
