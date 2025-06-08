@@ -5,7 +5,7 @@ use crate::{screens::Screen, space::intro::IntroState};
 
 use super::Player;
 
-const DASH_STRENGTH: f32 = 50000.0;
+const DASH_STRENGTH: f32 = 20000.0;
 const DASH_DURATION_MILLIS: u128 = 200;
 
 pub(super) fn plugin(app: &mut App) {
