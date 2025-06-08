@@ -36,11 +36,11 @@ fn spawn_player(
                 Mass(1.0),
                 AngularInertia(1.0),
                 MovementAcceleration(10.0),
-                GasBoost(60.0),
+                GasBoost(100.0),
                 CurrentGas(1.0),
                 AngularDamping(10.0),
                 LinearDamping(0.2),
-                RotationSpeed(500.0),
+                RotationSpeed(1000.0),
             ),
             (
                 PlayerControls { enabled: true },

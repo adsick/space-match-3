@@ -24,7 +24,7 @@ pub struct GasBoost(pub Scalar);
 #[derive(Component, Deref, DerefMut, Reflect)]
 pub struct CurrentGas(pub Scalar);
 
-pub const GLIDE_FORCE: f32 = 140.0;
+pub const GLIDE_FORCE: f32 = 250.0;
 // pub const DRAG_FORCE: f32 = 0.05;
 pub const SPEED_LOCK_IN: f32 = 20.0;
 
