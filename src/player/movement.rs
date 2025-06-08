@@ -147,7 +147,7 @@ fn glide(
     let glide = (forward - forward.project_onto(linvel.0)) * amount * GLIDE_FORCE; // basically we want to rotate the linvel by applying a perpendicular force...
 
     // gizmos.ray_2d(ship_pos, drag * 1.0, RED);
-    gizmos.ray_2d(ship_pos, glide * 1.0, GREEN_YELLOW);
+    // gizmos.ray_2d(ship_pos, glide * 1.0, GREEN_YELLOW);
 
     force.apply_force(glide);
 }

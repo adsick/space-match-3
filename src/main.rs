@@ -6,7 +6,7 @@
 mod asset_tracking;
 mod asteroids;
 mod audio;
-// #[cfg(feature = "dev")]
+#[cfg(feature = "dev")]
 mod dev_tools;
 mod menus;
 mod player;
@@ -68,7 +68,7 @@ impl Plugin for AppPlugin {
         app.add_plugins((
             asset_tracking::plugin,
             audio::plugin,
-            // #[cfg(feature = "dev")]
+            #[cfg(feature = "dev")]
             dev_tools::plugin,
             asteroids::plugin,
             menus::plugin,

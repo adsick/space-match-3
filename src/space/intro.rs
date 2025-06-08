@@ -6,8 +6,7 @@ use crate::{
     screens::Screen,
 };
 
-// pub const INTRO_SHIP_DAMPING: f32 = 1.2;
-// pub const NORMAL_SHIP_DAMPING
+pub const INTRO_DURATION_SECS: f32 = 3.0;
 
 pub fn plugin(app: &mut App) {
     app.insert_state(IntroState(true))
@@ -81,7 +80,7 @@ fn camera_follow_player(
         cam_transform.with_translation(player_transform.translation() + interpolated_translation);
     *cam_transform = cam_transform.looking_at(player_transform.translation(), Vec3::Y);
 
-    progress.t += time.delta_secs() / 4.0;
+    progress.t += time.delta_secs() / INTRO_DURATION_SECS;
     if progress.t >= 1.0 {
         progress.t = 0.0;
         intro_state.set(IntroState(false));
