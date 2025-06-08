@@ -30,8 +30,7 @@ fn spawn_player(
                 RigidBody::Dynamic,
                 Collider::circle(3.),
                 ShipAsteroidCollider {},
-                // LinearVelocity(Vec2::ZERO),
-                LinearVelocity(Vec2::new(0., 600.)),
+                LinearVelocity(Vec2::new(0., 900.)),
                 AngularVelocity(0.0),
                 Mass(1.0),
                 AngularInertia(1.0),
@@ -43,7 +42,6 @@ fn spawn_player(
                 RotationSpeed(1000.0),
             ),
             (
-                PlayerControls { enabled: true },
                 GravityScale(0.001),
                 PointLight {
                     color: VIOLET.into(),

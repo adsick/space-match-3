@@ -1,12 +1,7 @@
 use avian2d::prelude::{Physics, PhysicsTime};
 use bevy::{color::palettes::css::RED, prelude::*, state::commands};
 
-use crate::{
-    PausableSystems, Pause,
-    menus::Menu,
-    red_gas::ExplosionDamage,
-    screens::{GameState, Screen},
-};
+use crate::{PausableSystems, Pause, menus::Menu, red_gas::ExplosionDamage, screens::Screen};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Gameplay), spawn_damage_overlay)
@@ -14,7 +9,6 @@ pub(super) fn plugin(app: &mut App) {
             Update,
             check_explosion_damage
                 .run_if(in_state(Screen::Gameplay))
-                .run_if(not(in_state(GameState::Intro)))
                 .in_set(PausableSystems),
         );
     // .add_systems(OnEnter(GameState::Dead), start_death_animation)

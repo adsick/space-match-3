@@ -1,11 +1,6 @@
 use bevy::{prelude::*, ui::Val::*};
 
-use crate::{
-    PausableSystems,
-    player::Player,
-    screens::{GameState, Screen},
-    theme::widget,
-};
+use crate::{PausableSystems, player::Player, screens::Screen, theme::widget};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<HudAssets>()
