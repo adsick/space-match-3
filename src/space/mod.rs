@@ -238,7 +238,7 @@ fn populate_chunk(
             let explosive_orb_r = explosive_orb_distribution(r);
 
             if explosive_orb_r > 0.70 {
-                if rand::random::<f32>() + 0.5 * start_mask < 0.99 {
+                if rand::random::<f32>() + 0.2 * start_mask < 0.99 {
                     continue;
                 }
                 let pos = cell_pos

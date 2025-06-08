@@ -29,6 +29,7 @@ use crate::{
     utils::{PointLightLens, StandardMaterialLens},
 };
 
+
 pub fn on_add_explosive_gas_orb(
     trigger: Trigger<OnAdd, RedGasOrb>,
     mut commands: Commands,
@@ -149,7 +150,7 @@ pub fn spawn_explosion_mesh(
     // });
 }
 
-fn spawn_explosion_light(builder: &mut RelatedSpawnerCommands<'_, ChildOf>) {
+pub fn spawn_explosion_light(builder: &mut RelatedSpawnerCommands<'_, ChildOf>) {
     let duration = Duration::from_secs(3);
 
     let point_light_tween = Tween::new(
@@ -200,7 +201,7 @@ pub fn check_explosion_interactions(
             continue;
         };
 
-        if explosion.interactions > 20 {
+        if explosion.interactions > 7 {
             entity_commands.try_despawn();
             continue;
         }
@@ -210,7 +211,7 @@ pub fn check_explosion_interactions(
             .xy()
             .distance_squared(explosion.pos);
 
-        const EXPLOSION_CLEANUP_RADIUS: f32 = 2000.;
+        const EXPLOSION_CLEANUP_RADIUS: f32 = 3000.;
         if player_distance > EXPLOSION_CLEANUP_RADIUS * EXPLOSION_CLEANUP_RADIUS {
             entity_commands.try_despawn();
             continue;
