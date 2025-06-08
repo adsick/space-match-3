@@ -67,8 +67,8 @@ fn camera_follow_player(
     mut intro_state: ResMut<NextState<IntroState>>,
     mut progress: ResMut<IntroProgress>,
 ) {
-    const START_CAM_TRANSLATION: Vec3 = Vec3::new(0.0, 10., 10.);
-    const END_CAM_TRANSLATION: Vec3 = Vec3::new(0.0, -000., 1100.);
+    const START_CAM_TRANSLATION: Vec3 = Vec3::new(0.0, 0.0, 10.);
+    const END_CAM_TRANSLATION: Vec3 = Vec3::new(0.0, 0.0, 1100.);
 
     let t = ease_in_out_cubic(progress.t);
 
