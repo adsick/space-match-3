@@ -35,7 +35,7 @@ use crate::{
     PausableSystems, Pause, PhysicsLayers,
     asset_tracking::LoadResource,
     player::{self, Player},
-    screens::{GameState, Screen},
+    screens::Screen,
     utils::{PointLightLens, StandardMaterialLens},
 };
 
