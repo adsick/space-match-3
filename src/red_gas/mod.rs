@@ -36,6 +36,9 @@ use crate::{
     utils::{PointLightLens, StandardMaterialLens},
 };
 
+pub mod assets;
+use assets::RedOrbAssets;
+
 const MAX_EXPLOSION_RADIUS: f32 = 1500.;
 const EXPLOSION_DURATION_SECS: u64 = 10;
 
@@ -103,14 +106,6 @@ struct RedOrbExplosion {
     interactions: usize,
 }
 
-#[derive(Resource, Asset, Clone, Reflect)]
-struct RedOrbAssets {
-    mesh: Handle<Mesh>,
-    material: Handle<StandardMaterial>,
-    explosion_mesh: Handle<Mesh>,
-    // explosion_materials: Vec<Handle<StandardMaterial>>,
-}
-
 #[derive(Event)]
 pub struct RedOrbExplosionEvent {
     pub entity: Entity,
@@ -132,48 +127,6 @@ fn mix(a: f32, b: f32, t: f32) -> f32 {
 impl Lens<RedOrbExplosion> for RedOrbExplosionLens {
     fn lerp(&mut self, target: &mut dyn Targetable<RedOrbExplosion>, ratio: f32) {
         target.radius = mix(self.radius_start, self.radius_end, ratio);
-    }
-}
-
-impl FromWorld for RedOrbAssets {
-    fn from_world(world: &mut bevy::prelude::World) -> Self {
-        let assets = world.resource::<AssetServer>();
-
-        let mesh =
-            assets.add(SphereMeshBuilder::new(1.0, SphereKind::Ico { subdivisions: 3 }).build());
-
-        let material = assets.add(StandardMaterial {
-            base_color: RED.with_alpha(0.7).into(),
-            alpha_mode: AlphaMode::Blend,
-            emissive: (RED * 5.0).into(),
-            ..Default::default()
-        });
-
-        // let explosion_materials = vec![
-        //     assets.add(StandardMaterial {
-        //         base_color: RED.with_alpha(0.5).into(),
-        //         alpha_mode: AlphaMode::Blend,
-        //         emissive: (RED * 1.0).into(),
-        //         fog_enabled: false,
-        //         ..Default::default()
-        //     }),
-        //     assets.add(StandardMaterial {
-        //         base_color: RED.with_alpha(0.5).into(),
-        //         alpha_mode: AlphaMode::Blend,
-        //         emissive: (RED * 3.0).into(),
-        //         fog_enabled: false,
-        //         ..Default::default()
-        //     }),
-        // ];
-
-        let explosion_mesh = assets.add(CircleMeshBuilder::new(1.0, 64).build());
-
-        RedOrbAssets {
-            mesh,
-            material,
-            // explosion_materials,
-            explosion_mesh,
-        }
     }
 }
 
