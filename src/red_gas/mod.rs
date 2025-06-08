@@ -34,8 +34,8 @@ use crate::{
     utils::{PointLightLens, StandardMaterialLens},
 };
 
-const MAX_EXPLOSION_RADIUS: f32 = 600.;
-const EXPLOSION_DURATION_SECS: u64 = 15;
+const MAX_EXPLOSION_RADIUS: f32 = 1500.;
+const EXPLOSION_DURATION_SECS: u64 = 10;
 
 pub fn plugin(app: &mut App) {
     app.add_plugins((AutomaticUpdate::<RedGasOrb>::new()
@@ -179,7 +179,7 @@ fn explode_orbs(
         commands.entity(event.entity).try_despawn();
 
         let explosion_radius_tween = Tween::new(
-            EaseFunction::QuinticOut,
+            EaseFunction::SineOut,
             Duration::from_secs(EXPLOSION_DURATION_SECS),
             RedOrbExplosionLens {
                 radius_start: orb.radius,
@@ -218,7 +218,7 @@ fn spawn_explosion_mesh(
     let duration = Duration::from_secs(EXPLOSION_DURATION_SECS);
 
     let transform_tween = Tween::new(
-        EaseFunction::QuinticOut,
+        EaseFunction::SineOut,
         duration,
         TransformScaleLens {
             start: Vec3::splat(1.0),
@@ -229,7 +229,7 @@ fn spawn_explosion_mesh(
     let color_start = RED;
     let color_end = RED.with_alpha(0.2);
     let color_tween = Tween::new(
-        EaseFunction::QuinticOut,
+        EaseFunction::SineOut,
         duration,
         StandardMaterialLens {
             color_start: color_start.into(),
@@ -259,7 +259,7 @@ fn spawn_explosion_light(builder: &mut RelatedSpawnerCommands<'_, ChildOf>) {
     let duration = Duration::from_secs(3);
 
     let point_light_tween = Tween::new(
-        EaseFunction::QuinticOut,
+        EaseFunction::SineOut,
         duration,
         PointLightLens {
             color_start: RED.into(),
@@ -298,18 +298,18 @@ fn check_explosion_interactions(
             continue;
         };
 
-        if explosion.interactions > 2 {
+        if explosion.interactions > 20 {
             entity_commands.despawn();
             continue;
         }
 
-        let r = rand::random::<f32>();
-        if r > 0.999 {
-            entity_commands.despawn();
-            continue;
-        }
+        // let r = rand::random::<f32>();
+        // if r > 0.999 {
+        //     entity_commands.despawn();
+        //     continue;
+        // }
 
-        const EXPLOSION_CLEANUP_RADIUS: f32 = 1000.;
+        const EXPLOSION_CLEANUP_RADIUS: f32 = 2000.;
         if player_transform
             .translation
             .xy()
