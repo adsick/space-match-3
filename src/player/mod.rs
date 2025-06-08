@@ -13,6 +13,7 @@ pub mod death;
 pub mod engine;
 pub mod hud;
 pub mod movement;
+pub mod sound;
 pub mod spawn;
 
 pub(super) fn plugin(app: &mut App) {
@@ -24,16 +25,16 @@ pub(super) fn plugin(app: &mut App) {
         hud::plugin,
         death::plugin,
         dash::plugin,
+        sound::plugin,
     ))
     .add_systems(
         Update,
         (
             camera_follow_player.run_if(in_state(IntroState(false))),
             go_into_bullet_time.run_if(input_just_pressed(KeyCode::Space)),
-            player_powers
+            player_powers,
         )
             .run_if(in_state(Screen::Gameplay)),
-
     );
 }
 
@@ -78,7 +79,6 @@ const BULLET_TIME_DURATION: f32 = 5.0;
 const BULLET_TIME_COOLDOWN: f32 = 15.0; // seconds
 const BULLET_TIME_AURA_COST: f32 = 0.0;
 
-
 fn player_powers(
     player: Single<&Player>,
     real_time: Res<Time>,
@@ -113,4 +113,3 @@ fn go_into_bullet_time(
     player.bullet_time_cooldown_until = rt + BULLET_TIME_DURATION + BULLET_TIME_COOLDOWN;
     player.aura_points -= BULLET_TIME_AURA_COST
 }
-
