@@ -76,7 +76,7 @@ impl FromWorld for AudioAssets {
 }
 
 fn play_music(assets: Res<AudioAssets>, audio: Res<Audio>) {
-    audio.play(assets.music.clone()).looped();
+    audio.play(assets.music.clone()).with_volume(0.3).looped();
 }
 
 /// [`GlobalVolume`] doesn't apply to already-running audio entities, so this system will update them.
