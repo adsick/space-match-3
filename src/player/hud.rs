@@ -1,11 +1,7 @@
 use bevy::{prelude::*, ui::Val::*};
 
 use crate::{
-    PausableSystems,
-    asset_tracking::LoadResource,
-    player::Player,
-    screens::{GameState, Screen},
-    theme::widget,
+    PausableSystems, asset_tracking::LoadResource, player::Player, screens::Screen, theme::widget,
 };
 
 pub(super) fn plugin(app: &mut App) {
