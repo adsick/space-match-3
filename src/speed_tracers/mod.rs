@@ -13,7 +13,7 @@ const TRACER_LENGTH: usize = 5;
 const WRAPPING_HALF_EXTENT: f32 = 1000.0; // Increase this if lines are visibly teleporting
 const RENDER_STRIDE: usize = 1; // Reduces rendering cost at the risk of making lines less smooth
 const MIN_Z: f32 = 0.0;
-const MAX_Z: f32 = 700.0;
+const MAX_Z: f32 = 1000.0;
 const Z_EXTENT: f32 = MAX_Z - MIN_Z;
 const MIDDLE_Z: f32 = (MIN_Z + MAX_Z) / 2.0;
 
@@ -72,8 +72,12 @@ fn render_speed_tracers(
         }
 
         // fade out the further it is from the middle of the range, the more opaque
-        let opacity =
-            ((cam_tr.translation().z - pos.z - MIDDLE_Z).abs() / (Z_EXTENT / 2.0)).powf(1.0);
+        // let opacity = (1.0 - (cam_tr.translation().z - pos.z - MIDDLE_Z).abs() / (Z_EXTENT / 2.0))
+        //     .powf(1.0 / 2.0);
+
+        let offset_z = (cam_tr.translation().z - pos.z) / Z_EXTENT;
+        let opacity = crate::space::smoothstep(0.0, 0.2, offset_z)
+            .min(1.0 - crate::space::smoothstep(0.2, 1.0, offset_z));
 
         // gizmos.sphere(*pos, 2.0, *color * opacity);
 
@@ -86,7 +90,8 @@ fn render_speed_tracers(
             let Some(b) = reproject(&prev_tr, *pos) else {
                 continue;
             };
-            gizmos.line(a, b, *color * opacity);
+            let t = i as f32 / ((history.len() - 1) / RENDER_STRIDE) as f32;
+            gizmos.line(a, b, *color * opacity / (1.0 + t));
         }
     }
 }
