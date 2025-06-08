@@ -4,11 +4,10 @@
 #![cfg_attr(not(feature = "dev"), windows_subsystem = "windows")]
 #![allow(unused_imports)]
 mod asset_tracking;
+mod asteroids;
 mod audio;
 // #[cfg(feature = "dev")]
-mod asteroids;
 mod dev_tools;
-mod intro_scene;
 mod menus;
 mod player;
 mod red_gas;
@@ -25,6 +24,7 @@ use bevy::{
 };
 use bevy_framepace::FramepacePlugin;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
+use bevy_kira_audio::AudioPlugin;
 use bevy_tweening::TweeningPlugin;
 use bevy_vector_shapes::Shape2dPlugin;
 use rand::Rng;
@@ -63,6 +63,7 @@ impl Plugin for AppPlugin {
             FramepacePlugin,
             Shape2dPlugin::default(), // bevy_vector_shapes
             TweeningPlugin,
+            AudioPlugin,
         ));
 
         // Add other plugins.
@@ -79,12 +80,12 @@ impl Plugin for AppPlugin {
             space::plugin,
             red_gas::plugin,
             utils::plugin,
-            intro_scene::plugin,
             speed_tracers::plugin,
             FrameTimeDiagnosticsPlugin::default(),
         ));
 
-        app.insert_resource(ClearColor(Color::srgb(0.12, 0.1, 0.14)));
+        app.insert_resource(ClearColor(Color::srgb(0.12, 0.1, 0.14)))
+            .insert_resource(Gravity(Vec2::ZERO));
 
         // Order new `AppSystems` variants by adding them here:
         app.configure_sets(
@@ -100,6 +101,7 @@ impl Plugin for AppPlugin {
         // Set up the `Pause` state.
         app.init_state::<Pause>();
         app.configure_sets(Update, PausableSystems.run_if(in_state(Pause(false))));
+        app.configure_sets(FixedUpdate, PausableSystems.run_if(in_state(Pause(false))));
 
         // Spawn the main camera.
         app.add_systems(Startup, spawn_camera);

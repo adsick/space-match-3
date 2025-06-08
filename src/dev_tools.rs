@@ -3,11 +3,13 @@
 use avian2d::prelude::PhysicsDebugPlugin;
 use bevy::{
     color::palettes::css::WHITE,
-    dev_tools::states::log_transitions,
     input::common_conditions::{input_just_pressed, input_pressed},
     prelude::*,
-    ui::UiDebugOptions,
 };
+
+#[cfg(feature = "dev")]
+use bevy::{dev_tools::states::log_transitions, ui::UiDebugOptions};
+
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use iyes_perf_ui::{
     PerfUiPlugin,
@@ -36,12 +38,14 @@ pub(super) fn plugin(app: &mut App) {
     .add_systems(Startup, spawn_grid);
 
     // Log `Screen` state transitions.
+    #[cfg(feature = "dev")]
     app.add_systems(Update, log_transitions::<Screen>);
 
     // Toggle the debug overlay for UI.
     app.add_systems(
         Update,
         (
+            #[cfg(feature = "dev")]
             toggle_debug_ui.run_if(input_just_pressed(DEBUG_TOGGLE_KEY)),
             toggle_perf_ui.run_if(input_just_pressed(PERFUI_TOGGLE_KEY)),
         ),
@@ -51,6 +55,7 @@ pub(super) fn plugin(app: &mut App) {
 const DEBUG_TOGGLE_KEY: KeyCode = KeyCode::Backquote;
 const PERFUI_TOGGLE_KEY: KeyCode = KeyCode::F3;
 
+#[cfg(feature = "dev")]
 fn toggle_debug_ui(mut options: ResMut<UiDebugOptions>) {
     options.toggle();
 }

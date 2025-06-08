@@ -17,14 +17,19 @@ use bevy::{
         render_resource::AsBindGroup,
     },
 };
+use bevy_kira_audio::{Audio, AudioControl};
 use bevy_tweening::{
     AnimationSystem, Animator, AssetAnimator, Lens, Targetable, Tracks, Tween, TweenCompleted,
     asset_animator_system, component_animator_system,
     lens::{TransformRotationLens, TransformScaleLens},
 };
+use rand::Rng;
 
-use crate::utils::{PointLightLens, StandardMaterialLens};
 use crate::{CameraShake, player::Player};
+use crate::{
+    audio::AudioAssets,
+    utils::{PointLightLens, StandardMaterialLens},
+};
 
 const ASTEROID_SHADER_PATH: &str = "shaders/asteroid.wgsl";
 
@@ -116,6 +121,8 @@ fn on_add_ship_asteroid_collider(
              mut meshes: ResMut<Assets<Mesh>>,
              mut materials: ResMut<Assets<StandardMaterial>>,
              mut screen_shake: ResMut<CameraShake>,
+             audio: Res<Audio>,
+             audio_assets: Res<AudioAssets>,
              time: Res<Time<Physics>>| {
                 // let meteorite = meteorites.get(trigger.collider);
 
@@ -125,9 +132,11 @@ fn on_add_ship_asteroid_collider(
 
                 debug!("collision");
 
+                audio.play(audio_assets.explosion.clone());
+
                 commands.entity(trigger.collider).despawn();
 
-                player.aura_points -= ASTEROID_AURA_LOSS;
+                player.aura_points = (player.aura_points - ASTEROID_AURA_LOSS).max(0.0);
                 player.near_asteroids = false;
 
                 // tween.with_completed

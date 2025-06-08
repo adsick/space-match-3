@@ -1,12 +1,14 @@
 use bevy::{color::palettes::css::BLACK, input::common_conditions::input_just_pressed, prelude::*};
+use bevy_kira_audio::{Audio, AudioControl};
 
-use crate::{menus::Menu, screens::Screen, theme::widget};
+use crate::{audio::AudioAssets, menus::Menu, screens::Screen, theme::widget};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(Screen::Dead), spawn_death_menu);
 }
 
-fn spawn_death_menu(mut commands: Commands) {
+fn spawn_death_menu(mut commands: Commands, audio: Res<Audio>, audio_assets: Res<AudioAssets>) {
+    audio.play(audio_assets.lose.clone());
     commands.spawn((
         widget::ui_root("DEAD"),
         // GlobalZIndex(1),

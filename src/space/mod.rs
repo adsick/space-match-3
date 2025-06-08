@@ -5,16 +5,21 @@
 //!
 
 use avian2d::parry::utils::hashmap::HashMap;
-use bevy::prelude::*;
+use bevy::{
+    color::palettes::css::{GREEN, RED},
+    math::VectorSpace,
+    prelude::*,
+};
 use gas::GasOrb;
 use noiz::{Noise, SampleableFor, prelude::common_noise::Perlin, rng::NoiseRng};
 
 use crate::{asteroids::Asteroid, player::Player, red_gas::RedGasOrb, screens::Screen};
 
 pub mod gas;
+pub mod intro;
 
 pub fn plugin(app: &mut App) {
-    app.add_plugins(gas::plugin)
+    app.add_plugins((intro::plugin, gas::plugin))
         .insert_resource(GasGenerator {
             noise: Noise {
                 noise: Perlin::default(),
@@ -48,6 +53,12 @@ pub const MIN_ORB_SIZE: f32 = 0.4;
 pub const ORB_SCALE: f32 = 4.0;
 pub const CLOUD_Z_SCALE: f32 = 90.0;
 
+pub const INTRO_SCENE_RADIUS: f32 = 2000.;
+pub const INTRO_SCENE_RADIUS_SQ: f32 = INTRO_SCENE_RADIUS * INTRO_SCENE_RADIUS;
+const INTRO_CLOUD_POS: Vec2 = Vec2::new(0.0, INTRO_SCENE_RADIUS / 2.);
+const INTRO_CLOUD_RADIUS: f32 = 900.;
+const INTRO_CLOUD_RADIUS_SQ: f32 = INTRO_CLOUD_RADIUS * INTRO_CLOUD_RADIUS;
+
 // Chunks that have already been spawned.
 #[derive(Default, Resource)]
 pub struct PopulatedChunks(HashMap<IVec2, Entity>);
@@ -66,22 +77,35 @@ impl GasGenerator {
     pub fn sample(&self, p: Vec2) -> f32 {
         // // No orbs should be spawned near the start (0, 0) in order to free up space for the intro
         // // scene.
+        // const START_RADIUS: f32 = 2000.;
+
         let dist_sq = p.length_squared();
-        const START_RADIUS: f32 = 1000.;
-        const START_RADIUS_SQ: f32 = START_RADIUS * START_RADIUS;
-        let mut start_mask = smoothstep(0., START_RADIUS_SQ, dist_sq);
-        start_mask *= smoothstep(0., 10., p.y);
+        let start_mask = smoothstep(INTRO_SCENE_RADIUS_SQ / 2., INTRO_SCENE_RADIUS_SQ, dist_sq);
 
         let offset: Vec2 = Vec2::new(
             self.noise.sample(p * 2.0 + 100.0),
             self.noise.sample(p * 2.0 + 200.0),
         ) * 100.0;
-        let mut n = SampleableFor::<Vec2, f32>::sample(&self.noise, p + offset);
-        n *= start_mask;
+        let mut generic_clouds = SampleableFor::<Vec2, f32>::sample(&self.noise, p + offset);
 
-        let big_cloud = smoothstep(1.0, 0.5, dist_sq / START_RADIUS_SQ * 10.);
+        generic_clouds *= start_mask;
 
-        n + big_cloud
+        generic_clouds
+    }
+
+    /// Returns a value in [0, 1] range
+    pub fn sample_intro(&self, p: Vec2) -> f32 {
+        let dist_sq = (p - INTRO_CLOUD_POS).length_squared();
+        let start_mask = smoothstep(
+            INTRO_CLOUD_RADIUS_SQ - 600.,
+            INTRO_CLOUD_RADIUS_SQ - 400.,
+            dist_sq,
+        );
+
+        let mut generic_clouds = SampleableFor::<Vec2, f32>::sample(&self.noise, p * 3.);
+        generic_clouds -= start_mask;
+
+        generic_clouds
     }
 }
 
@@ -233,6 +257,50 @@ fn populate_chunk(
                     },
                     ChildOf(trigger.target()),
                 ));
+            }
+
+            if ((x * x + y * y) as f32) < INTRO_SCENE_RADIUS_SQ {
+                let r = gas.sample_intro(cell_pos);
+
+                if r > 0.1 {
+                    // The actual orb position is slightly offset to avoid a grid-like look
+                    // TODO: improve random generation perf
+                    let pos = cell_pos
+                        + Vec2::new(rand::random::<f32>(), rand::random::<f32>()) * CHUNK_SIZE
+                            / CHUNK_SUBDIV as f32;
+
+                    cmds.spawn((
+                        GasOrb(r),
+                        Transform::from_translation(
+                            pos.extend((rand::random::<f32>() - 0.5) * CLOUD_Z_SCALE * r),
+                        ) // todo: we can vary that 0.5 with another noise for more depth effect
+                        .with_scale(Vec3::splat(MIN_ORB_SIZE + ORB_SCALE * r)),
+                        ChildOf(trigger.target()),
+                    ));
+                }
+
+                let explosive_orb_r = explosive_orb_distribution(r);
+
+                if explosive_orb_r > 0.5 {
+                    if rand::random::<f32>() < 0.95 {
+                        continue;
+                    }
+                    let pos = cell_pos
+                        + Vec2::new(rand::random::<f32>(), rand::random::<f32>()) * CHUNK_SIZE
+                            / CHUNK_SUBDIV as f32;
+
+                    let r = rand::random::<f32>();
+                    let orb_size = MIN_EXPLOSIVE_ORB_SIZE + EXPLOSIVE_ORB_SIZE_VARIATION * r;
+                    cmds.spawn((
+                        RedGasOrb {
+                            pos: pos.extend(
+                                (rand::random::<f32>() - 0.5) * EXPLOSIVE_ORB_CLOUD_Z_SCALE,
+                            ),
+                            radius: orb_size,
+                        },
+                        ChildOf(trigger.target()),
+                    ));
+                }
             }
         }
     }

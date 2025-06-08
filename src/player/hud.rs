@@ -1,15 +1,12 @@
 use bevy::{prelude::*, ui::Val::*};
 
 use crate::{
-    PausableSystems,
-    player::Player,
-    screens::{GameState, Screen},
-    theme::widget,
+    PausableSystems, asset_tracking::LoadResource, player::Player, screens::Screen, theme::widget,
 };
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<HudAssets>()
-        .init_resource::<HudAssets>();
+        .load_resource::<HudAssets>();
     app.add_systems(OnEnter(Screen::Gameplay), setup_hud);
     app.add_systems(
         Update,

@@ -9,7 +9,6 @@ use bevy::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
     app.init_state::<Screen>();
-    app.init_state::<GameState>();
 
     app.add_plugins((
         gameplay::plugin,
@@ -32,11 +31,3 @@ pub enum Screen {
     Dead,
 }
 
-
-#[derive(States, Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
-#[states(scoped_entities)]
-pub enum GameState {
-    Intro,
-    #[default]
-    Playing,
-}
