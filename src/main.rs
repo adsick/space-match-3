@@ -26,7 +26,6 @@ use bevy_framepace::FramepacePlugin;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_kira_audio::AudioPlugin;
 use bevy_tweening::TweeningPlugin;
-use bevy_vector_shapes::Shape2dPlugin;
 use rand::Rng;
 
 fn main() -> AppExit {
@@ -61,7 +60,6 @@ impl Plugin for AppPlugin {
                 enable_multipass_for_primary_context: true,
             },
             FramepacePlugin,
-            Shape2dPlugin::default(), // bevy_vector_shapes
             TweeningPlugin,
             AudioPlugin,
         ));
