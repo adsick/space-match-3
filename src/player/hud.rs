@@ -74,6 +74,12 @@ fn update_hud(
     if !has_abilities {
         abilities_string.push('❌');
     }
+    if player.dash_timer.0.finished() {
+        abilities_string.push('💖');
+    } else {
+        abilities_string.push('💔');
+    }
+
     abilities_text.0 = abilities_string;
 }
 

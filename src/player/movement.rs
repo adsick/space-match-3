@@ -12,6 +12,9 @@ use crate::space::gas::ignite_gas;
 
 use super::Player;
 
+#[derive(Component, Deref, DerefMut, Reflect, Default)]
+pub struct DashTimer(pub Timer);
+
 #[derive(Component, Deref, DerefMut, Reflect)]
 pub struct MovementAcceleration(pub Scalar);
 

@@ -1,7 +1,11 @@
 use avian2d::prelude::*;
 use bevy::{color::palettes::css::VIOLET, prelude::*};
 
-use crate::{asteroids::ShipAsteroidCollider, player::movement::CurrentGas, screens::Screen};
+use crate::{
+    asteroids::ShipAsteroidCollider,
+    player::movement::{CurrentGas, DashTimer},
+    screens::Screen,
+};
 
 use super::{
     Player,
@@ -25,7 +29,10 @@ fn spawn_player(
     commands
         .spawn((
             (
-                Player::default(),
+                Player {
+                    dash_timer: DashTimer(Timer::from_seconds(3., TimerMode::Once)),
+                    ..Default::default()
+                },
                 Name::new("Player"),
                 RigidBody::Dynamic,
                 Collider::circle(3.),
