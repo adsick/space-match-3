@@ -4,11 +4,10 @@ use bevy_kira_audio::{Audio, AudioControl, AudioInstance, AudioSource, AudioTwee
 use crate::{asset_tracking::LoadResource, screens::Screen};
 
 pub(super) fn plugin(app: &mut App) {
-    app.register_type::<AudioAssets>();
     app.load_resource::<AudioAssets>();
     app.init_resource::<MusicHandle>();
 
-    app.add_systems(Update, play_loop.run_if(resource_added::<AudioAssets>));
+    // app.add_systems(Update, play_loop.run_if(resource_added::<AudioAssets>));
 
     app.add_systems(OnEnter(Screen::Gameplay), resume_music);
     app.add_systems(OnExit(Screen::Gameplay), pause_music);
