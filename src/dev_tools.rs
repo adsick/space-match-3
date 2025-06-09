@@ -7,7 +7,6 @@ use bevy::{
     prelude::*,
 };
 
-#[cfg(feature = "dev")]
 use bevy::{dev_tools::states::log_transitions, ui::UiDebugOptions};
 
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -23,7 +22,6 @@ pub(super) fn plugin(app: &mut App) {
     app.add_plugins(
         WorldInspectorPlugin::default().run_if(resource_equals(WorldInspectorEnabled(true))),
     )
-    .add_plugins(PerfUiPlugin)
     .add_plugins(bevy::diagnostic::EntityCountDiagnosticsPlugin)
     .add_plugins(bevy::diagnostic::SystemInformationDiagnosticsPlugin)
     .add_plugins(bevy::render::diagnostic::RenderDiagnosticsPlugin)
@@ -37,8 +35,9 @@ pub(super) fn plugin(app: &mut App) {
     )
     .add_systems(Startup, spawn_grid);
 
+    app.add_plugins(PerfUiPlugin);
+
     // Log `Screen` state transitions.
-    #[cfg(feature = "dev")]
     app.add_systems(Update, log_transitions::<Screen>);
 
     // Toggle the debug overlay for UI.
@@ -55,7 +54,6 @@ pub(super) fn plugin(app: &mut App) {
 const DEBUG_TOGGLE_KEY: KeyCode = KeyCode::Backquote;
 const PERFUI_TOGGLE_KEY: KeyCode = KeyCode::F3;
 
-#[cfg(feature = "dev")]
 fn toggle_debug_ui(mut options: ResMut<UiDebugOptions>) {
     options.toggle();
 }

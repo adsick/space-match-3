@@ -38,6 +38,10 @@ pub(super) fn plugin(app: &mut App) {
     );
 
     app.insert_resource(Score(0.0));
+
+    app.add_systems(OnEnter(Screen::Gameplay), |mut score: ResMut<Score>| {
+        score.0 = 0.0
+    });
 }
 
 #[derive(Resource)]
