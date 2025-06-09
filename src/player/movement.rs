@@ -6,6 +6,7 @@ use bevy::prelude::*;
 // use bevy::diagnostic::{DiagnosticPath, DiagnosticsStore};
 
 use crate::PausableSystems;
+use crate::player::Score;
 use crate::screens::Screen;
 use crate::space::GasGenerator;
 use crate::space::gas::ignite_gas;
@@ -27,9 +28,9 @@ pub struct GasBoost(pub Scalar);
 #[derive(Component, Deref, DerefMut, Reflect)]
 pub struct CurrentGas(pub Scalar);
 
-pub const GLIDE_FORCE: f32 = 250.0;
+pub const GLIDE_FORCE: f32 = 270.0;
 // pub const DRAG_FORCE: f32 = 0.05;
-pub const SPEED_LOCK_IN: f32 = 20.0;
+pub const SPEED_LOCK_IN: f32 = 21.0;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<MovementAcceleration>()
@@ -69,6 +70,7 @@ pub fn thrust(
     >,
     player_controls: Res<PlayerControls>,
     time: Res<Time<Physics>>,
+    mut score: ResMut<Score>,
 ) {
     let left = keyboard_input.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]);
     let right = keyboard_input.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]);
@@ -88,15 +90,13 @@ pub fn thrust(
 
     let vel_length = velocity.length();
     let delta = time.delta_secs();
-    player.score += vel_length / 250.0 * delta;
+    score.0 += vel_length / 250.0 * delta;
     player.aura_points +=
         vel_length * vel_length / 350.0 * delta * player.near_asteroids as u32 as f32; // boolean to binary
 
-    player.aura_points -= 3.0 * delta;
+    player.aura_points -= 1.0 * delta;
 
-    if player.aura_points < 0.0 {
-        player.aura_points = 0.0;
-    }
+    player.aura_points = player.aura_points.max(0.0);
 
     force.persistent = false;
     torque.persistent = false;

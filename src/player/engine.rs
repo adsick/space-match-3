@@ -4,7 +4,7 @@ use avian2d::prelude::{LinearVelocity, Physics};
 use bevy::{
     color::{
         ColorToComponents,
-        palettes::css::{PURPLE, RED},
+        palettes::css::{BLUE, PURPLE, RED, YELLOW},
     },
     math::{UVec4, Vec2, Vec3Swizzles, Vec4, VectorSpace},
     pbr::{ExtendedMaterial, MaterialExtension, MaterialPlugin, MeshMaterial3d, StandardMaterial},
@@ -107,7 +107,7 @@ fn on_add_fire(
 
     commands.entity(entity).insert((
         // Transform::from_translation(-Vec3::Y * 0.),
-        Mesh3d(meshes.add(Rectangle::from_length(2000.))),
+        Mesh3d(meshes.add(Rectangle::from_length(300.))),
         MeshMaterial3d(explosion_materials.add(ExtendedMaterial {
             base: StandardMaterial {
                 alpha_mode: AlphaMode::Blend,
@@ -147,8 +147,11 @@ fn update_engine_power(
         let Ok(current_gas) = ship_query.get(child_of.parent()) else {
             return;
         };
-        fire_params.color = (Srgba::new(252. / 255., 10. / 255., 113. / 255., 1.0) * 2.0)
-            .lerp(PURPLE * 2.0, current_gas.0)
+        fire_params.color = (Srgba::new(212. / 255., 80. / 255., 113. / 255., 1.0) * 2.0) //
+            .lerp(
+                Srgba::new(72. / 255., 60. / 255., 173. / 255., 1.0) * 2.0,
+                current_gas.0,
+            )
             .to_vec4();
     }
 }
