@@ -92,7 +92,7 @@ pub fn thrust(
     let delta = time.delta_secs();
     score.0 += vel_length / 250.0 * delta;
     player.aura_points +=
-        vel_length * vel_length / 350.0 * delta * player.near_asteroids as u32 as f32; // boolean to binary
+        vel_length * vel_length / 350.0 * delta * player.near_asteroids as u32 as f32;
 
     player.aura_points -= 1.0 * delta;
 

@@ -51,8 +51,8 @@ fn spawn_player(
             (
                 GravityScale(0.001),
                 PointLight {
-                    color: VIOLET.into(),
-                    intensity: 1000000000.,
+                    color: VIOLET.lighter(0.5).into(),
+                    intensity: 100000000.,
                     range: 400.,
 
                     ..default()
@@ -66,17 +66,14 @@ fn spawn_player(
                 transform,
             ),
         ))
-        .with_children(|child| {
-            child
-                .spawn((
-                    engine::EngineFire {
-                        power: 0.5,
-                        color: Vec4::default(),
-                    },
-                    Collider::circle(50.0),
-                    Sensor,
-                    CollisionEventsEnabled,
-                ))
+        .with_children(|parent| {
+            parent.spawn((engine::EngineFire {
+                power: 0.5,
+                color: Vec4::default(),
+            },));
+
+            parent
+                .spawn((Collider::circle(50.0), Sensor, CollisionEventsEnabled))
                 .observe(
                     |_trigger: Trigger<OnCollisionStart>, mut player: Single<&mut Player>| {
                         player.near_asteroids = true;

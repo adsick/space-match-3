@@ -99,7 +99,7 @@ fn on_add_asteroid(
     ));
 }
 
-const ASTEROID_AURA_LOSS: f32 = 300.0;
+const ASTEROID_AURA_LOSS: f32 = 100.0;
 
 fn on_add_ship_asteroid_collider(
     trigger: Trigger<OnAdd, ShipAsteroidCollider>,
