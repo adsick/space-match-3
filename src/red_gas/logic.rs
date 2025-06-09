@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{collections::BTreeMap, time::Duration};
 
 use avian2d::prelude::{Physics, PhysicsTime};
 use bevy::{
@@ -12,17 +12,21 @@ use bevy::{
     utils::default,
 };
 use bevy_spatial::{SpatialAccess, kdtree::KDTree2};
-use bevy_tweening::{
-    Animator, AssetAnimator, Tween, TweenCompleted, lens::TransformScaleLens,
-};
+use bevy_tweening::{Animator, AssetAnimator, Tween, TweenCompleted, lens::TransformScaleLens};
 use log::debug;
 
 use crate::{
-    player::Player, red_gas::{
-        assets::RedOrbAssets, ExplosionDamage, PhysicalTimeAnimator, RedGasOrb, RedOrbExplosion, RedOrbExplosionEvent, RedOrbExplosionLens, EXPLOSION_CLEANUP_RADIUS, EXPLOSION_DURATION_SECS, MAX_EXPLOSION_RADIUS
-    }, screens::Screen, utils::{PointLightLens, StandardMaterialLens}, Pause
+    Pause,
+    player::Player,
+    red_gas::{
+        EXPLOSION_CLEANUP_RADIUS, EXPLOSION_DURATION_SECS, ExplosionDamage, MAX_EXPLOSION_RADIUS,
+        PhysicalTimeAnimator, RedGasOrb, RedOrbExplosion, RedOrbExplosionEvent,
+        RedOrbExplosionLens, assets::RedOrbAssets,
+    },
+    screens::Screen,
+    space::intro::IntroState,
+    utils::{PointLightLens, StandardMaterialLens},
 };
-
 
 pub fn on_add_explosive_gas_orb(
     trigger: Trigger<OnAdd, RedGasOrb>,
@@ -183,36 +187,43 @@ pub fn check_explosion_interactions(
 
     mut explosion_damage: ResMut<ExplosionDamage>,
 
+    intro_state: Res<State<IntroState>>,
+
     time: Res<Time<Physics>>,
 ) {
     let mut i = 0;
     let mut is_inside_explosion = false;
     let mut already_exploded = EntityHashSet::default();
 
+    let player_pos = player_transform.translation.xy();
+
+    let mut explosion_distances = Vec::<(f32, Entity)>::new();
+
+    // let mut closest_explotions =
+
     for (entity, mut explosion) in &mut explosions {
         i += 1;
-        let Ok(mut entity_commands) = commands.get_entity(entity) else {
-            continue;
-        };
 
-        if explosion.interactions > 7 {
-            entity_commands.try_despawn();
-            continue;
-        }
+        // if explosion.interactions > 7 {
+        //     let Ok(mut entity_commands) = commands.get_entity(entity) else {
+        //         continue;
+        //     };
+        //     entity_commands.try_despawn();
+        //     continue;
+        // }
 
-        let player_distance = player_transform
-            .translation
-            .xy()
-            .distance_squared(explosion.pos);
-
-        if player_distance > EXPLOSION_CLEANUP_RADIUS * EXPLOSION_CLEANUP_RADIUS {
-            entity_commands.try_despawn();
-            continue;
-        }
+        let player_distance = player_pos.distance_squared(explosion.pos);
 
         if player_distance < explosion.radius * explosion.radius {
             is_inside_explosion = true;
         }
+
+        explosion_distances.push((player_distance, entity));
+
+        // if player_distance > EXPLOSION_CLEANUP_RADIUS * EXPLOSION_CLEANUP_RADIUS {
+        //     entity_commands.try_despawn();
+        //     continue;
+        // }
 
         for (_, entity) in red_orb_tree.within_distance(explosion.pos, explosion.radius) {
             if let Some(entity) = entity {
@@ -230,8 +241,16 @@ pub fn check_explosion_interactions(
         }
     }
 
+    explosion_distances.sort_by(|a, b| a.0.total_cmp(&b.0));
+
+    // println!("explosion distances: {:?}", explosion_distances);
+    let max_explosion_count = if intro_state.0 { 60 } else { 20 };
+    for (_, entity) in explosion_distances.iter().skip(max_explosion_count) {
+        commands.entity(*entity).try_despawn();
+    }
+
     if is_inside_explosion {
-        explosion_damage.0 += time.delta_secs() / 3.0;
+        // explosion_damage.0 += time.delta_secs() / 3.0;
     } else {
         explosion_damage.0 = 0.;
     }
