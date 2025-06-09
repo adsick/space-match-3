@@ -153,6 +153,7 @@ fn update_engine_power(
                 current_gas.0,
             )
             .to_vec4();
+        fire_params.power = (current_gas.0 * 0.07 + 0.46).min(1.0);
     }
 }
 
