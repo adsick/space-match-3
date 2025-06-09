@@ -45,7 +45,7 @@ impl FromWorld for RedOrbAssets {
 
         let explosion_material = assets.add(StandardMaterial {
             base_color: RED.with_alpha(0.7).into(),
-            alpha_mode: AlphaMode::Blend,
+            alpha_mode: AlphaMode::Opaque,
             emissive: (RED * 10.0).into(),
             ..Default::default()
         });
