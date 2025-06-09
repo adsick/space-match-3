@@ -138,7 +138,7 @@ pub fn spawn_explosion_mesh(
         PhysicalTimeAnimator {},
         Mesh3d(mesh),
         MeshMaterial3d(materials.add(StandardMaterial {
-            alpha_mode: AlphaMode::Blend,
+            alpha_mode: AlphaMode::Opaque,
             fog_enabled: false,
             ..Default::default()
         })),
@@ -250,7 +250,7 @@ pub fn check_explosion_interactions(
     }
 
     if is_inside_explosion {
-        // explosion_damage.0 += time.delta_secs() / 3.0;
+        explosion_damage.0 += time.delta_secs() / 2.0;
     } else {
         explosion_damage.0 = 0.;
     }
