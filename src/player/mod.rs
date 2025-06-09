@@ -79,9 +79,9 @@ pub fn camera_follow_player(
     // cam_transform.rotation = Quat::from_rotation_x(vel_len / 70.0);
 }
 
-const BULLET_TIME_DURATION: f32 = 5.0;
-const BULLET_TIME_COOLDOWN: f32 = 15.0; // seconds
-const BULLET_TIME_AURA_COST: f32 = 0.0;
+const BULLET_TIME_DURATION: f32 = 2.0;
+const BULLET_TIME_COOLDOWN: f32 = 3.0; // seconds
+const BULLET_TIME_AURA_COST: f32 = 100.0;
 
 fn player_powers(
     player: Single<&Player>,
