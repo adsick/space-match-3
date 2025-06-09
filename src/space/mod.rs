@@ -33,9 +33,9 @@ pub fn plugin(app: &mut App) {
 
 pub const CHUNK_SIZE: f32 = 64.0; // TODO: Increase this
 /// Number of orbs per m²
-pub const MAX_CLOUD_DENSITY: f32 = 0.03;
-pub const RENDER_DISTANCE: i32 = 10;
-pub const ORB_THRESHOLD: f32 = 0.1;
+pub const MAX_CLOUD_DENSITY: f32 = 0.018;
+pub const RENDER_DISTANCE: i32 = 12;
+pub const ORB_THRESHOLD: f32 = 0.14;
 
 const MIN_ASTEROID_SIZE: f32 = 20.0;
 const ASTEROID_SIZE_VARIATION: f32 = 25.0;
@@ -43,11 +43,11 @@ const ASTEROID_CLOUD_Z_SCALE: f32 = 10.0;
 
 const MIN_EXPLOSIVE_ORB_SIZE: f32 = 2.0;
 const EXPLOSIVE_ORB_SIZE_VARIATION: f32 = 5.0;
-const EXPLOSIVE_ORB_CLOUD_Z_SCALE: f32 = 60.0;
+const EXPLOSIVE_ORB_CLOUD_Z_SCALE: f32 = 70.0;
 
 pub const MIN_ORB_SIZE: f32 = 0.4;
-pub const ORB_SCALE: f32 = 4.0;
-pub const CLOUD_Z_SCALE: f32 = 90.0;
+pub const ORB_SCALE: f32 = 4.4;
+pub const CLOUD_Z_SCALE: f32 = 80.0;
 
 pub const INTRO_SCENE_RADIUS: f32 = 2000.;
 pub const INTRO_SCENE_RADIUS_SQ: f32 = INTRO_SCENE_RADIUS * INTRO_SCENE_RADIUS;
@@ -223,7 +223,7 @@ fn populate_chunk(
             }
         }
 
-        const ASTEROID_SPAWN_SCALE: f32 = 0.1;
+        const ASTEROID_SPAWN_SCALE: f32 = 0.2;
 
         const ASTEROID_CHUNK_SUBDIV: u32 = ((CHUNK_SUBDIV as f32) * ASTEROID_SPAWN_SCALE) as u32;
         for y in 0..ASTEROID_CHUNK_SUBDIV {

@@ -30,9 +30,9 @@ pub struct GasBoost(pub Scalar);
 #[derive(Component, Deref, DerefMut, Reflect)]
 pub struct CurrentGas(pub Scalar);
 
-pub const GLIDE_FORCE: f32 = 330.0;
+pub const GLIDE_FORCE: f32 = 450.0;
 // pub const DRAG_FORCE: f32 = 0.05;
-pub const SPEED_LOCK_IN: f32 = 28.0;
+pub const SPEED_LOCK_IN: f32 = 26.0;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<MovementAcceleration>()
