@@ -84,7 +84,7 @@ pub fn camera_follow_player(
 }
 
 const BULLET_TIME_DURATION: f32 = 2.0;
-const BULLET_TIME_COOLDOWN: f32 = 3.0; // seconds
+const BULLET_TIME_COOLDOWN: f32 = 1.0; // seconds
 const BULLET_TIME_AURA_COST: f32 = 100.0;
 
 fn player_powers(

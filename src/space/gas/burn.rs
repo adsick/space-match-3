@@ -33,12 +33,12 @@ pub fn plugin(app: &mut App) {
         );
 }
 
-const BURN_TIME: u32 = 670;
+const BURN_TIME: u32 = 300;
 const CELL_SIZE: f32 = 16.;
 const MAX_COUNT: u32 = 1000;
 const LIFETIME: u32 = 30;
 const SLOWDOWN: u32 = 10;
-const BASE_DELAY: u32 = 30;
+const BASE_DELAY: u32 = 15;
 
 #[derive(SystemSet, Hash, Debug, Eq, PartialEq, Clone)]
 pub struct UpdateGasSet;
@@ -168,16 +168,17 @@ fn update_burning_orbs(
     orb_q.par_iter_mut().for_each(|(mut tr, mut mat, time)| {
         let dt = ct - time.0;
 
-        if dt > 2 * BURN_TIME {
+        /*         if dt > 2 * BURN_TIME {
             mat.0 = orb_assets.orb_materials[3].clone();
-        } else if dt > BURN_TIME {
+        } else  */
+        if dt > BURN_TIME {
             mat.0 = orb_assets.orb_materials[2].clone();
             tr.scale = tr.scale.lerp(tr.scale * 0.996, 60.0 * delta);
         } else {
             mat.0 = orb_assets.orb_materials[1].clone();
             tr.scale = tr
                 .scale
-                .lerp(tr.scale * 1.011, 60.0 * delta)
+                .lerp(tr.scale * 1.013, 60.0 * delta)
                 .min(Vec3::splat(100.0));
         }
     });

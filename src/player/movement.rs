@@ -28,7 +28,7 @@ pub struct GasBoost(pub Scalar);
 #[derive(Component, Deref, DerefMut, Reflect)]
 pub struct CurrentGas(pub Scalar);
 
-pub const GLIDE_FORCE: f32 = 270.0;
+pub const GLIDE_FORCE: f32 = 330.0;
 // pub const DRAG_FORCE: f32 = 0.05;
 pub const SPEED_LOCK_IN: f32 = 21.0;
 
@@ -37,6 +37,7 @@ pub(super) fn plugin(app: &mut App) {
         .register_type::<RotationSpeed>()
         .register_type::<GasBoost>()
         .register_type::<CurrentGas>()
+        .add_event::<AuraEarned>()
         .insert_resource(PlayerControls { enabled: false })
         .add_systems(
             FixedUpdate,
@@ -45,6 +46,9 @@ pub(super) fn plugin(app: &mut App) {
                 .in_set(PausableSystems),
         );
 }
+
+#[derive(Event)]
+pub struct AuraEarned(pub f32);
 
 #[derive(Resource)]
 pub struct PlayerControls {
@@ -71,6 +75,7 @@ pub fn thrust(
     player_controls: Res<PlayerControls>,
     time: Res<Time<Physics>>,
     mut score: ResMut<Score>,
+    mut aura_event: EventWriter<AuraEarned>
 ) {
     let left = keyboard_input.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]);
     let right = keyboard_input.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]);
@@ -91,10 +96,15 @@ pub fn thrust(
     let vel_length = velocity.length();
     let delta = time.delta_secs();
     score.0 += vel_length / 250.0 * delta;
-    player.aura_points +=
-        vel_length * vel_length / 350.0 * delta * player.near_asteroids as u32 as f32;
 
-    player.aura_points -= 1.0 * delta;
+    let earned = vel_length * vel_length / 350.0 * delta * player.near_asteroids as u32 as f32;
+
+    if earned > 0.0 {
+        player.aura_points += earned;
+        aura_event.write(AuraEarned(earned));
+    }
+    player.aura_points += 1.0 * delta;
+
 
     player.aura_points = player.aura_points.max(0.0);
 
@@ -131,7 +141,7 @@ pub fn thrust(
 
 fn glide(
     player_query: Single<(&LinearVelocity, &mut ExternalForce, &Transform), With<Player>>,
-    mut gizmos: Gizmos,
+    // mut gizmos: Gizmos,
     gas: Res<GasGenerator>,
 ) {
     let (linvel, mut force, ship_tr) = player_query.into_inner();

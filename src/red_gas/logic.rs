@@ -55,9 +55,6 @@ pub fn explode_orbs(
     mut events: EventReader<RedOrbExplosionEvent>,
     mut commands: Commands,
 
-    // mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-
     orbs: Query<&RedGasOrb>,
     orb_assets: Res<RedOrbAssets>,
 ) {
@@ -279,17 +276,17 @@ pub fn update_component_animator_speed<T: Component>(
     }
 }
 
-pub fn update_asset_animator_speed<T: Asset>(
-    animators: Query<&mut AssetAnimator<T>, With<PhysicalTimeAnimator>>,
-    current_state: Res<State<Pause>>,
-    time: Res<Time<Physics>>,
-) {
-    let paused = current_state.get().0;
-    for mut animator in animators {
-        if paused {
-            animator.set_speed(0.0);
-        } else {
-            animator.set_speed(time.relative_speed());
-        }
-    }
-}
+// pub fn update_asset_animator_speed<T: Asset>(
+//     animators: Query<&mut AssetAnimator<T>, With<PhysicalTimeAnimator>>,
+//     current_state: Res<State<Pause>>,
+//     time: Res<Time<Physics>>,
+// ) {
+//     let paused = current_state.get().0;
+//     for mut animator in animators {
+//         if paused {
+//             animator.set_speed(0.0);
+//         } else {
+//             animator.set_speed(time.relative_speed());
+//         }
+//     }
+// }

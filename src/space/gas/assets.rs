@@ -36,23 +36,23 @@ impl FromWorld for OrbAssets {
         orb_materials.push(assets.add(StandardMaterial {
             base_color: RED.into(),
             alpha_mode: AlphaMode::Opaque,
-            emissive: (GOLD * 2.0).into(),
+            emissive: (GOLD * 3.0).mix(&RED, 0.1).into(),
             ..Default::default()
         }));
 
         orb_materials.push(assets.add(StandardMaterial {
             base_color: RED.with_alpha(0.7).into(),
-            alpha_mode: AlphaMode::Blend,
-            emissive: (RED * 0.5).mix(&GOLD, 0.3).into(),
+            alpha_mode: AlphaMode::Opaque,
+            emissive: (RED * 1.4).mix(&GOLD, 0.4).into(),
             ..Default::default()
         }));
 
-        orb_materials.push(assets.add(StandardMaterial {
-            base_color: GRAY_700.with_alpha(0.2).into(),
-            alpha_mode: AlphaMode::Multiply,
-            // emissive: (WHITE * 0.8).into(),
-            ..Default::default()
-        }));
+        // orb_materials.push(assets.add(StandardMaterial {
+        //     base_color: GRAY_700.with_alpha(0.2).into(),
+        //     alpha_mode: AlphaMode::Multiply,
+        //     // emissive: (WHITE * 0.8).into(),
+        //     ..Default::default()
+        // }));
 
         Self {
             orb_mesh,
