@@ -58,7 +58,7 @@ fn update_volume(
         .max_by(|a, b| a.total_cmp(b))
         .unwrap_or(0.0);
     instance.set_volume(
-        Volume::Amplitude(highest_volume as f64),
+        Volume::Amplitude(highest_volume as f64 * 0.6),
         AudioTween::linear(UPDATE_RATE),
     );
 }
