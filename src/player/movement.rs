@@ -2,10 +2,12 @@ use avian2d::math::Scalar;
 use avian2d::prelude::*;
 use bevy::color::palettes::css::GREEN_YELLOW;
 use bevy::prelude::*;
+use bevy_kira_audio::{Audio, AudioControl as _};
 
 // use bevy::diagnostic::{DiagnosticPath, DiagnosticsStore};
 
 use crate::PausableSystems;
+use crate::audio::AudioAssets;
 use crate::player::Score;
 use crate::screens::Screen;
 use crate::space::GasGenerator;
@@ -75,7 +77,9 @@ pub fn thrust(
     player_controls: Res<PlayerControls>,
     time: Res<Time<Physics>>,
     mut score: ResMut<Score>,
-    mut aura_event: EventWriter<AuraEarned>
+    mut aura_event: EventWriter<AuraEarned>,
+    audio: Res<Audio>,
+    audio_assets: Res<AudioAssets>,
 ) {
     let left = keyboard_input.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]);
     let right = keyboard_input.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]);
@@ -102,9 +106,11 @@ pub fn thrust(
     if earned > 0.0 {
         player.aura_points += earned;
         aura_event.write(AuraEarned(earned));
+        debug!("earned: {earned}");
+
+        audio.play(audio_assets.pop_3.clone()).with_volume(0.03);
     }
     player.aura_points += 1.0 * delta;
-
 
     player.aura_points = player.aura_points.max(0.0);
 
