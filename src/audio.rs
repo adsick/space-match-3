@@ -49,6 +49,8 @@ pub struct AudioAssets {
     pub button_click: Handle<AudioSource>,
     #[dependency]
     pub button_hover: Handle<AudioSource>,
+    #[dependency]
+    pub big_explosion: Handle<AudioSource>,
 }
 
 impl FromWorld for AudioAssets {
@@ -71,6 +73,7 @@ impl FromWorld for AudioAssets {
             pop_3: assets.load("audio/sound_effects/pop_3.ogg"),
             button_click: assets.load("audio/sound_effects/button_click.ogg"),
             button_hover: assets.load("audio/sound_effects/button_hover.ogg"),
+            big_explosion: assets.load("audio/sound_effects/big_explosion.ogg"),
         }
     }
 }

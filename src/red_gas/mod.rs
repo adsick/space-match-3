@@ -13,6 +13,7 @@ use crate::{PausableSystems, asset_tracking::LoadResource, screens::Screen};
 
 pub mod assets;
 pub mod logic;
+mod sound;
 
 use assets::RedOrbAssets;
 use logic::*;
@@ -21,37 +22,38 @@ const MAX_EXPLOSION_RADIUS: f32 = 1500.;
 const EXPLOSION_DURATION_SECS: u64 = 10;
 const EXPLOSION_CLEANUP_RADIUS: f32 = 3000.;
 
-
 pub fn plugin(app: &mut App) {
-    app.add_plugins((AutomaticUpdate::<RedGasOrb>::new()
-        .with_spatial_ds(SpatialStructure::KDTree2)
-        .with_frequency(Duration::from_secs_f32(0.1))
-        .with_transform(TransformMode::GlobalTransform),))
-        .add_observer(on_add_explosive_gas_orb)
-        .load_resource::<RedOrbAssets>()
-        .insert_resource(ExplosionDamage(0.0))
-        .add_event::<RedOrbExplosionEvent>()
-        .add_systems(
-            Update,
-            (
-                explode_orbs,
-                check_explosion_interactions,
-                component_animator_system::<RedOrbExplosion>
-                    .in_set(AnimationSystem::AnimationUpdate),
-            )
-                .run_if(in_state(Screen::Gameplay))
-                .in_set(PausableSystems),
+    app.add_plugins((
+        AutomaticUpdate::<RedGasOrb>::new()
+            .with_spatial_ds(SpatialStructure::KDTree2)
+            .with_frequency(Duration::from_secs_f32(0.1))
+            .with_transform(TransformMode::GlobalTransform),
+        sound::plugin,
+    ))
+    .add_observer(on_add_explosive_gas_orb)
+    .load_resource::<RedOrbAssets>()
+    .insert_resource(ExplosionDamage(0.0))
+    .add_event::<RedOrbExplosionEvent>()
+    .add_systems(
+        Update,
+        (
+            explode_orbs,
+            check_explosion_interactions,
+            component_animator_system::<RedOrbExplosion>.in_set(AnimationSystem::AnimationUpdate),
         )
-        .add_systems(
-            Update,
-            (
-                update_component_animator_speed::<PointLight>,
-                update_component_animator_speed::<RedOrbExplosion>,
-                update_component_animator_speed::<Transform>,
-                update_asset_animator_speed::<StandardMaterial>,
-            )
-                .run_if(in_state(Screen::Gameplay)),
-        );
+            .run_if(in_state(Screen::Gameplay))
+            .in_set(PausableSystems),
+    )
+    .add_systems(
+        Update,
+        (
+            update_component_animator_speed::<PointLight>,
+            update_component_animator_speed::<RedOrbExplosion>,
+            update_component_animator_speed::<Transform>,
+            update_asset_animator_speed::<StandardMaterial>,
+        )
+            .run_if(in_state(Screen::Gameplay)),
+    );
 }
 
 #[derive(Resource)]
