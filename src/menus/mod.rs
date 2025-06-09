@@ -12,9 +12,9 @@ pub(super) fn plugin(app: &mut App) {
     app.init_state::<Menu>();
 
     app.add_plugins((
-        credits::plugin,
+        // credits::plugin,
         main::plugin,
-        settings::plugin,
+        // settings::plugin,
         pause::plugin,
         death::plugin,
     ));
