@@ -3,7 +3,7 @@ use std::{collections::BTreeMap, time::Duration};
 use avian2d::prelude::{Physics, PhysicsTime};
 use bevy::{
     asset::{Asset, Assets, Handle},
-    color::{Alpha, palettes::css::RED},
+    color::{palettes::css::{LIME, RED}, Alpha},
     ecs::{entity::EntityHashSet, relationship::RelatedSpawnerCommands},
     math::{Vec3, Vec3Swizzles},
     pbr::{MeshMaterial3d, PointLight, StandardMaterial},
@@ -56,7 +56,8 @@ pub fn explode_red_orbs(
     orb_assets: Res<RedOrbAssets>,
 
     // debug
-    player: Single<&Transform, With<Player>>
+    player: Single<&Transform, With<Player>>,
+    mut gizmo: Gizmos,
 ) {
     for event in events.read() {
         let Ok(orb) = orbs.get(event.entity) else {
@@ -74,6 +75,7 @@ pub fn explode_red_orbs(
 
         if pos.dot(ship_tr.up().truncate()) > 0.0 {
             debug!("Explosion in front. Source: {source}");
+            gizmo.ray_2d(ship_tr.translation.truncate(), pos, LIME);
         }
 
 
