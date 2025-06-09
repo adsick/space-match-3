@@ -23,9 +23,10 @@ bevy-inspector-egui = "0.31.0"
 noiz = "0.2.0"
 bevy_input_prompts = "0.2.2"
 bevy_framepace = "0.19.1"
-iyes_perf_ui = "0.5.0"
+iyes_perf_ui = { version = "0.5.0", optional = true }
 bevy_tweening = "0.13.0"
 bevy_kira_audio = "0.23.0"
+bevy_mod_debugdump = { version = "0.13.0", optional = true }
 
 # Your web builds will start failing if you add a dependency that pulls in `getrandom` v0.3+.
 # To fix this, you should tell `getrandom` to use the `wasm_js` backend on Wasm.
@@ -56,12 +57,16 @@ dev_native = [
     "bevy/file_watcher",
     # Enable embedded asset hot reloading for native dev builds.
     "bevy/embedded_watcher",
+    "dep:bevy_mod_debugdump",
+    "dep:iyes_perf_ui",
 ]
 wayland = ["bevy/wayland"]
 
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-bevy_spatial = { version = "0.11.0", default-features = false, features = ["kdtree"] }
+bevy_spatial = { version = "0.11.0", default-features = false, features = [
+    "kdtree",
+] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 bevy_spatial = { version = "0.11.0", default-features = true }
@@ -76,7 +81,7 @@ features = []
 [package.metadata.bevy_cli.web]
 # Disable native features for web builds.
 default-features = false
-features = [] # TODO: add bevy/webgpu for better web perf (doesn't work for me)
+features = []
 
 [package.metadata.bevy_cli.web.dev]
 features = ["dev"]

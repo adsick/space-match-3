@@ -25,6 +25,8 @@ use bevy::{
 use bevy_framepace::FramepacePlugin;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_kira_audio::AudioPlugin;
+#[cfg(feature = "dev_native")]
+use bevy_mod_debugdump::schedule_graph::Settings;
 use bevy_tweening::TweeningPlugin;
 use rand::Rng;
 
@@ -107,6 +109,12 @@ impl Plugin for AppPlugin {
         // screen shake shit
         app.init_resource::<CameraShake>();
         app.add_systems(Update, screen_shake);
+
+        #[cfg(feature = "dev_native")]
+        println!(
+            "{}",
+            bevy_mod_debugdump::schedule_graph_dot(app, Update, &Settings::default())
+        );
     }
 }
 
