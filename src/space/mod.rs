@@ -51,9 +51,6 @@ pub const CLOUD_Z_SCALE: f32 = 90.0;
 
 pub const INTRO_SCENE_RADIUS: f32 = 2000.;
 pub const INTRO_SCENE_RADIUS_SQ: f32 = INTRO_SCENE_RADIUS * INTRO_SCENE_RADIUS;
-const INTRO_CLOUD_POS: Vec2 = Vec2::new(0.0, 1000.);
-const INTRO_CLOUD_RADIUS: f32 = 1000.;
-const INTRO_CLOUD_RADIUS_SQ: f32 = INTRO_CLOUD_RADIUS * INTRO_CLOUD_RADIUS;
 
 // Chunks that have already been spawned.
 #[derive(Default, Resource)]
@@ -184,17 +181,6 @@ fn populate_chunk(
             let cell_pos = trigger.0.as_vec2() * CHUNK_SIZE
                 + (Vec2::new(x as f32, y as f32) / (CHUNK_SUBDIV as f32)) * CHUNK_SIZE;
             let r = gas.sample(cell_pos);
-            // let r = 0.5;
-
-            let intro_cloud_dist_sq = cell_pos.distance(INTRO_CLOUD_POS);
-
-            let start_mask = smoothstep(
-                INTRO_CLOUD_RADIUS,
-                INTRO_CLOUD_RADIUS - 400.,
-                intro_cloud_dist_sq,
-            );
-
-            let is_intro_region = cell_pos.length_squared() < INTRO_SCENE_RADIUS_SQ;
 
             // println!("start_mask: {start_mask}");
 
@@ -215,35 +201,14 @@ fn populate_chunk(
                 ));
             }
 
-            let meteorite_r = asteroid_distribution(r);
-            if meteorite_r > 0.60 && !is_intro_region {
-                if rand::random::<f32>() < 0.999 {
-                    continue;
-                }
-                let pos = cell_pos
-                    + Vec2::new(rand::random::<f32>(), rand::random::<f32>()) * CHUNK_SIZE
-                        / CHUNK_SUBDIV as f32;
-
-                let r = rand::random::<f32>();
-                let asteroid_size = MIN_ASTEROID_SIZE + ASTEROID_SIZE_VARIATION * r;
-                cmds.spawn((
-                    Asteroid {
-                        pos: pos.extend((rand::random::<f32>() - 0.5) * ASTEROID_CLOUD_Z_SCALE),
-                        radius: asteroid_size,
-                    },
-                    ChildOf(trigger.target()),
-                ));
-            }
-
             let explosive_orb_r = explosive_orb_distribution(r);
 
             if explosive_orb_r > 0.70 {
-                if rand::random::<f32>() + 0.2 * start_mask < 0.99 {
+                if rand::random::<f32>() < 0.99 {
                     continue;
                 }
-                let pos = cell_pos
-                    + Vec2::new(rand::random::<f32>(), rand::random::<f32>()) * CHUNK_SIZE
-                        / CHUNK_SUBDIV as f32;
+
+                let pos = cell_pos;
 
                 let r = rand::random::<f32>();
                 let orb_size = MIN_EXPLOSIVE_ORB_SIZE + EXPLOSIVE_ORB_SIZE_VARIATION * r;
@@ -255,6 +220,40 @@ fn populate_chunk(
                     },
                     ChildOf(trigger.target()),
                 ));
+            }
+        }
+
+        const ASTEROID_SPAWN_SCALE: f32 = 0.1;
+
+        const ASTEROID_CHUNK_SUBDIV: u32 = ((CHUNK_SUBDIV as f32) * ASTEROID_SPAWN_SCALE) as u32;
+        for y in 0..ASTEROID_CHUNK_SUBDIV {
+            for x in 0..ASTEROID_CHUNK_SUBDIV {
+                let cell_pos = trigger.0.as_vec2() * CHUNK_SIZE
+                    + (Vec2::new(x as f32, y as f32) / (ASTEROID_CHUNK_SUBDIV as f32))
+                        * CHUNK_SIZE;
+
+                let r = gas.sample(cell_pos);
+
+                let is_intro_region = cell_pos.length_squared() < INTRO_SCENE_RADIUS_SQ;
+                let meteorite_r = asteroid_distribution(r);
+                if meteorite_r > 0.60 && !is_intro_region {
+                    if rand::random::<f32>() < 0.99 {
+                        continue;
+                    }
+                    let pos = cell_pos
+                        + Vec2::new(rand::random::<f32>(), rand::random::<f32>()) * CHUNK_SIZE
+                            / CHUNK_SUBDIV as f32;
+
+                    let r = rand::random::<f32>();
+                    let asteroid_size = MIN_ASTEROID_SIZE + ASTEROID_SIZE_VARIATION * r;
+                    cmds.spawn((
+                        Asteroid {
+                            pos: pos.extend((rand::random::<f32>() - 0.5) * ASTEROID_CLOUD_Z_SCALE),
+                            radius: asteroid_size,
+                        },
+                        ChildOf(trigger.target()),
+                    ));
+                }
             }
         }
     }
