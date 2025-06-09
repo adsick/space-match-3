@@ -57,10 +57,10 @@ dev_native = [
     "bevy/file_watcher",
     # Enable embedded asset hot reloading for native dev builds.
     "bevy/embedded_watcher",
-    "dep:bevy_mod_debugdump",
     "dep:iyes_perf_ui",
 ]
 wayland = ["bevy/wayland"]
+debugdump = ["dep:bevy_mod_debugdump"]
 
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
