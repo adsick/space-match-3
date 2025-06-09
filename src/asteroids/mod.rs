@@ -23,7 +23,10 @@ use bevy_tweening::{
     lens::{TransformRotationLens, TransformScaleLens},
 };
 
-use crate::{CameraShake, player::Player};
+use crate::{
+    CameraShake,
+    player::{Player, movement::AuraEarned},
+};
 use crate::{
     audio::AudioAssets,
     utils::{PointLightLens, StandardMaterialLens},
@@ -119,6 +122,7 @@ fn on_add_ship_asteroid_collider(
              mut meshes: ResMut<Assets<Mesh>>,
              mut materials: ResMut<Assets<StandardMaterial>>,
              mut screen_shake: ResMut<CameraShake>,
+             mut aura_event: EventWriter<AuraEarned>,
              audio: Res<Audio>,
              audio_assets: Res<AudioAssets>,
              time: Res<Time<Physics>>| {
@@ -135,6 +139,7 @@ fn on_add_ship_asteroid_collider(
                 commands.entity(trigger.collider).despawn();
 
                 player.aura_points = (player.aura_points - ASTEROID_AURA_LOSS).max(0.0);
+                aura_event.write(AuraEarned(-ASTEROID_AURA_LOSS));
                 player.near_asteroids = false;
 
                 // tween.with_completed

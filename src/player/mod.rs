@@ -4,6 +4,7 @@ use avian2d::prelude::{
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_kira_audio::{Audio, AudioControl};
 
+use crate::player::movement::AuraEarned;
 use crate::space::intro::IntroState;
 use crate::{player::movement::DashTimer, screens::Screen};
 
@@ -104,6 +105,7 @@ fn go_into_bullet_time(
     mut physics_time: ResMut<Time<Physics>>,
     mut player: Single<&mut Player>,
     audio: Res<Audio>,
+    mut aura_event: EventWriter<AuraEarned>,
 ) {
     // TODO: PLAY SOUND HERE
 
@@ -119,5 +121,6 @@ fn go_into_bullet_time(
     audio.set_playback_rate(0.25);
     player.bullet_time_until = rt + BULLET_TIME_DURATION;
     player.bullet_time_cooldown_until = rt + BULLET_TIME_DURATION + BULLET_TIME_COOLDOWN;
-    player.aura_points -= BULLET_TIME_AURA_COST
+    player.aura_points -= BULLET_TIME_AURA_COST;
+    aura_event.write(AuraEarned(-BULLET_TIME_AURA_COST));
 }

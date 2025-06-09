@@ -69,16 +69,15 @@ fn update_hud(
     let mut earnings = String::new();
     let ct = time.elapsed().as_millis() as u32;
 
-
     let mut earned = 0.0;
     for ev in aura_event.read() {
         earned += ev.0;
     }
 
-    if earned > 0.0 {
-        if recent_earnings.len() == 0 {
+    if earned != 0.0 {
+        if recent_earnings.is_empty() {
             recent_earnings.push_front((earned, ct));
-        } else if ct - recent_earnings[0].1 < 40 {
+        } else if ct - recent_earnings[0].1 < 40 && earned > 0.0 {
             recent_earnings[0].0 += earned;
             recent_earnings[0].1 = ct;
         } else {
@@ -91,7 +90,10 @@ fn update_hud(
         if ct - t > 3000 {
             break;
         }
-        earnings.push_str(&format!("     +{ev:.0}\n"));
+        earnings.push_str(&format!(
+            "     {}{ev:.0}\n",
+            if *ev > 0.0 { "+" } else { "" }
+        ));
     }
 
     score_text.0 = format!(
