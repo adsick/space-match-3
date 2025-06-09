@@ -21,7 +21,7 @@ concurrency:
 # Configure the release workflow by editing the following values.
 env:
   # The base filename of the binary produced by `cargo build`.
-  cargo_build_binary_name: space-match-3
+  cargo_build_binary_name: galactic-burnout
 
   # The path to the assets directory.
   assets_path: assets
@@ -37,7 +37,7 @@ env:
 
   # The itch.io project to upload to in the format `user-name/project-name`.
   # There will be no upload to itch.io if this is commented out.
-  upload_to_itch: adsick/space-match-3
+  upload_to_itch: adsick/galactic-burnout
 
   ############
   # ADVANCED #
@@ -46,16 +46,16 @@ env:
   # The ID of the app produced by this workflow.
   # Applies to macOS releases.
   # Must contain only A-Z, a-z, 0-9, hyphen, and period: <https://developer.apple.com/documentation/bundleresources/information_property_list/cfbundleidentifier>.
-  app_id: adsick.space-match-3
+  app_id: adsick.galactic-burnout
 
   # The base filename of the binary in the package produced by this workflow.
   # Applies to Windows, macOS, and Linux releases.
   # Defaults to `cargo_build_binary_name` if commented out.
-  #app_binary_name: space-match-3
+  #app_binary_name: galactic-burnout
 
   # The name of the `.zip` or `.dmg` file produced by this workflow.
   # Defaults to `app_binary_name` if commented out.
-  #app_package_name: space-match-3
+  #app_package_name: galactic-burnout
 
   # The display name of the app produced by this workflow.
   # Applies to macOS releases.

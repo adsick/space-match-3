@@ -1,5 +1,5 @@
 [package]
-name = "space-match-3"
+name = "galactic-burnout"
 authors = ["adsick <adsick@protonmail.com>"]
 license = "MIT OR Apache-2.0"
 version = "0.1.0"
@@ -7,7 +7,7 @@ edition = "2024"
 
 [dependencies]
 bevy = { version = "0.16" }
-rand = "0.8"
+rand = "0.9"
 # Compile low-severity logs out of native builds for performance.
 log = { version = "0.4", features = [
     "max_level_debug",
@@ -18,7 +18,7 @@ tracing = { version = "0.1", features = [
     "max_level_debug",
     "release_max_level_warn",
 ] }
-avian2d = "0.3"
+avian2d = "0.3.1"
 bevy-inspector-egui = "0.31.0"
 noiz = "0.2.0"
 bevy_input_prompts = "0.2.2"
