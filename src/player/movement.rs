@@ -32,7 +32,7 @@ pub struct CurrentGas(pub Scalar);
 
 pub const GLIDE_FORCE: f32 = 330.0;
 // pub const DRAG_FORCE: f32 = 0.05;
-pub const SPEED_LOCK_IN: f32 = 21.0;
+pub const SPEED_LOCK_IN: f32 = 28.0;
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<MovementAcceleration>()
@@ -108,7 +108,7 @@ pub fn thrust(
         aura_event.write(AuraEarned(earned));
         debug!("earned: {earned}");
 
-        audio.play(audio_assets.pop_3.clone()).with_volume(0.03);
+        audio.play(audio_assets.pop_3.clone()).with_volume(0.06);
     }
     player.aura_points += 1.0 * delta;
 
