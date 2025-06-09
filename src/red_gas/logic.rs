@@ -39,10 +39,7 @@ pub fn on_add_explosive_gas_orb(
         return;
     };
 
-    let mut transform = Transform::from_translation(orb.pos).with_scale(Vec3::splat(orb.radius));
-
-    transform.rotate_local_z(orb.pos.x);
-    transform.rotate_local_x(orb.pos.y);
+    let transform = Transform::from_translation(orb.pos).with_scale(Vec3::splat(orb.radius));
 
     commands.entity(entity).insert((
         transform,
