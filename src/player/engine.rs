@@ -107,7 +107,7 @@ fn on_add_fire(
 
     commands.entity(entity).insert((
         // Transform::from_translation(-Vec3::Y * 0.),
-        Mesh3d(meshes.add(Rectangle::from_length(2000.))),
+        Mesh3d(meshes.add(Rectangle::from_length(300.))),
         MeshMaterial3d(explosion_materials.add(ExtendedMaterial {
             base: StandardMaterial {
                 alpha_mode: AlphaMode::Blend,
