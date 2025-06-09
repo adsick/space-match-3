@@ -6,6 +6,7 @@ use bevy::prelude::*;
 // use bevy::diagnostic::{DiagnosticPath, DiagnosticsStore};
 
 use crate::PausableSystems;
+use crate::player::Score;
 use crate::screens::Screen;
 use crate::space::GasGenerator;
 use crate::space::gas::ignite_gas;
@@ -69,6 +70,7 @@ pub fn thrust(
     >,
     player_controls: Res<PlayerControls>,
     time: Res<Time<Physics>>,
+    mut score: ResMut<Score>,
 ) {
     let left = keyboard_input.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]);
     let right = keyboard_input.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]);
@@ -88,7 +90,7 @@ pub fn thrust(
 
     let vel_length = velocity.length();
     let delta = time.delta_secs();
-    player.score += vel_length / 250.0 * delta;
+    score.0 += vel_length / 250.0 * delta;
     player.aura_points +=
         vel_length * vel_length / 350.0 * delta * player.near_asteroids as u32 as f32; // boolean to binary
 

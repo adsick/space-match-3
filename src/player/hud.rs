@@ -1,7 +1,11 @@
 use bevy::prelude::*;
 
 use crate::{
-    PausableSystems, asset_tracking::LoadResource, player::Player, screens::Screen, theme::widget,
+    PausableSystems,
+    asset_tracking::LoadResource,
+    player::{Player, Score},
+    screens::Screen,
+    theme::widget,
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -55,11 +59,12 @@ fn update_hud(
     player: Single<&Player>,
     mut score_text: Single<&mut Text, (With<HudScores>, Without<HudAbilities>)>,
     mut abilities_text: Single<&mut Text, (With<HudAbilities>, Without<HudScores>)>,
+    score: Res<Score>,
     time: Res<Time>,
 ) {
     score_text.0 = format!(
-        "Score: {}\nAura: {}",
-        player.score as i32, player.aura_points as i32
+        "Score: {:.1}\nAura: {}",
+        score.0, player.aura_points as i32
     );
     let mut abilities_string = "Abilities:".to_string();
     let elapsed = time.elapsed_secs();

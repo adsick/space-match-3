@@ -36,11 +36,15 @@ pub(super) fn plugin(app: &mut App) {
         )
             .run_if(in_state(Screen::Gameplay)),
     );
+
+    app.insert_resource(Score(0.0));
 }
+
+#[derive(Resource)]
+pub struct Score(pub f32);
 
 #[derive(Component, Default)]
 pub struct Player {
-    pub score: f32,                      // given based on survival time
     pub aura_points: f32, // given based on style (flying by objects at high speeds, etc.) // * maybe change this to a float too
     pub bullet_time_until: f32, // seconds
     pub bullet_time_cooldown_until: f32, // seconds
