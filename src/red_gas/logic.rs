@@ -3,7 +3,10 @@ use std::{collections::BTreeMap, time::Duration};
 use avian2d::prelude::{Physics, PhysicsTime};
 use bevy::{
     asset::{Asset, Assets, Handle},
-    color::{palettes::css::{LIME, RED}, Alpha},
+    color::{
+        Alpha,
+        palettes::css::{LIME, RED, YELLOW},
+    },
     ecs::{entity::EntityHashSet, relationship::RelatedSpawnerCommands},
     math::{Vec3, Vec3Swizzles},
     pbr::{MeshMaterial3d, PointLight, StandardMaterial},
@@ -68,18 +71,19 @@ pub fn explode_red_orbs(
 
         // debug
 
-        let ship_tr = &*player;
+        let ship_tr = player.translation.truncate();
         let source = event.meta;
 
         let pos = orb.pos.truncate();
+        let relative = pos - ship_tr;
 
-        if pos.dot(ship_tr.up().truncate()) > 0.0 {
+        if relative.dot(player.up().truncate()) > 0.0 {
             debug!("Explosion in front. Source: {source}");
-            gizmo.ray_2d(ship_tr.translation.truncate(), pos, LIME);
+            gizmo.line_2d(ship_tr, pos, RED);
+            gizmo.circle_2d(Isometry2d::from_translation(pos), 10.0, RED);
+        } else {
+            gizmo.line_2d(ship_tr, pos, YELLOW);
         }
-
-
-
 
         let explosion_radius_tween = Tween::new(
             EaseFunction::SineOut,
@@ -274,7 +278,7 @@ pub fn check_explosion_interactions(
         explosion_damage.0 = 0.;
     }
 
-    debug!("explosion count: {i}");
+    // debug!("explosion count: {i}");
 }
 
 pub fn update_component_animator_speed<T: Component>(
@@ -306,3 +310,12 @@ pub fn update_component_animator_speed<T: Component>(
 //         }
 //     }
 // }
+
+// #[cfg(feature = "dev")]
+pub fn configure_gizmos(mut gizmo_config: ResMut<GizmoConfigStore>) {
+    gizmo_config
+        .config_mut::<DefaultGizmoConfigGroup>()
+        .0
+        .line
+        .width = 8.0;
+}
