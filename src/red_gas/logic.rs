@@ -93,7 +93,11 @@ pub fn explode_orbs(
             ))
             .with_children(|builder| {
                 spawn_explosion_light(builder);
-                spawn_explosion_mesh(builder, orb_assets.explosion_mesh.clone(), &mut materials);
+                spawn_explosion_mesh(
+                    builder,
+                    orb_assets.explosion_mesh.clone(),
+                    orb_assets.explosion_material.clone(),
+                );
             })
             .observe(|trigger: Trigger<TweenCompleted>, mut commands: Commands| {
                 commands.entity(trigger.target()).try_despawn();
@@ -105,7 +109,8 @@ pub fn spawn_explosion_mesh(
     builder: &mut RelatedSpawnerCommands<'_, ChildOf>,
 
     mesh: Handle<Mesh>,
-    materials: &mut ResMut<Assets<StandardMaterial>>,
+    material: Handle<StandardMaterial>,
+    // materials: &mut ResMut<Assets<StandardMaterial>>,
 ) {
     let duration = Duration::from_secs(EXPLOSION_DURATION_SECS);
 
@@ -118,30 +123,30 @@ pub fn spawn_explosion_mesh(
         },
     );
 
-    let color_start = RED;
-    let color_end = RED.with_alpha(0.2);
-    let color_tween = Tween::new(
-        EaseFunction::SineOut,
-        duration,
-        StandardMaterialLens {
-            color_start: color_start.into(),
-            color_end: color_end.into(),
-            emissive_start: (color_start * 10.).into(),
-            emissive_end: (color_end * 4.).into(),
-        },
-    )
-    .with_completed_event(0);
+    // let color_start = RED;
+    // let color_end = RED.with_alpha(0.2);
+    // let color_tween = Tween::new(
+    //     EaseFunction::SineOut,
+    //     duration,
+    //     StandardMaterialLens {
+    //         color_start: color_start.into(),
+    //         color_end: color_end.into(),
+    //         emissive_start: (color_start * 10.).into(),
+    //         emissive_end: (color_end * 4.).into(),
+    //     },
+    // )
+    // .with_completed_event(0);
 
     builder.spawn((
         Animator::new(transform_tween),
-        AssetAnimator::new(color_tween),
         PhysicalTimeAnimator {},
         Mesh3d(mesh),
-        MeshMaterial3d(materials.add(StandardMaterial {
-            alpha_mode: AlphaMode::Opaque,
-            fog_enabled: false,
-            ..Default::default()
-        })),
+        MeshMaterial3d(material),
+        // MeshMaterial3d(materials.add(StandardMaterial {
+        //     alpha_mode: AlphaMode::Blend,
+        //     fog_enabled: false,
+        //     ..Default::default()
+        // })),
     ));
     // .observe(|trigger: Trigger<TweenCompleted>, mut commands: Commands| {
     //     commands.entity(trigger.target()).try_despawn();
@@ -251,6 +256,7 @@ pub fn check_explosion_interactions(
 
     if is_inside_explosion {
         explosion_damage.0 += time.delta_secs() / 2.0;
+        // explosion_damage.0 += time.delta_secs() / 2.0;
     } else {
         explosion_damage.0 = 0.;
     }

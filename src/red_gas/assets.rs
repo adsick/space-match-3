@@ -9,7 +9,7 @@ pub struct RedOrbAssets {
     pub mesh: Handle<Mesh>,
     pub material: Handle<StandardMaterial>,
     pub explosion_mesh: Handle<Mesh>,
-    // explosion_materials: Vec<Handle<StandardMaterial>>,
+    pub explosion_material: Handle<StandardMaterial>,
 }
 
 impl FromWorld for RedOrbAssets {
@@ -43,12 +43,18 @@ impl FromWorld for RedOrbAssets {
         //     }),
         // ];
 
+        let explosion_material = assets.add(StandardMaterial {
+            base_color: RED.with_alpha(0.7).into(),
+            alpha_mode: AlphaMode::Blend,
+            emissive: (RED * 10.0).into(),
+            ..Default::default()
+        });
         let explosion_mesh = assets.add(CircleMeshBuilder::new(1.0, 64).build());
 
         RedOrbAssets {
             mesh,
             material,
-            // explosion_materials,
+            explosion_material,
             explosion_mesh,
         }
     }

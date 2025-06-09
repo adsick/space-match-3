@@ -50,7 +50,7 @@ pub fn plugin(app: &mut App) {
             update_component_animator_speed::<PointLight>,
             update_component_animator_speed::<RedOrbExplosion>,
             update_component_animator_speed::<Transform>,
-            update_asset_animator_speed::<StandardMaterial>,
+            // update_asset_animator_speed::<StandardMaterial>,
         )
             .run_if(in_state(Screen::Gameplay)),
     );
