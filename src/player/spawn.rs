@@ -29,10 +29,10 @@ fn spawn_player(
     commands
         .spawn((
             (
-                Player {
-                    dash_timer: DashTimer(Timer::from_seconds(1., TimerMode::Once)),
-                    ..Default::default()
-                },
+                // Player {
+                //     dash_timer: DashTimer(Timer::from_seconds(1., TimerMode::Once)),
+                //     ..Default::default()
+                // },
                 Name::new("Player"),
                 RigidBody::Dynamic,
                 Collider::circle(3.),

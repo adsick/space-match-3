@@ -48,12 +48,15 @@ pub fn on_add_explosive_gas_orb(
     ));
 }
 
-pub fn explode_orbs(
+pub fn explode_red_orbs(
     mut events: EventReader<RedOrbExplosionEvent>,
     mut commands: Commands,
 
     orbs: Query<&RedGasOrb>,
     orb_assets: Res<RedOrbAssets>,
+
+    // debug
+    player: Single<&Transform, With<Player>>
 ) {
     for event in events.read() {
         let Ok(orb) = orbs.get(event.entity) else {
@@ -61,6 +64,20 @@ pub fn explode_orbs(
         };
 
         commands.entity(event.entity).try_despawn();
+
+        // debug
+
+        let ship_tr = &*player;
+        let source = event.meta;
+
+        let pos = orb.pos.truncate();
+
+        if pos.dot(ship_tr.up().truncate()) > 0.0 {
+            debug!("Explosion in front. Source: {source}");
+        }
+
+
+
 
         let explosion_radius_tween = Tween::new(
             EaseFunction::SineOut,
@@ -234,7 +251,7 @@ pub fn check_explosion_interactions(
                 }
 
                 explosion.interactions += 1;
-                red_orb_explosion_events.write(RedOrbExplosionEvent { entity });
+                red_orb_explosion_events.write(RedOrbExplosionEvent { entity, meta: 1 });
                 already_exploded.insert(entity);
             }
         }

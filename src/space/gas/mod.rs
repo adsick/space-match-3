@@ -9,13 +9,13 @@ use crate::{
     PausableSystems,
     player::movement::CurrentGas,
     screens::Screen,
-    space::gas::{assets::OrbAssets, burn::OrbExplosion},
+    space::gas::{assets::OrbAssets, burn::BurnEvent},
 };
 
 pub mod assets;
 pub mod burn;
 
-use burn::propagate_explosion;
+use burn::propagate_flames;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
@@ -30,7 +30,7 @@ pub(super) fn plugin(app: &mut App) {
     .add_systems(
         Update,
         ignite_gas
-            .before(propagate_explosion)
+            .before(propagate_flames)
             .run_if(in_state(Screen::Gameplay))
             .in_set(PausableSystems),
     );
@@ -58,7 +58,7 @@ pub fn ignite_gas(
     q_orbs: Query<&GasOrb>,
     q_ship: Single<(&Transform, &mut CurrentGas)>,
     tree: Res<KDTree2<GasOrb>>,
-    mut ignite_gas_tx: EventWriter<OrbExplosion>,
+    mut ignite_gas_tx: EventWriter<BurnEvent>,
 ) {
     let (ship_tr, mut gas) = q_ship.into_inner();
 
@@ -83,7 +83,7 @@ pub fn ignite_gas(
     }
 
     if total_gas > 0.0 {
-        ignite_gas_tx.write(OrbExplosion {
+        ignite_gas_tx.write(BurnEvent {
             pos: ship_tr_2d + IGNITION_OFFSET * backward,
         });
     }

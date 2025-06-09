@@ -19,7 +19,7 @@ use crate::{
 use super::GasOrb;
 
 pub fn plugin(app: &mut App) {
-    app.add_event::<OrbExplosion>()
+    app.add_event::<BurnEvent>()
         .configure_sets(
             Update,
             UpdateGasSet
@@ -29,7 +29,7 @@ pub fn plugin(app: &mut App) {
         )
         .add_systems(
             Update,
-            (propagate_explosion, update_burning_orbs).in_set(UpdateGasSet),
+            (propagate_flames, update_burning_orbs).in_set(UpdateGasSet),
         );
 }
 
@@ -44,7 +44,7 @@ const BASE_DELAY: u32 = 15;
 pub struct UpdateGasSet;
 
 #[derive(Event)]
-pub struct OrbExplosion {
+pub struct BurnEvent {
     pub pos: Vec2,
 }
 
@@ -54,8 +54,8 @@ pub struct OrbExplosionCell {
     life: u32,
 }
 
-pub fn propagate_explosion(
-    mut events: EventReader<OrbExplosion>,
+pub fn propagate_flames(
+    mut burn: EventReader<BurnEvent>,
     mut commands: Commands,
     orb_tree: Res<KDTree2<GasOrb>>,
     red_orb_tree: Res<KDTree2<RedGasOrb>>,
@@ -67,7 +67,7 @@ pub fn propagate_explosion(
 ) {
     let curr_time = time.elapsed().as_millis() as u32;
 
-    for event in events.read() {
+    for event in burn.read() {
         explosion_queue.push_back(OrbExplosionCell {
             pos: event.pos,
             time: curr_time,
@@ -104,7 +104,7 @@ pub fn propagate_explosion(
             }
             for (_, entity) in red_orb_tree.within_distance(explosion.pos, size / 2.0) {
                 if let Some(e) = entity {
-                    red_orb_explosion_events.write(RedOrbExplosionEvent { entity: e });
+                    red_orb_explosion_events.write(RedOrbExplosionEvent { entity: e, meta: 0});
                     // commands
                     //     .entity(e)
                     //     .try_remove::<GasOrb>()

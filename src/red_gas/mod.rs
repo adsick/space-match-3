@@ -37,7 +37,7 @@ pub fn plugin(app: &mut App) {
     .add_systems(
         Update,
         (
-            explode_orbs,
+            explode_red_orbs,
             check_explosion_interactions,
             component_animator_system::<RedOrbExplosion>.in_set(AnimationSystem::AnimationUpdate),
         )
@@ -77,6 +77,7 @@ pub struct RedOrbExplosion {
 #[derive(Event)]
 pub struct RedOrbExplosionEvent {
     pub entity: Entity,
+    pub meta: u8
 }
 
 #[derive(Component)]
