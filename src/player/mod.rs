@@ -24,7 +24,7 @@ pub(super) fn plugin(app: &mut App) {
         engine::plugin,
         hud::plugin,
         death::plugin,
-        dash::plugin,
+        // dash::plugin,
         sound::plugin,
     ))
     .add_systems(
