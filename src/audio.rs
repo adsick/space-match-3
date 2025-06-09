@@ -1,13 +1,17 @@
 use bevy::prelude::*;
-use bevy_kira_audio::{Audio, AudioControl, AudioSource};
+use bevy_kira_audio::{Audio, AudioControl, AudioInstance, AudioSource, AudioTween, PlaybackState};
 
-use crate::asset_tracking::LoadResource;
+use crate::{asset_tracking::LoadResource, screens::Screen};
 
 pub(super) fn plugin(app: &mut App) {
     app.register_type::<AudioAssets>();
     app.load_resource::<AudioAssets>();
+    app.init_resource::<MusicHandle>();
 
-    app.add_systems(Update, play_music.run_if(resource_added::<AudioAssets>));
+    app.add_systems(Update, play_loop.run_if(resource_added::<AudioAssets>));
+
+    app.add_systems(OnEnter(Screen::Gameplay), resume_music);
+    app.add_systems(OnExit(Screen::Gameplay), pause_music);
     app.add_systems(
         Update,
         apply_global_volume.run_if(resource_changed::<GlobalVolume>),
@@ -33,8 +37,8 @@ pub struct AudioAssets {
     pub tick_short: Handle<AudioSource>,
     #[dependency]
     pub tick_norm: Handle<AudioSource>,
-    #[dependency]
-    pub win_1: Handle<AudioSource>,
+    // #[dependency]
+    // pub win_1: Handle<AudioSource>,
     #[dependency]
     pub win_2: Handle<AudioSource>,
     #[dependency]
@@ -65,7 +69,7 @@ impl FromWorld for AudioAssets {
             sharp_2: assets.load("audio/sound_effects/sharp_2.ogg"),
             tick_short: assets.load("audio/sound_effects/tick_short.ogg"),
             tick_norm: assets.load("audio/sound_effects/tick_norm.ogg"),
-            win_1: assets.load("audio/sound_effects/win_1.ogg"),
+            // win_1: assets.load("audio/sound_effects/win_1.ogg"),
             win_2: assets.load("audio/sound_effects/win_2.ogg"),
             fm_snare: assets.load("audio/sound_effects/fm_snare.ogg"),
             pop_1: assets.load("audio/sound_effects/pop_1.ogg"),
@@ -78,8 +82,34 @@ impl FromWorld for AudioAssets {
     }
 }
 
-fn play_music(assets: Res<AudioAssets>, audio: Res<Audio>) {
-    audio.play(assets.music.clone()).with_volume(0.3).looped();
+#[derive(Resource, Default)]
+pub struct MusicHandle(Handle<AudioInstance>);
+
+fn pause_music(mut audio_instances: ResMut<Assets<AudioInstance>>, handle: Res<MusicHandle>) {
+    let Some(music) = audio_instances.get_mut(&handle.0) else {
+        return;
+    };
+
+    music.pause(AudioTween::default());
+}
+
+fn resume_music(mut audio_instances: ResMut<Assets<AudioInstance>>, handle: Res<MusicHandle>) {
+    let Some(music) = audio_instances.get_mut(&handle.0) else {
+        return;
+    };
+
+    music.resume(AudioTween::default());
+}
+
+fn play_loop(mut commands: Commands, assets: Res<AudioAssets>, audio: Res<Audio>) {
+    debug!("playing loop...");
+    let handle = audio
+        .play(assets.music.clone())
+        .paused()
+        .with_volume(0.3)
+        .looped()
+        .handle();
+    commands.insert_resource(MusicHandle(handle));
 }
 
 /// [`GlobalVolume`] doesn't apply to already-running audio entities, so this system will update them.
