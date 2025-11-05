@@ -36,7 +36,6 @@ pub(super) fn plugin(app: &mut App) {
         .register_type::<GasBoost>()
         .register_type::<CurrentGas>()
         .add_event::<AuraEarned>()
-        .insert_resource(PlayerControls { enabled: false })
         .add_systems(
             FixedUpdate,
             (thrust.after(ignite_gas), glide)
@@ -47,11 +46,6 @@ pub(super) fn plugin(app: &mut App) {
 
 #[derive(Event)]
 pub struct AuraEarned(pub f32);
-
-#[derive(Resource)]
-pub struct PlayerControls {
-    pub enabled: bool,
-}
 
 // *maybe rename this function
 pub fn thrust(
@@ -70,7 +64,6 @@ pub fn thrust(
         ),
         With<Player>,
     >,
-    player_controls: Res<PlayerControls>,
     time: Res<Time<Physics>>,
     mut score: ResMut<Score>,
     mut aura_event: EventWriter<AuraEarned>,
@@ -116,10 +109,10 @@ pub fn thrust(
     let speed_sqrt = vel_length.sqrt();
     debug!("sqrt(speed) = {speed_sqrt:.2}",);
     let tq = rotation_speed.0 / speed_sqrt.max(SPEED_LOCK_IN);
-    if left && player_controls.enabled {
+    if left {
         torque.apply_torque(tq);
     }
-    if right && player_controls.enabled {
+    if right {
         torque.apply_torque(-tq);
     }
 
@@ -127,7 +120,7 @@ pub fn thrust(
 
     let mut thrust_force = forward_dir * **acceleration;
 
-    if brake && player_controls.enabled {
+    if brake {
         thrust_force *= 0.15;
     }
 

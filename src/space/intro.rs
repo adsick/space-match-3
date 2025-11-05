@@ -1,10 +1,7 @@
 use avian2d::prelude::LinearVelocity;
 use bevy::{math::VectorSpace, prelude::*};
 
-use crate::{
-    player::{Player, movement::PlayerControls},
-    screens::Screen,
-};
+use crate::{player::Player, screens::Screen};
 
 pub const INTRO_DURATION_SECS: f32 = 3.0;
 
@@ -31,21 +28,14 @@ pub struct IntroProgress {
 }
 
 fn setup_intro(
-    mut player_controls: ResMut<PlayerControls>,
     mut intro_state: ResMut<NextState<IntroState>>,
 ) {
-    debug!("disabling controls");
-    player_controls.enabled = false;
     intro_state.set(IntroState(true));
 }
 
 fn on_intro_finished(
-    mut player_controls: ResMut<PlayerControls>,
     mut ship_velocity: Single<&mut LinearVelocity, With<Player>>,
 ) {
-    debug!("enabling controls");
-    player_controls.enabled = true;
-
     ship_velocity.0 = Vec2::new(0.0, 400.);
 }
 
