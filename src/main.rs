@@ -19,11 +19,18 @@ mod utils;
 
 use avian2d::prelude::*;
 use bevy::{
-    asset::AssetMetaCheck, color::palettes::css::WHITE, core_pipeline::bloom::Bloom,
-    diagnostic::FrameTimeDiagnosticsPlugin, math::VectorSpace, prelude::*,
+    asset::AssetMetaCheck,
+    color::palettes::css::WHITE,
+    core_pipeline::bloom::Bloom,
+    diagnostic::FrameTimeDiagnosticsPlugin,
+    math::VectorSpace,
+    prelude::*,
+    render::{
+        RenderPlugin,
+        settings::{Backends, PowerPreference, RenderCreation, WgpuSettings},
+    },
 };
 use bevy_framepace::FramepacePlugin;
-use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_kira_audio::AudioPlugin;
 #[cfg(feature = "debugdump")]
 use bevy_mod_debugdump::schedule_graph::Settings;
@@ -50,17 +57,22 @@ impl Plugin for AppPlugin {
                 })
                 .set(WindowPlugin {
                     primary_window: Window {
-                        title: "Space rush - galactic burnout".to_string(),
+                        title: "Space Rush - Galactic Burnout".to_string(),
                         fit_canvas_to_parent: true,
                         ..default()
                     }
                     .into(),
                     ..default()
+                })
+                .set(RenderPlugin {
+                    render_creation: RenderCreation::Automatic(WgpuSettings {
+                        // backends: Some(Backends::VULKAN | Backends::BROWSER_WEBGPU),
+                        power_preference: PowerPreference::HighPerformance,
+                        ..default()
+                    }),
+                    ..default()
                 }),
             PhysicsPlugins::default().with_length_unit(1.0),
-            EguiPlugin {
-                enable_multipass_for_primary_context: true,
-            },
             FramepacePlugin,
             TweeningPlugin,
             AudioPlugin,

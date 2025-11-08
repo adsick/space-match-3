@@ -9,7 +9,7 @@ use bevy::{
 
 use bevy::{dev_tools::states::log_transitions, ui::UiDebugOptions};
 
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use iyes_perf_ui::{
     PerfUiPlugin,
     prelude::{PerfUiDefaultEntries, PerfUiRoot},
@@ -19,21 +19,30 @@ use crate::screens::Screen;
 
 pub(super) fn plugin(app: &mut App) {
     // World inspector
-    app.add_plugins(
+    app.add_plugins((
+        EguiPlugin {
+            enable_multipass_for_primary_context: true,
+        },
         WorldInspectorPlugin::default().run_if(resource_equals(WorldInspectorEnabled(true))),
-    )
-    .add_plugins(bevy::diagnostic::EntityCountDiagnosticsPlugin)
-    .add_plugins(bevy::diagnostic::SystemInformationDiagnosticsPlugin)
-    .add_plugins(bevy::render::diagnostic::RenderDiagnosticsPlugin)
-    .add_plugins(PhysicsDebugPlugin::default())
-    .init_resource::<WorldInspectorEnabled>()
-    .add_systems(Startup, spawn_perf_ui)
-    .add_systems(
-        Update,
-        (|mut enabled: ResMut<WorldInspectorEnabled>| enabled.0 = !enabled.0)
-            .run_if(input_just_pressed(KeyCode::KeyW).and(input_pressed(KeyCode::ControlLeft))),
-    )
-    .add_systems(Startup, spawn_grid);
+    ));
+
+    app.add_plugins((
+        bevy::diagnostic::EntityCountDiagnosticsPlugin,
+        bevy::diagnostic::SystemInformationDiagnosticsPlugin,
+        bevy::render::diagnostic::RenderDiagnosticsPlugin,
+        // bevy::diagnostic::FrameTimeDiagnosticsPlugin::default()
+    ));
+
+    app.add_plugins(PhysicsDebugPlugin::default());
+
+    app.init_resource::<WorldInspectorEnabled>()
+        .add_systems(Startup, spawn_perf_ui)
+        .add_systems(
+            Update,
+            (|mut enabled: ResMut<WorldInspectorEnabled>| enabled.0 = !enabled.0)
+                .run_if(input_just_pressed(KeyCode::KeyW).and(input_pressed(KeyCode::ControlLeft))),
+        )
+        .add_systems(Startup, spawn_grid);
 
     app.add_plugins(PerfUiPlugin);
 
@@ -44,7 +53,6 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         Update,
         (
-            #[cfg(feature = "dev")]
             toggle_debug_ui.run_if(input_just_pressed(DEBUG_TOGGLE_KEY)),
             toggle_perf_ui.run_if(input_just_pressed(PERFUI_TOGGLE_KEY)),
         ),
