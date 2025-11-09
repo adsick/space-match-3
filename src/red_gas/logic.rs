@@ -6,7 +6,7 @@ use bevy::{
     color::palettes::css::{RED, YELLOW},
     ecs::{entity::EntityHashSet, relationship::RelatedSpawnerCommands},
     math::{Vec3, Vec3Swizzles},
-    pbr::{MeshMaterial3d, PointLight, StandardMaterial},
+    pbr::{MeshMaterial3d, NotShadowCaster, NotShadowReceiver, PointLight, StandardMaterial},
     prelude::*,
     time::Time,
     utils::default,
@@ -124,7 +124,6 @@ pub fn spawn_explosion_mesh(
 
     mesh: Handle<Mesh>,
     material: Handle<StandardMaterial>,
-    // materials: &mut ResMut<Assets<StandardMaterial>>,
 ) {
     let duration = Duration::from_secs(EXPLOSION_DURATION_SECS);
 
@@ -137,34 +136,18 @@ pub fn spawn_explosion_mesh(
         },
     );
 
-    // let color_start = RED;
-    // let color_end = RED.with_alpha(0.2);
-    // let color_tween = Tween::new(
-    //     EaseFunction::SineOut,
-    //     duration,
-    //     StandardMaterialLens {
-    //         color_start: color_start.into(),
-    //         color_end: color_end.into(),
-    //         emissive_start: (color_start * 10.).into(),
-    //         emissive_end: (color_end * 4.).into(),
-    //     },
-    // )
-    // .with_completed_event(0);
-
-    builder.spawn((
-        Animator::new(transform_tween),
-        PhysicalTimeAnimator {},
-        Mesh3d(mesh),
-        MeshMaterial3d(material),
-        // MeshMaterial3d(materials.add(StandardMaterial {
-        //     alpha_mode: AlphaMode::Blend,
-        //     fog_enabled: false,
-        //     ..Default::default()
-        // })),
-    ));
-    // .observe(|trigger: Trigger<TweenCompleted>, mut commands: Commands| {
-    //     commands.entity(trigger.target()).try_despawn();
-    // });
+    builder
+        .spawn((
+            Animator::new(transform_tween),
+            PhysicalTimeAnimator {},
+            Mesh3d(mesh),
+            MeshMaterial3d(material),
+            NotShadowCaster,
+            NotShadowReceiver,
+        ))
+        .observe(|trigger: Trigger<TweenCompleted>, mut commands: Commands| {
+            commands.entity(trigger.target()).try_despawn();
+        });
 }
 
 pub fn spawn_explosion_light(builder: &mut RelatedSpawnerCommands<'_, ChildOf>) {
