@@ -66,8 +66,7 @@ impl Plugin for AppPlugin {
                 })
                 .set(RenderPlugin {
                     render_creation: RenderCreation::Automatic(WgpuSettings {
-                        // backends: Some(Backends::VULKAN | Backends::BROWSER_WEBGPU),
-                        power_preference: PowerPreference::HighPerformance,
+                        power_preference: PowerPreference::LowPower,
                         ..default()
                     }),
                     ..default()
