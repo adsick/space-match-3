@@ -26,7 +26,6 @@ fn spawn_player(
         .spawn((
             (
                 Player {
-                    // dash_timer: DashTimer(Timer::from_seconds(1., TimerMode::Once)),
                     ..Default::default()
                 },
                 Name::new("Player"),
