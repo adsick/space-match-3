@@ -42,7 +42,7 @@ getrandom = { git = "https://github.com/benfrankel/getrandom" }
 
 [features]
 # Default to a native dev build.
-default = []
+default = ["dev"]
 dev = [
     # Improve compile times for dev builds by linking Bevy as a dynamic library.
     "bevy/dynamic_linking",
@@ -91,6 +91,7 @@ features = ["dev"]
 [lints.rust]
 # Mark `bevy_lint` as a valid `cfg`, as it is set when the Bevy linter runs.
 unexpected_cfgs = { level = "warn", check-cfg = ["cfg(bevy_lint)"] }
+unused_imports = { level = "allow" }
 
 [lints.clippy]
 # Bevy supplies arguments to systems via dependency injection, so it's natural for systems to

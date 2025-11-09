@@ -1,11 +1,7 @@
 use avian2d::prelude::*;
 use bevy::{color::palettes::css::VIOLET, prelude::*};
 
-use crate::{
-    asteroids::ShipAsteroidCollider,
-    player::movement::{CurrentGas, DashTimer},
-    screens::Screen,
-};
+use crate::{asteroids::ShipAsteroidCollider, player::movement::CurrentGas, screens::Screen};
 
 use super::{
     Player,

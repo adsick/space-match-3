@@ -3,7 +3,7 @@ use std::time::Duration;
 use bevy::{
     app::{App, Update},
     math::{Vec2, Vec3},
-    pbr::{PointLight, StandardMaterial},
+    pbr::PointLight,
     prelude::*,
 };
 use bevy_spatial::{AutomaticUpdate, SpatialStructure, TransformMode};

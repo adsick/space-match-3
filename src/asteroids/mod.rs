@@ -19,17 +19,17 @@ use bevy::{
 };
 use bevy_kira_audio::{Audio, AudioControl};
 use bevy_tweening::{
-    Animator, AssetAnimator, Targetable, Tracks, Tween, TweenCompleted,
+    Animator, AssetAnimator, Tracks, Tween, TweenCompleted,
     lens::{TransformRotationLens, TransformScaleLens},
 };
 
 use crate::{
-    CameraShake,
-    player::{Player, movement::AuraEarned},
-};
-use crate::{
     audio::AudioAssets,
     utils::{PointLightLens, StandardMaterialLens},
+};
+use crate::{
+    player::{Player, movement::AuraEarned},
+    vfx::ScreenShake,
 };
 
 const ASTEROID_SHADER_PATH: &str = "shaders/asteroid.wgsl";
@@ -121,7 +121,7 @@ fn on_add_ship_asteroid_collider(
 
              mut meshes: ResMut<Assets<Mesh>>,
              mut materials: ResMut<Assets<StandardMaterial>>,
-             mut screen_shake: ResMut<CameraShake>,
+             mut screen_shake: ResMut<ScreenShake>,
              mut aura_event: EventWriter<AuraEarned>,
              audio: Res<Audio>,
              audio_assets: Res<AudioAssets>,

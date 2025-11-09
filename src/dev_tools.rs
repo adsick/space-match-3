@@ -3,6 +3,7 @@
 use avian2d::prelude::PhysicsDebugPlugin;
 use bevy::{
     color::palettes::css::WHITE,
+    core_pipeline::bloom::Bloom,
     input::common_conditions::{input_just_pressed, input_pressed},
     prelude::*,
 };
@@ -12,10 +13,18 @@ use bevy::{dev_tools::states::log_transitions, ui::UiDebugOptions};
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use iyes_perf_ui::{
     PerfUiPlugin,
-    prelude::{PerfUiDefaultEntries, PerfUiRoot},
+    entries::{
+        PerfUiFixedTimeEntries, PerfUiFramerateEntries, PerfUiRenderEntries, PerfUiSystemEntries,
+        PerfUiWindowEntries,
+    },
+    prelude::PerfUiRoot,
 };
 
-use crate::screens::Screen;
+use crate::{screens::Screen, vfx};
+
+const DEBUG_TOGGLE_KEY: KeyCode = KeyCode::Backquote;
+const PERFUI_TOGGLE_KEY: KeyCode = KeyCode::F3;
+const BLOOM_TOGGLE_KEY: KeyCode = KeyCode::KeyB;
 
 pub(super) fn plugin(app: &mut App) {
     // World inspector
@@ -57,10 +66,12 @@ pub(super) fn plugin(app: &mut App) {
             toggle_perf_ui.run_if(input_just_pressed(PERFUI_TOGGLE_KEY)),
         ),
     );
-}
 
-const DEBUG_TOGGLE_KEY: KeyCode = KeyCode::Backquote;
-const PERFUI_TOGGLE_KEY: KeyCode = KeyCode::F3;
+    app.add_systems(
+        Update,
+        tooggle_bloom.run_if(input_just_pressed(BLOOM_TOGGLE_KEY)),
+    );
+}
 
 fn toggle_debug_ui(mut options: ResMut<UiDebugOptions>) {
     options.toggle();
@@ -76,7 +87,21 @@ fn toggle_perf_ui(mut query: Query<&mut Visibility, With<PerfUiRoot>>) {
 }
 
 fn spawn_perf_ui(mut commands: Commands) {
-    commands.spawn(PerfUiDefaultEntries::default());
+    commands.spawn(
+        (
+            // Contains everything related to FPS and frame time
+            PerfUiFramerateEntries::default(),
+            // CPU and GPU render times
+            PerfUiRenderEntries::default(),
+            // Contains everything related to the window and cursor
+            PerfUiWindowEntries::default(),
+            // Contains everything related to system diagnostics (CPU, RAM)
+            PerfUiSystemEntries::default(),
+            // Contains everything related to fixed timestep
+            PerfUiFixedTimeEntries::default(),
+            // ...
+        ),
+    );
 }
 
 #[derive(Default, PartialEq, Resource)]
@@ -100,4 +125,22 @@ fn spawn_grid(mut commands: Commands, mut gizmo_assets: ResMut<Assets<GizmoAsset
         },
         ..default()
     });
+}
+
+fn tooggle_bloom(
+    mut commands: Commands,
+    mut camera: Query<Entity, With<Camera>>,
+    mut state: Local<bool>,
+) {
+    let camera = camera.single_mut().unwrap();
+    let mut camera = commands.get_entity(camera).unwrap();
+
+    if *state {
+        info!("Enable Bloom");
+        camera.insert(vfx::BASE_BLOOM);
+    } else {
+        info!("Disable Bloom");
+        camera.remove::<Bloom>();
+    }
+    *state = !*state;
 }

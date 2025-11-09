@@ -1,10 +1,7 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
-use bevy_kira_audio::{
-    Audio, AudioControl, AudioEasing, AudioInstance, AudioTween, SpatialAudioEmitter,
-    prelude::Volume,
-};
+use bevy_kira_audio::{Audio, AudioControl, AudioInstance, AudioTween, prelude::Volume};
 
 use crate::{audio::AudioAssets, player::Player};
 

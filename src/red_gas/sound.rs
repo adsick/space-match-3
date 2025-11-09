@@ -3,11 +3,7 @@ use std::time::Duration;
 use bevy::{prelude::*, time::common_conditions::on_real_timer};
 use bevy_kira_audio::{Audio, AudioControl, AudioInstance, AudioTween, prelude::Volume};
 
-use crate::{
-    audio::AudioAssets,
-    player::Player,
-    red_gas::{RedOrbExplosion, RedOrbExplosionEvent},
-};
+use crate::{audio::AudioAssets, player::Player, red_gas::RedOrbExplosion};
 
 const UPDATE_RATE: Duration = Duration::from_millis(500);
 

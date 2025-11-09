@@ -1,12 +1,9 @@
-use std::{collections::BTreeMap, time::Duration};
+use std::time::Duration;
 
 use avian2d::prelude::{Physics, PhysicsTime};
 use bevy::{
-    asset::{Asset, Assets, Handle},
-    color::{
-        Alpha,
-        palettes::css::{LIME, RED, YELLOW},
-    },
+    asset::Handle,
+    color::palettes::css::{RED, YELLOW},
     ecs::{entity::EntityHashSet, relationship::RelatedSpawnerCommands},
     math::{Vec3, Vec3Swizzles},
     pbr::{MeshMaterial3d, PointLight, StandardMaterial},
@@ -15,20 +12,20 @@ use bevy::{
     utils::default,
 };
 use bevy_spatial::{SpatialAccess, kdtree::KDTree2};
-use bevy_tweening::{Animator, AssetAnimator, Tween, TweenCompleted, lens::TransformScaleLens};
+use bevy_tweening::{Animator, Tween, TweenCompleted, lens::TransformScaleLens};
 use log::debug;
 
 use crate::{
     Pause,
     player::Player,
     red_gas::{
-        EXPLOSION_CLEANUP_RADIUS, EXPLOSION_DURATION_SECS, ExplosionDamage, MAX_EXPLOSION_RADIUS,
-        PhysicalTimeAnimator, RedGasOrb, RedOrbExplosion, RedOrbExplosionEvent,
-        RedOrbExplosionLens, assets::RedOrbAssets,
+        EXPLOSION_DURATION_SECS, ExplosionDamage, MAX_EXPLOSION_RADIUS, PhysicalTimeAnimator,
+        RedGasOrb, RedOrbExplosion, RedOrbExplosionEvent, RedOrbExplosionLens,
+        assets::RedOrbAssets,
     },
     screens::Screen,
     space::intro::IntroState,
-    utils::{PointLightLens, StandardMaterialLens},
+    utils::PointLightLens,
 };
 
 pub fn on_add_explosive_gas_orb(

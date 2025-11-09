@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use avian2d::prelude::{LinearVelocity, Physics};
+use avian2d::prelude::*;
 use bevy::{
     color::{
         ColorToComponents,
@@ -158,7 +158,7 @@ fn update_engine_power(
 }
 
 fn update_shader_params(
-    ship: Single<&LinearVelocity, With<Player>>,
+    // ship: Single<&LinearVelocity, With<Player>>,
     fire: Single<(&GlobalTransform, &EngineFire)>,
     mut materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, FireMaterialExtension>>>,
     fire_material: Single<
@@ -176,7 +176,7 @@ fn update_shader_params(
     };
 
     let (fire_tr, fire_params) = *fire;
-    let ship_velocity = ship.into_inner();
+    // let ship_velocity = ship.into_inner();
 
     let flame_dir = fire_tr.down();
     let curr_time = time.elapsed().as_millis();

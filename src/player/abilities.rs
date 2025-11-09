@@ -1,14 +1,9 @@
-use avian2d::prelude::{
-    ExternalForce, ExternalImpulse, LinearVelocity, Physics, PhysicsTime, Rotation,
-};
-use bevy::{input::common_conditions::input_just_pressed, prelude::*};
+use avian2d::prelude::{Physics, PhysicsTime};
+use bevy::prelude::*;
 use bevy_kira_audio::{Audio, AudioControl};
 
-use crate::player::movement::AuraEarned;
 use crate::player::Player;
-use crate::space::intro::IntroState;
-use crate::{player::movement::DashTimer, screens::Screen};
-
+use crate::player::movement::AuraEarned;
 
 const BULLET_TIME_DURATION: f32 = 2.0;
 const BULLET_TIME_COOLDOWN: f32 = 1.0; // seconds
