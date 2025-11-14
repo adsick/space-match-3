@@ -70,12 +70,12 @@ fn spawn_player(
             parent
                 .spawn((Collider::circle(50.0), Sensor, CollisionEventsEnabled))
                 .observe(
-                    |_trigger: Trigger<OnCollisionStart>, mut player: Single<&mut Player>| {
+                    |_trigger: On<CollisionStart>, mut player: Single<&mut Player>| {
                         player.near_asteroids = true;
                     },
                 )
                 .observe(
-                    |_trigger: Trigger<OnCollisionEnd>, mut player: Single<&mut Player>| {
+                    |_trigger: On<CollisionEnd>, mut player: Single<&mut Player>| {
                         player.near_asteroids = false;
                     },
                 );

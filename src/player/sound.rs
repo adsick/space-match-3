@@ -1,7 +1,7 @@
 use std::time::Duration;
 
-use bevy::prelude::*;
-use bevy_kira_audio::{Audio, AudioControl, AudioInstance, AudioTween, prelude::Volume};
+use bevy::{audio::Volume, prelude::*};
+use bevy_kira_audio::{Audio, AudioControl, AudioInstance, AudioTween, prelude::Decibels};
 
 use crate::{audio::AudioAssets, player::Player};
 
@@ -17,17 +17,21 @@ pub struct EngineSound(Handle<AudioInstance>);
 const VOLUME: f32 = 0.3;
 
 fn setup_sound(
-    trigger: Trigger<OnAdd, Player>,
+    trigger: On<Add, Player>,
     mut cmds: Commands,
     audio: Res<Audio>,
     audio_assets: Res<AudioAssets>,
 ) {
     let sound = audio
         .play(audio_assets.engine_fire.clone())
+        // wtf? can't find any reference to `Amplitude` in bevy 0.16 docs.
+        // Not in bevy_kira_audio either. It's like it never existed.
+        // Where did this come from?
         .with_volume(Volume::Amplitude(VOLUME as f64))
         .looped()
         .handle();
-    cmds.entity(trigger.target()).insert(EngineSound(sound));
+    cmds.entity(trigger.event().event_target())
+        .insert(EngineSound(sound));
 }
 
 fn update_sound(
@@ -48,11 +52,11 @@ fn update_sound(
 }
 
 fn stop_sound(
-    trigger: Trigger<OnRemove, EngineSound>,
+    trigger: On<Remove, EngineSound>,
     q_sound: Query<&EngineSound>,
     mut sounds: ResMut<Assets<AudioInstance>>,
 ) {
-    let Ok(sound) = q_sound.get(trigger.target()) else {
+    let Ok(sound) = q_sound.get(trigger.event().event_target()) else {
         return;
     };
     let Some(instance) = sounds.get_mut(sound.0.id()) else {

@@ -1,25 +1,13 @@
 use bevy::{
     app::{App, Update},
     color::{Color, Mix},
+    ecs::{system::Res, world::Mut},
+    light::PointLight,
     math::VectorSpace,
-    pbr::{MeshMaterial3d, PointLight, StandardMaterial},
+    pbr::{MeshMaterial3d, StandardMaterial},
     prelude::IntoScheduleConfigs,
 };
-use bevy_tweening::{
-    AnimationSystem, Lens, Targetable, asset_animator_system, component_animator_system,
-};
-
-pub fn plugin(app: &mut App) {
-    app.add_systems(
-        Update,
-        asset_animator_system::<StandardMaterial, MeshMaterial3d<StandardMaterial>>
-            .in_set(AnimationSystem::AnimationUpdate),
-    )
-    .add_systems(
-        Update,
-        component_animator_system::<PointLight>.in_set(AnimationSystem::AnimationUpdate),
-    );
-}
+use bevy_tweening::{AnimationSystem, Lens};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct StandardMaterialLens {
@@ -31,7 +19,7 @@ pub struct StandardMaterialLens {
 }
 
 impl Lens<StandardMaterial> for StandardMaterialLens {
-    fn lerp(&mut self, target: &mut dyn Targetable<StandardMaterial>, ratio: f32) {
+    fn lerp(&mut self, mut target: Mut<StandardMaterial>, ratio: f32) {
         target.base_color = self.color_start.mix(&self.color_end, ratio);
         target.emissive = self.emissive_start.mix(&self.emissive_end, ratio).into();
     }
@@ -47,7 +35,7 @@ pub struct PointLightLens {
 }
 
 impl Lens<PointLight> for PointLightLens {
-    fn lerp(&mut self, target: &mut dyn Targetable<PointLight>, ratio: f32) {
+    fn lerp(&mut self, mut target: Mut<PointLight>, ratio: f32) {
         target.color = self.color_start.mix(&self.color_end, ratio);
         target.intensity = self.intensity_start.lerp(self.intensity_end, ratio);
     }

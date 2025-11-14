@@ -5,14 +5,15 @@ use bevy::{
     asset::Handle,
     color::palettes::css::{RED, YELLOW},
     ecs::{entity::EntityHashSet, relationship::RelatedSpawnerCommands},
+    light::{NotShadowCaster, NotShadowReceiver},
     math::{Vec3, Vec3Swizzles},
-    pbr::{MeshMaterial3d, NotShadowCaster, NotShadowReceiver, PointLight, StandardMaterial},
+    pbr::{MeshMaterial3d, StandardMaterial},
     prelude::*,
     time::Time,
     utils::default,
 };
 use bevy_spatial::{SpatialAccess, kdtree::KDTree2};
-use bevy_tweening::{Animator, Tween, TweenCompleted, lens::TransformScaleLens};
+use bevy_tweening::{AnimCompletedEvent, Tween, TweenAnim, lens::TransformScaleLens};
 use log::debug;
 
 use crate::{
@@ -29,12 +30,12 @@ use crate::{
 };
 
 pub fn on_add_explosive_gas_orb(
-    trigger: Trigger<OnAdd, RedGasOrb>,
+    trigger: On<Add, RedGasOrb>,
     mut commands: Commands,
     orbs: Query<&RedGasOrb>,
     orb_assets: Res<RedOrbAssets>,
 ) {
-    let entity = trigger.target();
+    let entity = trigger.event().event_target();
     let Ok(orb) = orbs.get(entity) else {
         return;
     };
@@ -49,7 +50,7 @@ pub fn on_add_explosive_gas_orb(
 }
 
 pub fn explode_red_orbs(
-    mut events: EventReader<RedOrbExplosionEvent>,
+    mut events: MessageReader<RedOrbExplosionEvent>,
     mut commands: Commands,
 
     orbs: Query<&RedGasOrb>,
@@ -89,12 +90,12 @@ pub fn explode_red_orbs(
                 radius_start: orb.radius,
                 radius_end: MAX_EXPLOSION_RADIUS,
             },
-        )
+        );
         .with_completed_event(0);
 
         commands
             .spawn((
-                StateScoped(Screen::Gameplay),
+                DespawnOnExit(Screen::Gameplay),
                 RedOrbExplosion {
                     pos: orb.pos.xy(),
                     radius: orb.radius,
@@ -102,7 +103,7 @@ pub fn explode_red_orbs(
                 },
                 Transform::from_translation(orb.pos),
                 PhysicalTimeAnimator {},
-                Animator::new(explosion_radius_tween),
+                TweenAnim::new(explosion_radius_tween),
                 Visibility::Visible,
             ))
             .with_children(|builder| {
@@ -113,7 +114,7 @@ pub fn explode_red_orbs(
                     orb_assets.explosion_material.clone(),
                 );
             })
-            .observe(|trigger: Trigger<TweenCompleted>, mut commands: Commands| {
+            .observe(|trigger: On<AnimCompletedEvent>, mut commands: Commands| {
                 commands.entity(trigger.target()).try_despawn();
             });
     }
@@ -138,14 +139,14 @@ pub fn spawn_explosion_mesh(
 
     builder
         .spawn((
-            Animator::new(transform_tween),
+            TweenAnim::new(transform_tween),
             PhysicalTimeAnimator {},
             Mesh3d(mesh),
             MeshMaterial3d(material),
             NotShadowCaster,
             NotShadowReceiver,
         ))
-        .observe(|trigger: Trigger<TweenCompleted>, mut commands: Commands| {
+        .observe(|trigger: On<AnimCompletedEvent>, mut commands: Commands| {
             commands.entity(trigger.target()).try_despawn();
         });
 }
@@ -168,14 +169,14 @@ pub fn spawn_explosion_light(builder: &mut RelatedSpawnerCommands<'_, ChildOf>) 
     builder
         .spawn((
             PhysicalTimeAnimator {},
-            Animator::new(point_light_tween),
+            TweenAnim::new(point_light_tween),
             PointLight {
                 color: RED.into(),
                 radius: 5000.,
                 ..default()
             },
         ))
-        .observe(|trigger: Trigger<TweenCompleted>, mut commands: Commands| {
+        .observe(|trigger: On<AnimCompletedEvent>, mut commands: Commands| {
             commands.entity(trigger.target()).try_despawn();
         });
 }
@@ -185,7 +186,7 @@ pub fn check_explosion_interactions(
     mut explosions: Query<(Entity, &mut RedOrbExplosion)>,
     red_orb_tree: Res<KDTree2<RedGasOrb>>,
     player_transform: Single<&Transform, With<Player>>,
-    mut red_orb_explosion_events: EventWriter<RedOrbExplosionEvent>,
+    mut red_orb_explosion_events: MessageWriter<RedOrbExplosionEvent>,
 
     mut explosion_damage: ResMut<ExplosionDamage>,
 
@@ -261,17 +262,18 @@ pub fn check_explosion_interactions(
     // debug!("explosion count: {i}");
 }
 
-pub fn update_component_animator_speed<T: Component>(
-    animators: Query<&mut Animator<T>, With<PhysicalTimeAnimator>>,
+pub fn update_component_animator_speed(
+    animators: Query<&mut TweenAnim, With<PhysicalTimeAnimator>>,
     pause_state: Res<State<Pause>>,
     time: Res<Time<Physics>>,
 ) {
     let paused = pause_state.get().0;
     for mut animator in animators {
         if paused {
-            animator.set_speed(0.0);
+            animator.speed = 0.0;
+            // animator.set_speed(0.0);
         } else {
-            animator.set_speed(time.relative_speed());
+            animator.speed = time.relative_speed() as f64;
         }
     }
 }

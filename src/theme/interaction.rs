@@ -39,7 +39,7 @@ fn apply_interaction_palette(
 }
 
 fn play_on_hover_sound_effect(
-    trigger: Trigger<Pointer<Over>>,
+    trigger: On<Pointer<Over>>,
     audio: Res<Audio>,
     audio_assets: Option<Res<AudioAssets>>,
     interaction_query: Query<(), With<Interaction>>,
@@ -47,14 +47,14 @@ fn play_on_hover_sound_effect(
     let Some(audio_assets) = audio_assets else {
         return;
     };
-    if interaction_query.contains(trigger.target()) {
+    if interaction_query.contains(trigger.event().event_target()) {
         audio.play(audio_assets.button_hover.clone());
         // commands.spawn(sound_effect(audio_assets.hover.clone()));
     }
 }
 
 fn play_on_click_sound_effect(
-    trigger: Trigger<Pointer<Click>>,
+    trigger: On<Pointer<Click>>,
     audio: Res<Audio>,
     audio_assets: Option<Res<AudioAssets>>,
     interaction_query: Query<(), With<Interaction>>,
@@ -62,7 +62,7 @@ fn play_on_click_sound_effect(
     let Some(audio_assets) = audio_assets else {
         return;
     };
-    if interaction_query.contains(trigger.target()) {
+    if interaction_query.contains(trigger.event().event_target()) {
         audio.play(audio_assets.button_click.clone());
         // commands.spawn(sound_effect(audio_assets.click.clone()));
     }

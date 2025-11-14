@@ -3,11 +3,10 @@ use std::time::Duration;
 use bevy::{
     app::{App, Update},
     math::{Vec2, Vec3},
-    pbr::PointLight,
     prelude::*,
 };
 use bevy_spatial::{AutomaticUpdate, SpatialStructure, TransformMode};
-use bevy_tweening::{AnimationSystem, Lens, Targetable, component_animator_system};
+use bevy_tweening::{AnimationSystem, Lens};
 
 use crate::{PausableSystems, asset_tracking::LoadResource, screens::Screen};
 
@@ -33,23 +32,17 @@ pub fn plugin(app: &mut App) {
     .add_observer(on_add_explosive_gas_orb)
     .load_resource::<RedOrbAssets>()
     .insert_resource(ExplosionDamage(0.0))
-    .add_event::<RedOrbExplosionEvent>()
+    .add_message::<RedOrbExplosionEvent>()
     .add_systems(
         Update,
-        (
-            explode_red_orbs,
-            check_explosion_interactions,
-            component_animator_system::<RedOrbExplosion>.in_set(AnimationSystem::AnimationUpdate),
-        )
+        (explode_red_orbs, check_explosion_interactions)
             .run_if(in_state(Screen::Gameplay))
             .in_set(PausableSystems),
     )
     .add_systems(
         Update,
         (
-            update_component_animator_speed::<PointLight>,
-            update_component_animator_speed::<RedOrbExplosion>,
-            update_component_animator_speed::<Transform>,
+            update_component_animator_speed,
             // update_asset_animator_speed::<StandardMaterial>,
         )
             .run_if(in_state(Screen::Gameplay)),
@@ -77,7 +70,7 @@ pub struct RedOrbExplosion {
     interactions: usize,
 }
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct RedOrbExplosionEvent {
     pub entity: Entity,
     pub meta: u8,
@@ -97,7 +90,7 @@ fn mix(a: f32, b: f32, t: f32) -> f32 {
 }
 
 impl Lens<RedOrbExplosion> for RedOrbExplosionLens {
-    fn lerp(&mut self, target: &mut dyn Targetable<RedOrbExplosion>, ratio: f32) {
+    fn lerp(&mut self, mut target: Mut<RedOrbExplosion>, ratio: f32) {
         target.radius = mix(self.radius_start, self.radius_end, ratio);
     }
 }

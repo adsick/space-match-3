@@ -1,7 +1,5 @@
 use bevy::{
-    color::palettes::css::RED,
-    prelude::*,
-    render::mesh::{CircleMeshBuilder, SphereKind, SphereMeshBuilder},
+    color::palettes::css::RED, mesh::{CircleMeshBuilder, SphereKind, SphereMeshBuilder}, prelude::*
 };
 
 #[derive(Resource, Asset, Clone, Reflect)]

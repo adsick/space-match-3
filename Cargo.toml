@@ -6,7 +6,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-bevy = { version = "0.16" }
+bevy = { version = "0.17" }
 rand = "0.9"
 # Compile low-severity logs out of native builds for performance.
 log = { version = "0.4", features = [
@@ -18,14 +18,14 @@ tracing = { version = "0.1", features = [
     "max_level_debug",
     "release_max_level_warn",
 ] }
-avian2d = "0.3.1"
-bevy-inspector-egui = "0.31.0"
-noiz = "0.2.0"
+avian2d = "0.4.1"
+bevy-inspector-egui = "0.35.0"
+noiz = "0.3.0"
 bevy_input_prompts = "0.2.2"
-bevy_framepace = "0.19.1"
+bevy_framepace = "0.20"
 iyes_perf_ui = { version = "0.5.0", optional = true }
-bevy_tweening = "0.13.0"
-bevy_kira_audio = "0.23.0"
+bevy_tweening = "0.14.0"
+bevy_kira_audio = "0.24.0"
 bevy_mod_debugdump = { version = "0.13.0", optional = true }
 
 # Your web builds will start failing if you add a dependency that pulls in `getrandom` v0.3+.
@@ -58,9 +58,9 @@ dev_native = [
     "bevy/file_watcher",
     # Enable embedded asset hot reloading for native dev builds.
     "bevy/embedded_watcher",
-    
+
 ]
-wayland = ["bevy/wayland"]
+# wayland = ["bevy/wayland"]
 debugdump = ["dep:bevy_mod_debugdump"]
 
 
