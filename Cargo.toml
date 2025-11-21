@@ -66,12 +66,12 @@ debugdump = ["dep:bevy_mod_debugdump"]
 
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-bevy_spatial = { version = "0.11.0", default-features = false, features = [
+bevy_spatial = { git = "https://github.com/laundmo/bevy-spatial", rev = "refs/pull/37/head", default-features = false, features = [
     "kdtree",
 ] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-bevy_spatial = { version = "0.11.0", default-features = true }
+bevy_spatial = { git = "https://github.com/laundmo/bevy-spatial", rev = "refs/pull/37/head", default-features = true }
 
 
 [package.metadata.bevy_cli.release]
