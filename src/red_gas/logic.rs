@@ -91,7 +91,7 @@ pub fn explode_red_orbs(
                 radius_end: MAX_EXPLOSION_RADIUS,
             },
         );
-        .with_completed_event(0);
+        // .with_completed_event(0);
 
         commands
             .spawn((
@@ -115,7 +115,7 @@ pub fn explode_red_orbs(
                 );
             })
             .observe(|trigger: On<AnimCompletedEvent>, mut commands: Commands| {
-                commands.entity(trigger.target()).try_despawn();
+                commands.entity(trigger.event().event_target()).try_despawn();
             });
     }
 }
@@ -147,7 +147,7 @@ pub fn spawn_explosion_mesh(
             NotShadowReceiver,
         ))
         .observe(|trigger: On<AnimCompletedEvent>, mut commands: Commands| {
-            commands.entity(trigger.target()).try_despawn();
+            commands.entity(trigger.event().event_target()).try_despawn();
         });
 }
 
@@ -163,8 +163,8 @@ pub fn spawn_explosion_light(builder: &mut RelatedSpawnerCommands<'_, ChildOf>) 
             intensity_start: 1000000000000000.,
             intensity_end: 0.,
         },
-    )
-    .with_completed_event(0);
+    );
+    // .with_completed_event(0);
 
     builder
         .spawn((
@@ -177,7 +177,7 @@ pub fn spawn_explosion_light(builder: &mut RelatedSpawnerCommands<'_, ChildOf>) 
             },
         ))
         .observe(|trigger: On<AnimCompletedEvent>, mut commands: Commands| {
-            commands.entity(trigger.target()).try_despawn();
+            commands.entity(trigger.event().event_target()).try_despawn();
         });
 }
 
