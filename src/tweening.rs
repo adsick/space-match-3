@@ -1,25 +1,9 @@
 use bevy::prelude::*;
 use bevy_tweening::{AnimCompletedEvent, CycleCompletedEvent, TweenAnim, TweenResolver};
 
-// this is needed in order to move Tweening to other schedule
+// copied from bevy_tweening itself. this is needed in order to move Tweening to other schedule
 
-/// Plugin to register the 🍃 Bevy Tweening animation framework.
-///
-/// This plugin registers the common resources and events used by 🍃 Bevy
-/// Tweening as well as the core animation system which steps all pending
-/// tweenable animations. That system runs in the
-/// [`AnimationSystem::AnimationUpdate`] system set, during the [`Update`]
-/// schedule.
-///
-/// ```no_run
-/// use bevy::prelude::*;
-/// use bevy_tweening::*;
-///
-/// App::default()
-///     .add_plugins(DefaultPlugins)
-///     .add_plugins(TweeningPlugin)
-///     .run();
-/// ```
+/// Impostor
 #[derive(Debug, Clone, Copy)]
 pub struct TweeningPlugin;
 
