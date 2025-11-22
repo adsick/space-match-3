@@ -14,6 +14,7 @@ mod screens;
 mod space;
 mod speed_tracers;
 mod theme;
+mod tweening;
 mod utils;
 mod vfx;
 
@@ -33,7 +34,7 @@ use bevy_framepace::FramepacePlugin;
 use bevy_kira_audio::AudioPlugin;
 #[cfg(feature = "debugdump")]
 use bevy_mod_debugdump::schedule_graph::Settings;
-use bevy_tweening::TweeningPlugin;
+use tweening::TweeningPlugin;
 
 fn main() -> AppExit {
     App::new().add_plugins(AppPlugin).run()
