@@ -31,11 +31,17 @@ pub(super) fn plugin(app: &mut App) {
     .add_systems(
         Update,
         (
-            camera_follow_player.run_if(in_state(IntroState(false))),
             go_into_bullet_time.run_if(input_just_pressed(KeyCode::Space)),
             reset_bullet_time,
         )
             .run_if(in_state(Screen::Gameplay)),
+    )
+    .add_systems(
+        FixedPostUpdate,
+        camera_follow_player
+            .run_if(in_state(IntroState(false)))
+            // avian docs suggests this as well, but idk
+            // .before(TransformSystems::Propagate),
     );
 
     app.insert_resource(Score(0.0));

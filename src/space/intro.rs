@@ -11,12 +11,11 @@ pub fn plugin(app: &mut App) {
         .add_systems(OnEnter(Screen::Gameplay), setup_intro)
         .add_systems(OnEnter(IntroState(false)), on_intro_finished)
         .add_systems(
-            Update,
+            FixedPostUpdate,
             camera_follow_player
                 .run_if(in_state(Screen::Gameplay))
                 .run_if(in_state(IntroState(true))),
         );
-    // .add_systems(OnEnter(Screen::Gameplay), spawn_big_bang);
 }
 
 #[derive(States, Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
@@ -27,15 +26,11 @@ pub struct IntroProgress {
     t: f32,
 }
 
-fn setup_intro(
-    mut intro_state: ResMut<NextState<IntroState>>,
-) {
+fn setup_intro(mut intro_state: ResMut<NextState<IntroState>>) {
     intro_state.set(IntroState(true));
 }
 
-fn on_intro_finished(
-    mut ship_velocity: Single<&mut LinearVelocity, With<Player>>,
-) {
+fn on_intro_finished(mut ship_velocity: Single<&mut LinearVelocity, With<Player>>) {
     ship_velocity.0 = Vec2::new(0.0, 400.);
 }
 
