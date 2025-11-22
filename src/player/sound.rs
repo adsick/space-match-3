@@ -1,7 +1,8 @@
 use std::time::Duration;
 
-use bevy::{audio::Volume, prelude::*};
+use bevy::prelude::*;
 use bevy_kira_audio::{Audio, AudioControl, AudioInstance, AudioTween, prelude::Decibels};
+// use kira::Volume
 
 use crate::{audio::AudioAssets, player::Player};
 
@@ -14,7 +15,7 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Component)]
 pub struct EngineSound(Handle<AudioInstance>);
 
-const VOLUME: f32 = 0.3;
+const VOLUME: f32 = -10.0;
 
 fn setup_sound(
     trigger: On<Add, Player>,
@@ -24,10 +25,8 @@ fn setup_sound(
 ) {
     let sound = audio
         .play(audio_assets.engine_fire.clone())
-        // wtf? can't find any reference to `Amplitude` in bevy 0.16 docs.
-        // Not in bevy_kira_audio either. It's like it never existed.
-        // Where did this come from?
-        .with_volume(Volume::Amplitude(VOLUME as f64))
+        .with_volume(Decibels(VOLUME))
+        // .with_volume(Volume::Amplitude(VOLUME as f64))
         .looped()
         .handle();
     cmds.entity(trigger.event().event_target())
@@ -45,8 +44,10 @@ fn update_sound(
     let Some(instance) = sounds.get_mut(sound.0.id()) else {
         return;
     };
-    instance.set_volume(
-        Volume::Amplitude((VOLUME / (cam_tr.translation().z / 500.0 + 1.0)) as f64),
+    // TODO: This might behave differently from the way it did with
+    // Volume::Amplitude. Will need adjusting when we can run the game.
+    instance.set_decibels(
+        Decibels(VOLUME / (cam_tr.translation().z / 500.0 + 1.0)),
         AudioTween::linear(Duration::from_secs_f32(time.delta_secs())),
     );
 }
