@@ -59,7 +59,6 @@ pub fn thrust(
             // &mut ExternalTorque,
             &mut CurrentGas,
             &Rotation,
-            &LinearVelocity,
             &MovementAcceleration,
             &RotationSpeed,
             &GasBoost,
@@ -83,13 +82,12 @@ pub fn thrust(
         // mut torque,
         mut current_gas,
         rotation,
-        velocity,
         acceleration,
         rotation_speed,
         gas_boost,
     ) = player_query.into_inner();
 
-    let vel_length = velocity.length();
+    let vel_length = forces.linear_velocity().length();
     let delta = time.delta_secs();
     score.0 += vel_length / 250.0 * delta;
 
@@ -138,11 +136,13 @@ pub fn thrust(
 }
 
 fn glide(
-    player_query: Single<(&LinearVelocity, Forces, &Transform), With<Player>>,
+    player_query: Single<(Forces, &Transform), With<Player>>,
     // mut gizmos: Gizmos,
     gas: Res<GasGenerator>,
 ) {
-    let (linvel, mut forces, ship_tr) = player_query.into_inner();
+    let (mut forces, ship_tr) = player_query.into_inner();
+
+    let linvel = forces.linear_velocity();
 
     let forward = ship_tr.up().truncate();
     let ship_pos = ship_tr.translation.truncate();
@@ -152,7 +152,7 @@ fn glide(
     let amount = gas.sample(ship_pos).clamp(0.0, 1.0) + 0.3;
 
     // let drag = -side_vel * amount * DRAG_FORCE;
-    let glide = (forward - forward.project_onto(linvel.0)) * amount * GLIDE_FORCE; // basically we want to rotate the linvel by applying a perpendicular force...
+    let glide = (forward - forward.project_onto(linvel)) * amount * GLIDE_FORCE; // basically we want to rotate the linvel by applying a perpendicular force...
 
     // gizmos.ray_2d(ship_pos, drag * 1.0, RED);
     // gizmos.ray_2d(ship_pos, glide * 1.0, GREEN_YELLOW);
