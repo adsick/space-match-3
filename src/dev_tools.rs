@@ -2,13 +2,10 @@
 
 use avian2d::prelude::PhysicsDebugPlugin;
 use bevy::{
-    color::palettes::css::WHITE,
-    core_pipeline::bloom::Bloom,
-    input::common_conditions::{input_just_pressed, input_pressed},
-    prelude::*,
+    color::palettes::css::WHITE, input::common_conditions::{input_just_pressed, input_pressed}, post_process::bloom::Bloom, prelude::*
 };
 
-use bevy::{dev_tools::states::log_transitions, ui::UiDebugOptions};
+use bevy::dev_tools::states::log_transitions;
 
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use iyes_perf_ui::{
@@ -30,13 +27,14 @@ pub(super) fn plugin(app: &mut App) {
     // World inspector
     app.add_plugins((
         EguiPlugin {
-            enable_multipass_for_primary_context: true,
+            ..Default::default()
+            // enable_multipass_for_primary_context: true,
         },
         WorldInspectorPlugin::default().run_if(resource_equals(WorldInspectorEnabled(true))),
     ));
 
     app.add_plugins((
-        bevy::diagnostic::EntityCountDiagnosticsPlugin,
+        bevy::diagnostic::EntityCountDiagnosticsPlugin::default(),
         bevy::diagnostic::SystemInformationDiagnosticsPlugin,
         bevy::render::diagnostic::RenderDiagnosticsPlugin,
         // bevy::diagnostic::FrameTimeDiagnosticsPlugin::default()
@@ -87,21 +85,19 @@ fn toggle_perf_ui(mut query: Query<&mut Visibility, With<PerfUiRoot>>) {
 }
 
 fn spawn_perf_ui(mut commands: Commands) {
-    commands.spawn(
-        (
-            // Contains everything related to FPS and frame time
-            PerfUiFramerateEntries::default(),
-            // CPU and GPU render times
-            PerfUiRenderEntries::default(),
-            // Contains everything related to the window and cursor
-            PerfUiWindowEntries::default(),
-            // Contains everything related to system diagnostics (CPU, RAM)
-            PerfUiSystemEntries::default(),
-            // Contains everything related to fixed timestep
-            PerfUiFixedTimeEntries::default(),
-            // ...
-        ),
-    );
+    commands.spawn((
+        // Contains everything related to FPS and frame time
+        PerfUiFramerateEntries::default(),
+        // CPU and GPU render times
+        PerfUiRenderEntries::default(),
+        // Contains everything related to the window and cursor
+        PerfUiWindowEntries::default(),
+        // Contains everything related to system diagnostics (CPU, RAM)
+        PerfUiSystemEntries::default(),
+        // Contains everything related to fixed timestep
+        PerfUiFixedTimeEntries::default(),
+        // ...
+    ));
 }
 
 #[derive(Default, PartialEq, Resource)]

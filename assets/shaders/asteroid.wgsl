@@ -30,9 +30,9 @@ struct VertexInput {
 
 
 
-@group(2) @binding(100)
+@group(#{MATERIAL_BIND_GROUP}) @binding(100)
 var<uniform> terrain_seed: vec4f;
-@group(2) @binding(101)
+@group(#{MATERIAL_BIND_GROUP}) @binding(101)
 var<uniform> radius: vec4f;
 
 

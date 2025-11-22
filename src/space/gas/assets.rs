@@ -3,8 +3,8 @@ use bevy::{
         css::{GOLD, RED, WHEAT, WHITE},
         tailwind::GRAY_700,
     },
-    prelude::*,
-    render::mesh::CircleMeshBuilder,
+    mesh::CircleMeshBuilder,
+    prelude::*, // render::mesh::CircleMeshBuilder,
 };
 
 use crate::asset_tracking::LoadResource;

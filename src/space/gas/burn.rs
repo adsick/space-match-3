@@ -19,7 +19,7 @@ use crate::{
 use super::GasOrb;
 
 pub fn plugin(app: &mut App) {
-    app.add_event::<BurnEvent>()
+    app.add_message::<BurnEvent>()
         .configure_sets(
             Update,
             UpdateGasSet
@@ -43,7 +43,7 @@ const BASE_DELAY: u32 = 15;
 #[derive(SystemSet, Hash, Debug, Eq, PartialEq, Clone)]
 pub struct UpdateGasSet;
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct BurnEvent {
     pub pos: Vec2,
 }
@@ -55,12 +55,12 @@ pub struct OrbExplosionCell {
 }
 
 pub fn propagate_flames(
-    mut burn: EventReader<BurnEvent>,
+    mut burn: MessageReader<BurnEvent>,
     mut commands: Commands,
     orb_tree: Res<KDTree2<GasOrb>>,
     red_orb_tree: Res<KDTree2<RedGasOrb>>,
 
-    mut red_orb_explosion_events: EventWriter<RedOrbExplosionEvent>,
+    mut red_orb_explosion_events: MessageWriter<RedOrbExplosionEvent>,
 
     time: Res<Time<Physics>>,
     mut explosion_queue: Local<VecDeque<OrbExplosionCell>>,

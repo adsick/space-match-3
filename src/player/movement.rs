@@ -15,7 +15,6 @@ use crate::space::gas::ignite_gas;
 
 use super::Player;
 
-
 #[derive(Component, Deref, DerefMut, Reflect)]
 pub struct MovementAcceleration(pub Scalar);
 
@@ -37,7 +36,7 @@ pub(super) fn plugin(app: &mut App) {
         .register_type::<RotationSpeed>()
         .register_type::<GasBoost>()
         .register_type::<CurrentGas>()
-        .add_event::<AuraEarned>()
+        .add_message::<AuraEarned>()
         .add_systems(
             FixedUpdate,
             (thrust.after(ignite_gas), glide)
@@ -46,7 +45,7 @@ pub(super) fn plugin(app: &mut App) {
         );
 }
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct AuraEarned(pub f32);
 
 // *maybe rename this function
@@ -55,11 +54,11 @@ pub fn thrust(
     player_query: Single<
         (
             &mut Player,
-            &mut ExternalForce,
-            &mut ExternalTorque,
+            Forces,
+            // &mut ExternalForce,
+            // &mut ExternalTorque,
             &mut CurrentGas,
             &Rotation,
-            &LinearVelocity,
             &MovementAcceleration,
             &RotationSpeed,
             &GasBoost,
@@ -68,7 +67,7 @@ pub fn thrust(
     >,
     time: Res<Time<Physics>>,
     mut score: ResMut<Score>,
-    mut aura_event: EventWriter<AuraEarned>,
+    mut aura_event: MessageWriter<AuraEarned>,
     audio: Res<Audio>,
     audio_assets: Res<AudioAssets>,
 ) {
@@ -78,17 +77,17 @@ pub fn thrust(
 
     let (
         mut player,
-        mut force,
-        mut torque,
+        mut forces,
+        // mut force,
+        // mut torque,
         mut current_gas,
         rotation,
-        velocity,
         acceleration,
         rotation_speed,
         gas_boost,
     ) = player_query.into_inner();
 
-    let vel_length = velocity.length();
+    let vel_length = forces.linear_velocity().length();
     let delta = time.delta_secs();
     score.0 += vel_length / 250.0 * delta;
 
@@ -105,17 +104,17 @@ pub fn thrust(
 
     player.aura_points = player.aura_points.max(0.0);
 
-    force.persistent = false;
-    torque.persistent = false;
+    // force.persistent = false;
+    // torque.persistent = false;
 
     let speed_sqrt = vel_length.sqrt();
     debug!("sqrt(speed) = {speed_sqrt:.2}",);
     let tq = rotation_speed.0 / speed_sqrt.max(SPEED_LOCK_IN);
     if left {
-        torque.apply_torque(tq);
+        forces.apply_torque(tq);
     }
     if right {
-        torque.apply_torque(-tq);
+        forces.apply_torque(-tq);
     }
 
     let forward_dir = rotation * Vec2::Y;
@@ -128,8 +127,8 @@ pub fn thrust(
 
     let gas_boost_force = forward_dir * current_gas.0 * gas_boost.0;
 
-    force.apply_force(thrust_force);
-    force.apply_force(gas_boost_force);
+    forces.apply_force(thrust_force);
+    forces.apply_force(gas_boost_force);
 
     let before = current_gas.0;
     current_gas.0 *= 0.01f32.powf(delta);
@@ -137,11 +136,13 @@ pub fn thrust(
 }
 
 fn glide(
-    player_query: Single<(&LinearVelocity, &mut ExternalForce, &Transform), With<Player>>,
+    player_query: Single<(Forces, &Transform), With<Player>>,
     // mut gizmos: Gizmos,
     gas: Res<GasGenerator>,
 ) {
-    let (linvel, mut force, ship_tr) = player_query.into_inner();
+    let (mut forces, ship_tr) = player_query.into_inner();
+
+    let linvel = forces.linear_velocity();
 
     let forward = ship_tr.up().truncate();
     let ship_pos = ship_tr.translation.truncate();
@@ -151,10 +152,10 @@ fn glide(
     let amount = gas.sample(ship_pos).clamp(0.0, 1.0) + 0.3;
 
     // let drag = -side_vel * amount * DRAG_FORCE;
-    let glide = (forward - forward.project_onto(linvel.0)) * amount * GLIDE_FORCE; // basically we want to rotate the linvel by applying a perpendicular force...
+    let glide = (forward - forward.project_onto(linvel)) * amount * GLIDE_FORCE; // basically we want to rotate the linvel by applying a perpendicular force...
 
     // gizmos.ray_2d(ship_pos, drag * 1.0, RED);
     // gizmos.ray_2d(ship_pos, glide * 1.0, GREEN_YELLOW);
 
-    force.apply_force(glide);
+    forces.apply_force(glide);
 }

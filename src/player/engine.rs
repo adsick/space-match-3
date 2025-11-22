@@ -9,11 +9,12 @@ use bevy::{
     math::{UVec4, Vec2, Vec3Swizzles, Vec4, VectorSpace},
     pbr::{ExtendedMaterial, MaterialExtension, MaterialPlugin, MeshMaterial3d, StandardMaterial},
     prelude::{
-        AlphaMode, Changed, Commands, Component, GlobalTransform, Local, Mesh, Mesh3d, OnAdd,
-        Query, Rectangle, Res, ResMut, Single, Trigger, With, *,
+        AlphaMode, Changed, Commands, Component, GlobalTransform, Local, Mesh, Mesh3d, Query,
+        Rectangle, Res, ResMut, Single, With, *,
     },
     reflect::Reflect,
-    render::render_resource::{AsBindGroup, ShaderRef},
+    render::render_resource::AsBindGroup,
+    shader::ShaderRef,
 };
 
 use crate::{
@@ -96,14 +97,14 @@ pub struct EngineFire {
 }
 
 fn on_add_fire(
-    trigger: Trigger<OnAdd, EngineFire>,
+    trigger: On<Add, EngineFire>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut explosion_materials: ResMut<
         Assets<ExtendedMaterial<StandardMaterial, FireMaterialExtension>>,
     >,
 ) {
-    let entity = trigger.target();
+    let entity = trigger.event().event_target();
 
     commands.entity(entity).insert((
         // Transform::from_translation(-Vec3::Y * 0.),

@@ -26,7 +26,7 @@ pub fn go_into_bullet_time(
     mut physics_time: ResMut<Time<Physics>>,
     mut player: Single<&mut Player>,
     audio: Res<Audio>,
-    mut aura_event: EventWriter<AuraEarned>,
+    mut aura_event: MessageWriter<AuraEarned>,
 ) {
     // TODO: PLAY SOUND HERE
 

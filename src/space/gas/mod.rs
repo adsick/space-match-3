@@ -46,8 +46,8 @@ pub struct BurningGasOrb(pub u32); // time when it started burning in ms
 pub const IGNITION_OFFSET: f32 = 10.0;
 pub const IGNITION_RADIUS: f32 = 13.0;
 
-fn orb_setup(trigger: Trigger<OnAdd, GasOrb>, mut cmds: Commands, gas_assets: Res<OrbAssets>) {
-    cmds.entity(trigger.target()).insert((
+fn orb_setup(trigger: On<Add, GasOrb>, mut cmds: Commands, gas_assets: Res<OrbAssets>) {
+    cmds.entity(trigger.event().event_target()).insert((
         Mesh3d(gas_assets.orb_mesh.clone()),
         MeshMaterial3d(gas_assets.orb_materials[0].clone()),
     ));
@@ -58,7 +58,7 @@ pub fn ignite_gas(
     q_orbs: Query<&GasOrb>,
     q_ship: Single<(&Transform, &mut CurrentGas)>,
     tree: Res<KDTree2<GasOrb>>,
-    mut ignite_gas_tx: EventWriter<BurnEvent>,
+    mut ignite_gas_tx: MessageWriter<BurnEvent>,
 ) {
     let (ship_tr, mut gas) = q_ship.into_inner();
 

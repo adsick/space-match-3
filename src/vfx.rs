@@ -1,8 +1,7 @@
 use avian2d::prelude::*;
 use rand::Rng;
 
-use bevy::core_pipeline::bloom::Bloom;
-use bevy::prelude::*;
+use bevy::{post_process::bloom::Bloom, prelude::*};
 
 pub const BASE_BLOOM: Bloom = Bloom::NATURAL;
 
@@ -38,11 +37,11 @@ pub fn screen_shake(
         screen_shake.last_position = Vec2::new(0.0, 0.0);
     }
 
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let shake = screen_shake.trauma * screen_shake.trauma;
-    let angle = (screen_shake.max_angle * shake).to_radians() * rng.gen_range(-1.0..1.0);
-    let offset_x = screen_shake.max_offset * shake * rng.gen_range(-1.0..1.0);
-    let offset_y = screen_shake.max_offset * shake * rng.gen_range(-1.0..1.0);
+    let angle = (screen_shake.max_angle * shake).to_radians() * rng.random_range(-1.0..1.0);
+    let offset_x = screen_shake.max_offset * shake * rng.random_range(-1.0..1.0);
+    let offset_y = screen_shake.max_offset * shake * rng.random_range(-1.0..1.0);
 
     if shake > 0.0 {
         for mut transform in query.iter_mut() {

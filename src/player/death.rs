@@ -35,7 +35,7 @@ fn spawn_damage_overlay(
     let damage_overlay = commands
         .spawn((
             DamageOverlay {},
-            StateScoped(Screen::Gameplay),
+            DespawnOnExit(Screen::Gameplay),
             Transform::from_translation(Vec3::new(0.0, 0.0, -10.)),
             Mesh3d(meshes.add(Rectangle::from_length(100.))),
             MeshMaterial3d(materials.add(StandardMaterial {

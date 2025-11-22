@@ -22,7 +22,7 @@ fn spawn_death_menu(
     commands.spawn((
         widget::ui_root("DEAD"),
         // GlobalZIndex(1),
-        StateScoped(Screen::Dead),
+        DespawnOnExit(Screen::Dead),
         children![
             widget::header("Burned out..."),
             widget::label(format!("Score: {:.1}", score.0)),
@@ -32,10 +32,10 @@ fn spawn_death_menu(
     ));
 }
 
-fn restart(_: Trigger<Pointer<Click>>, mut next_screen: ResMut<NextState<Screen>>) {
+fn restart(_: On<Pointer<Click>>, mut next_screen: ResMut<NextState<Screen>>) {
     next_screen.set(Screen::Gameplay);
 }
 
-fn quit_to_title(_: Trigger<Pointer<Click>>, mut next_screen: ResMut<NextState<Screen>>) {
+fn quit_to_title(_: On<Pointer<Click>>, mut next_screen: ResMut<NextState<Screen>>) {
     next_screen.set(Screen::Title);
 }

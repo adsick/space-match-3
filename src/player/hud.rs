@@ -25,7 +25,7 @@ pub(super) fn plugin(app: &mut App) {
 fn setup_hud(mut commands: Commands, assets: Res<HudAssets>) {
     commands.spawn((
         widget::ui_root_uncentered("Scores"),
-        StateScoped(Screen::Gameplay),
+        DespawnOnExit(Screen::Gameplay),
         children![(
             widget::label("Score:\nAura:"),
             Node {
@@ -41,7 +41,7 @@ fn setup_hud(mut commands: Commands, assets: Res<HudAssets>) {
 
     commands.spawn((
         widget::ui_root_uncentered("Abilities"),
-        StateScoped(Screen::Gameplay),
+        DespawnOnExit(Screen::Gameplay),
         children![(
             widget::emoji_label("⏳", &assets),
             Node {
@@ -63,7 +63,7 @@ fn update_hud(
     mut abilities_text: Single<&mut Text, (With<HudAbilities>, Without<HudScores>)>,
     score: Res<Score>,
     time: Res<Time>,
-    mut aura_event: EventReader<AuraEarned>,
+    mut aura_event: MessageReader<AuraEarned>,
     mut recent_earnings: Local<VecDeque<(f32, u32)>>,
 ) {
     let mut earnings = String::new();

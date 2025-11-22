@@ -138,17 +138,24 @@ fn trigger_chunk_population(
         // let pos = chunk_coords.as_vec2().extend(0.0) * CHUNK_SIZE;
         let chunk_entity = cmds
             .spawn((
-                StateScoped(Screen::Gameplay),
+                DespawnOnExit(Screen::Gameplay),
                 Transform::default(),
                 InheritedVisibility::VISIBLE,
             ))
             .id();
-        cmds.trigger_targets(PopulateChunk(chunk_coords), chunk_entity);
+        // cmds.trigger_targets(PopulateChunk(chunk_coords), chunk_entity);
+        cmds.trigger(PopulateChunk {
+            chunk_coords,
+            entity: chunk_entity,
+        })
     }
 }
 
-#[derive(Debug, Event)]
-pub struct PopulateChunk(IVec2);
+#[derive(Debug, EntityEvent)]
+pub struct PopulateChunk {
+    entity: Entity,
+    chunk_coords: IVec2,
+}
 
 fn asteroid_distribution(r: f32) -> f32 {
     let a = smoothstep(-0.5, -0.3, r);
@@ -168,7 +175,7 @@ fn explosive_orb_distribution(r: f32) -> f32 {
 /// The chunk is first subdivided into `CHUNK_SUBDIV` parts along each axis,
 /// then each cell may spawn an orb depending on randomness and underlying space parameters.
 fn populate_chunk(
-    trigger: Trigger<PopulateChunk>,
+    trigger: On<PopulateChunk>,
     mut cmds: Commands,
     gas: Res<GasGenerator>,
     mut populated: ResMut<PopulatedChunks>,
@@ -178,7 +185,7 @@ fn populate_chunk(
 
     for y in 0..CHUNK_SUBDIV {
         for x in 0..CHUNK_SUBDIV {
-            let cell_pos = trigger.0.as_vec2() * CHUNK_SIZE
+            let cell_pos = trigger.event().chunk_coords.as_vec2() * CHUNK_SIZE
                 + (Vec2::new(x as f32, y as f32) / (CHUNK_SUBDIV as f32)) * CHUNK_SIZE;
             let r = gas.sample(cell_pos);
 
@@ -197,7 +204,7 @@ fn populate_chunk(
                         pos.extend((rand::random::<f32>() - 0.5) * CLOUD_Z_SCALE * r),
                     ) // todo: we can vary that 0.5 with another noise for more depth effect
                     .with_scale(Vec3::splat(MIN_ORB_SIZE + ORB_SCALE * r)),
-                    ChildOf(trigger.target()),
+                    ChildOf(trigger.event().event_target()),
                 ));
             }
 
@@ -218,7 +225,7 @@ fn populate_chunk(
                             .extend((rand::random::<f32>() - 0.5) * EXPLOSIVE_ORB_CLOUD_Z_SCALE),
                         radius: orb_size,
                     },
-                    ChildOf(trigger.target()),
+                    ChildOf(trigger.event().event_target()),
                 ));
             }
         }
@@ -228,9 +235,8 @@ fn populate_chunk(
         const ASTEROID_CHUNK_SUBDIV: u32 = ((CHUNK_SUBDIV as f32) * ASTEROID_SPAWN_SCALE) as u32;
         for y in 0..ASTEROID_CHUNK_SUBDIV {
             for x in 0..ASTEROID_CHUNK_SUBDIV {
-                let cell_pos = trigger.0.as_vec2() * CHUNK_SIZE
-                    + (Vec2::new(x as f32, y as f32) / (ASTEROID_CHUNK_SUBDIV as f32))
-                        * CHUNK_SIZE;
+                let cell_pos = trigger.event().chunk_coords.as_vec2() * CHUNK_SIZE
+                    + (Vec2::new(x as f32, y as f32) / (ASTEROID_CHUNK_SUBDIV as f32)) * CHUNK_SIZE;
 
                 let r = gas.sample(cell_pos);
 
@@ -251,7 +257,7 @@ fn populate_chunk(
                             pos: pos.extend((rand::random::<f32>() - 0.5) * ASTEROID_CLOUD_Z_SCALE),
                             radius: asteroid_size,
                         },
-                        ChildOf(trigger.target()),
+                        ChildOf(trigger.event().event_target()),
                     ));
                 }
             }
@@ -260,7 +266,9 @@ fn populate_chunk(
 
     // debug!("chunk generation took {t:.2?}");
 
-    populated.0.insert(trigger.0, trigger.target());
+    populated
+        .0
+        .insert(trigger.event().chunk_coords, trigger.event().event_target());
 }
 
 fn unload_far_chunks(

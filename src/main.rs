@@ -26,6 +26,7 @@ use bevy::{
     render::{
         RenderPlugin,
         settings::{PowerPreference, RenderCreation, WgpuSettings},
+        view::Hdr,
     },
 };
 use bevy_framepace::FramepacePlugin;
@@ -87,7 +88,7 @@ impl Plugin for AppPlugin {
             player::plugin,
             space::plugin,
             red_gas::plugin,
-            utils::plugin,
+            // utils::plugin,
             speed_tracers::plugin,
             FrameTimeDiagnosticsPlugin::default(),
         ));
@@ -149,8 +150,9 @@ struct PausableSystems;
 fn spawn_camera(mut commands: Commands) {
     commands.spawn((
         Name::new("Camera"),
+        Hdr,
         Camera {
-            hdr: true,
+            // hdr: true,
             ..default()
         },
         Camera3d::default(),

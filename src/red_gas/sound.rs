@@ -1,7 +1,7 @@
 use std::time::Duration;
 
-use bevy::{prelude::*, time::common_conditions::on_real_timer};
-use bevy_kira_audio::{Audio, AudioControl, AudioInstance, AudioTween, prelude::Volume};
+use bevy::{audio::Volume, prelude::*, time::common_conditions::on_real_timer};
+use bevy_kira_audio::{Audio, AudioControl, AudioInstance, AudioTween};
 
 use crate::{audio::AudioAssets, player::Player, red_gas::RedOrbExplosion};
 
@@ -41,20 +41,35 @@ fn update_volume(
         return;
     };
     let Ok(player_transform) = q_player.single() else {
-        instance.set_volume(0.0, AudioTween::default());
+        // instance.set_volume(0.0, AudioTween::default());
+        instance.set_decibels(f32::MIN, AudioTween::default());
         return;
     };
     let player_pos = player_transform.translation().truncate();
-    let highest_volume = q_explosions
+
+    // let highest_volume = q_explosions
+    //     .iter()
+    //     .map(|(tr, orb)| {
+    //         1.0 / ((player_pos.distance(tr.translation().truncate()) - orb.radius).max(0.0) / 100.0
+    //             + 1.0)
+    //     })
+    //     .max_by(|a, b| a.total_cmp(b))
+    //     .unwrap_or(0.0);
+    // instance.set_volume(
+    //     Volume::Amplitude(smallest_distance as f64 * 0.6),
+    //     AudioTween::linear(UPDATE_RATE),
+    // );
+
+    // TODO: This might behave differently from the way it did with
+    // Volume::Amplitude. Will need adjusting when we can run the game.
+    let smallest_distance = q_explosions
         .iter()
-        .map(|(tr, orb)| {
-            1.0 / ((player_pos.distance(tr.translation().truncate()) - orb.radius).max(0.0) / 100.0
-                + 1.0)
-        })
-        .max_by(|a, b| a.total_cmp(b))
-        .unwrap_or(0.0);
-    instance.set_volume(
-        Volume::Amplitude(highest_volume as f64 * 0.6),
+        .map(|(tr, orb)| (player_pos.distance(tr.translation().truncate()) - orb.radius).max(0.0))
+        .min_by(|a, b| a.total_cmp(b))
+        .unwrap_or(f32::MAX);
+
+    instance.set_decibels(
+        1.0 / (smallest_distance / 100.0 + 1.0),
         AudioTween::linear(UPDATE_RATE),
     );
 }

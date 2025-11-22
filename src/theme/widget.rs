@@ -84,7 +84,7 @@ pub fn emoji_label(text: impl Into<String>, hud_assets: &HudAssets) -> impl Bund
 /// A large rounded button with text and an action defined as an [`Observer`].
 pub fn button<E, B, M, I>(text: impl Into<String>, action: I) -> impl Bundle
 where
-    E: Event,
+    E: EntityEvent,
     B: Bundle,
     I: IntoObserverSystem<E, B, M>,
 {
@@ -107,7 +107,7 @@ where
 /// A small square button with text and an action defined as an [`Observer`].
 pub fn button_small<E, B, M, I>(text: impl Into<String>, action: I) -> impl Bundle
 where
-    E: Event,
+    E: EntityEvent,
     B: Bundle,
     I: IntoObserverSystem<E, B, M>,
 {
@@ -131,7 +131,7 @@ fn button_base<E, B, M, I>(
     button_bundle: impl Bundle,
 ) -> impl Bundle
 where
-    E: Event,
+    E: EntityEvent,
     B: Bundle,
     I: IntoObserverSystem<E, B, M>,
 {
