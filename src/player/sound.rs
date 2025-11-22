@@ -15,7 +15,7 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Component)]
 pub struct EngineSound(Handle<AudioInstance>);
 
-const VOLUME: f32 = -10.0;
+const VOLUME: f32 = -20.0;
 
 fn setup_sound(
     trigger: On<Add, Player>,
@@ -47,7 +47,7 @@ fn update_sound(
     // TODO: This might behave differently from the way it did with
     // Volume::Amplitude. Will need adjusting when we can run the game.
     instance.set_decibels(
-        Decibels(VOLUME / (cam_tr.translation().z / 500.0 + 1.0)),
+        Decibels(VOLUME * (cam_tr.translation().z / 500.0)),
         AudioTween::linear(Duration::from_secs_f32(time.delta_secs())),
     );
 }
