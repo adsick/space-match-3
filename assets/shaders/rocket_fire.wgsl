@@ -16,17 +16,17 @@
 }
 #endif
 
-@group(2) @binding(100)
+@group(#{MATERIAL_BIND_GROUP}) @binding(100)
 var<uniform> color: vec4f;
-@group(2) @binding(101)
+@group(#{MATERIAL_BIND_GROUP}) @binding(101)
 var<uniform> center: vec4f;
-@group(2) @binding(102)
+@group(#{MATERIAL_BIND_GROUP}) @binding(102)
 var<uniform> nof_particles: vec4u;
-@group(2) @binding(103)
+@group(#{MATERIAL_BIND_GROUP}) @binding(103)
 var<uniform> particles: array<vec4f, 32>;
-@group(2) @binding(104)
+@group(#{MATERIAL_BIND_GROUP}) @binding(104)
 var<uniform> dir: vec4f;
-@group(2) @binding(105)
+@group(#{MATERIAL_BIND_GROUP}) @binding(105)
 var<uniform> power: vec4f;
 
 const PARTICLE_RADIUS: f32 = 5.0;
