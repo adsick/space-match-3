@@ -11,7 +11,7 @@ use bevy::{
 };
 use bevy_kira_audio::{Audio, AudioControl};
 use bevy_tweening::{
-    AnimCompletedEvent, Tween, TweenAnim,
+    AnimCompletedEvent, AnimTarget, Tween, TweenAnim,
     lens::{TransformRotationLens, TransformScaleLens},
 };
 
@@ -210,24 +210,6 @@ fn spawn_animated_explosion(
             end: Vec3::splat(5.5),
         },
     );
-    // let transform_tween = Tracks::new([
-    //     Tween::new(
-    //         EaseFunction::QuinticOut,
-    //         duration,
-    //         TransformRotationLens {
-    //             start: Quat::IDENTITY,
-    //             end: Quat::from_axis_angle(Vec3::Z, std::f32::consts::PI * 6.),
-    //         },
-    //     ),
-    //     Tween::new(
-    //         EaseFunction::QuinticOut,
-    //         duration,
-    //         TransformScaleLens {
-    //             start: Vec3::splat(1.0),
-    //             end: Vec3::splat(5.5),
-    //         },
-    //     ),
-    // ]);
 
     let point_light_tween = Tween::new(
         EaseFunction::ExponentialIn,
@@ -251,25 +233,48 @@ fn spawn_animated_explosion(
         },
     );
 
+    let asteroid_material = materials.add(StandardMaterial {
+        alpha_mode: AlphaMode::Blend,
+        ..Default::default()
+    });
+
+    let asteroid_material_id = asteroid_material.id();
+
+    let anim_entity_id = builder
+        .spawn((
+            AnimatedExplosion,
+            Mesh3d(meshes.add(sphere)),
+            MeshMaterial3d(asteroid_material),
+            PointLight {
+                color: color_start.into(),
+                radius: 1000.,
+                ..default()
+            },
+        ))
+        .observe(|trigger: On<AnimCompletedEvent>, mut commands: Commands| {
+            commands.entity(trigger.event().anim_entity).try_despawn();
+        })
+        .id();
+
     builder.spawn((
-        AnimatedExplosion,
         TweenAnim::new(rotation_anim),
-        TweenAnim::new(scale_anim),
-        TweenAnim::new(point_light_tween),
-        TweenAnim::new(color_tween),
-        Mesh3d(meshes.add(sphere)),
-        MeshMaterial3d(materials.add(StandardMaterial {
-            alpha_mode: AlphaMode::Blend,
-            ..Default::default()
-        })),
-        PointLight {
-            color: color_start.into(),
-            radius: 1000.,
-            ..default()
-        },
+        AnimTarget::component::<Transform>(anim_entity_id),
     ));
-    // .observe(|trigger: On<AnimCompletedEvent>, mut commands: Commands| {
-    // });
+
+    builder.spawn((
+        TweenAnim::new(scale_anim),
+        AnimTarget::component::<Transform>(anim_entity_id),
+    ));
+
+    builder.spawn((
+        TweenAnim::new(point_light_tween),
+        AnimTarget::component::<PointLight>(anim_entity_id),
+    ));
+
+    builder.spawn((
+        TweenAnim::new(color_tween),
+        AnimTarget::asset(asteroid_material_id),
+    ));
 }
 
 fn foo(trigger: On<AnimCompletedEvent>, mut commands: Commands) {
