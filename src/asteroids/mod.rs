@@ -21,7 +21,6 @@ use crate::{
     utils::{PointLightLens, StandardMaterialLens},
     vfx::ScreenShake,
 };
-// use bevy_tweening::{Animator, AssetAnimator, TweenCompleted};
 
 const ASTEROID_SHADER_PATH: &str = "shaders/asteroid.wgsl";
 
@@ -45,17 +44,6 @@ pub struct ShipAsteroidCollider;
 #[derive(Component)]
 pub struct AnimatedExplosion;
 
-// pub fn meteorite_bundle(r: f32, pos: Vec2, parent: Entity) -> impl Bundle {
-//     (
-//         Meteorite { mass: r },
-//         Transform::from_translation(
-//             pos.extend((rand::random::<f32>() - 0.5) * METEORITE_CLOUD_Z_SCALE * r),
-//         )
-//         .with_scale(Vec3::splat(MIN_METEORITE_SIZE + METEORITE_SCALE * r)),
-//         ChildOf(parent),
-//     )
-// }
-
 fn on_add_asteroid(
     trigger: On<Add, Asteroid>,
     mut commands: Commands,
@@ -63,7 +51,6 @@ fn on_add_asteroid(
 
     mut meshes: ResMut<Assets<Mesh>>,
     mut asteroid_materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, AsteroidMaterial>>>,
-    // mut asteroid_materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let entity = trigger.event().event_target();
     let Ok(asteroid) = asteroids.get(entity) else {
@@ -117,8 +104,6 @@ fn on_add_ship_asteroid_collider(trigger: On<Add, ShipAsteroidCollider>, mut com
              audio: Res<Audio>,
              audio_assets: Res<AudioAssets>,
              time: Res<Time<Physics>>| {
-                // let meteorite = meteorites.get(trigger.collider);
-
                 let Ok((asteroid, asteroid_transform)) = asteroids.get(trigger.event().collider2)
                 else {
                     return;
@@ -133,8 +118,6 @@ fn on_add_ship_asteroid_collider(trigger: On<Add, ShipAsteroidCollider>, mut com
                 player.aura_points = (player.aura_points - ASTEROID_AURA_LOSS).max(0.0);
                 aura_event.write(AuraEarned(-ASTEROID_AURA_LOSS));
                 player.near_asteroids = false;
-
-                // tween.with_completed
 
                 commands
                     .spawn((
@@ -173,12 +156,6 @@ fn on_add_ship_asteroid_collider(trigger: On<Add, ShipAsteroidCollider>, mut com
                     });
 
                 screen_shake.until = time.elapsed_secs() + 0.5;
-
-                // let pressure_plate = trigger.target();
-                // let other_entity = trigger.collider;
-                // if player_query.contains(other_entity) {
-                //     debug!("Player {other_entity} stepped on pressure plate {pressure_plate}");
-                // }
             },
         );
 }
@@ -299,16 +276,3 @@ impl MaterialExtension for AsteroidMaterial {
     //     ASTEROID_SHADER_PATH.into()
     // }
 }
-
-// pub fn meteorite_collider_for_ship() -> impl Bundle {
-//     (
-//         RigidBody::Kinematic,
-//         Collider::circle(10.),
-//         CollisionLayers::new(
-//             GameCollisionLayers::Meteorites,
-//             GameCollisionLayers::Meteorites,
-//         ),
-//         CollisionEventsEnabled,
-//         Observer::with_entity(self, entity)
-//     )
-// }
