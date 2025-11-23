@@ -16,7 +16,7 @@ log = { version = "0.4", features = [
 # Compile low-severity logs out of web builds for performance.
 tracing = { version = "0.1", features = [
     "max_level_debug",
-    "release_max_level_warn",
+    "release_max_level_debug",
 ] }
 avian2d = "0.4.1"
 bevy-inspector-egui = "0.35.0"
@@ -38,7 +38,7 @@ getrandom = { version = "0.3", features = ["wasm_js"] }
 default = ["dev"]
 dev = [
     # Improve compile times for dev builds by linking Bevy as a dynamic library.
-    "bevy/dynamic_linking",
+    # "bevy/dynamic_linking",
     "bevy/bevy_dev_tools",
     "bevy/bevy_ui_debug",
     # Improve error messages coming from Bevy
@@ -56,6 +56,7 @@ dev_native = [
 
 ]
 wayland = ["bevy/wayland"]
+tracing = ["bevy/trace_tracy"]
 skip_intro = []
 debugdump = ["dep:bevy_mod_debugdump"]
 

@@ -40,6 +40,7 @@ pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
         bevy::diagnostic::EntityCountDiagnosticsPlugin::default(),
         bevy::diagnostic::SystemInformationDiagnosticsPlugin,
+        #[cfg(not(feature = "tracing"))]
         bevy::render::diagnostic::RenderDiagnosticsPlugin,
         // bevy::diagnostic::FrameTimeDiagnosticsPlugin::default()
     ));
