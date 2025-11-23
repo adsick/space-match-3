@@ -30,8 +30,8 @@ bevy_kira_audio = "0.24.0"
 bevy_mod_debugdump = { version = "0.13.0", optional = true }
 kira = "0.11.0"
 
-[target.wasm32-unknown-unknown.dependencies]
-getrandom = { version = "0.3", features = ["wasm_js"] }
+[target.'cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none")))'.dependencies]
+getrandom = { version = "^0.2", features = ["js"] }
 
 [features]
 # Default to a native dev build.
