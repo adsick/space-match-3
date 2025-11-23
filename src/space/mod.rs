@@ -28,15 +28,15 @@ pub fn plugin(app: &mut App) {
         .insert_resource(PopulatedChunks::default())
         .add_observer(populate_chunk)
         .add_systems(
-            Update,
+            FixedUpdate,
             (trigger_chunk_population, unload_far_chunks).chain(),
         );
 }
 
-pub const CHUNK_SIZE: f32 = 64.0;
+pub const CHUNK_SIZE: f32 = 256.0;
 /// Number of orbs per m²
 pub const MAX_CLOUD_DENSITY: f32 = 0.018;
-pub const RENDER_DISTANCE: i32 = 12;
+pub const RENDER_DISTANCE: i32 = 3;
 pub const ORB_THRESHOLD: f32 = 0.14;
 
 const MIN_ASTEROID_SIZE: f32 = 20.0;

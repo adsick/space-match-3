@@ -33,13 +33,13 @@ pub(crate) fn plugin(app: &mut App) {
             ExtendedMaterial<StandardMaterial, FireMaterialExtension>,
         >::default(),))
         .add_systems(
-            Update,
+            FixedUpdate,
             check_fire_params_change
                 .run_if(in_state(Screen::Gameplay))
                 .in_set(PausableSystems),
         )
         .add_systems(
-            Update,
+            FixedUpdate,
             (update_engine_power, update_shader_params)
                 .chain()
                 .run_if(in_state(Screen::Gameplay))

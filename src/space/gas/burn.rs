@@ -22,14 +22,14 @@ use super::GasOrb;
 pub fn plugin(app: &mut App) {
     app.add_message::<BurnEvent>()
         .configure_sets(
-            Update,
+            FixedUpdate,
             UpdateGasSet
                 .after(ignite_gas)
                 .run_if(in_state(Screen::Gameplay))
                 .in_set(PausableSystems),
         )
         .add_systems(
-            Update,
+            FixedUpdate,
             (propagate_flames, update_burning_orbs).in_set(UpdateGasSet),
         );
 }
@@ -66,8 +66,7 @@ pub fn propagate_flames(
     time: Res<Time<Physics>>,
     mut explosion_queue: Local<VecDeque<OrbExplosionCell>>,
 
-    #[cfg(feature = "dev")]
-    mut gizmos: Gizmos,
+    #[cfg(feature = "dev")] mut gizmos: Gizmos,
 ) {
     let curr_time = time.elapsed().as_millis() as u32;
 

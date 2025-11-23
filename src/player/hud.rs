@@ -15,7 +15,7 @@ pub(super) fn plugin(app: &mut App) {
         .load_resource::<HudAssets>();
     app.add_systems(OnEnter(Screen::Gameplay), setup_hud);
     app.add_systems(
-        Update,
+        FixedUpdate,
         update_hud
             .run_if(in_state(Screen::Gameplay))
             .in_set(PausableSystems),
