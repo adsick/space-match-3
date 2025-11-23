@@ -6,7 +6,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-bevy = { version = "0.17" }
 rand = "0.9"
 # Compile low-severity logs out of native builds for performance.
 log = { version = "0.4", features = [
@@ -30,6 +29,65 @@ bevy_kira_audio = "0.24.0"
 bevy_mod_debugdump = { version = "0.13.0", optional = true }
 kira = "0.11.0"
 
+[dependencies.bevy]
+version = "0.17"
+# this setup is currently required to disable some of the default features, e.g. `multi_threaded`
+default-features = false
+features = [
+    "std",
+    "async_executor",
+    "android-game-activity",
+    "android_shared_stdcxx",
+    "animation",
+    "bevy_asset",
+    "bevy_audio",
+    "bevy_color",
+    "bevy_core_pipeline",
+    "bevy_post_process",
+    "bevy_anti_alias",
+    "bevy_gilrs",
+    "bevy_gizmos",
+    "bevy_gltf",
+    "bevy_input_focus",
+    "bevy_log",
+    "bevy_mesh_picking_backend",
+    "bevy_pbr",
+    "bevy_picking",
+    "bevy_render",
+    "bevy_scene",
+    "bevy_image",
+    "bevy_mesh",
+    "bevy_camera",
+    "bevy_light",
+    "bevy_shader",
+    "bevy_sprite",
+    "bevy_sprite_picking_backend",
+    "bevy_sprite_render",
+    "bevy_state",
+    "bevy_text",
+    "bevy_ui",
+    "bevy_ui_picking_backend",
+    "bevy_ui_render",
+    "bevy_window",
+    "bevy_winit",
+    "custom_cursor",
+    "default_font",
+    "hdr",
+    "ktx2",
+    # "multi_threaded",
+    "png",
+    "reflect_auto_register",
+    "smaa_luts",
+    "sysinfo_plugin",
+    "tonemapping_luts",
+    "vorbis",
+    "webgl2",
+    "x11",
+    "wayland",
+    "debug",
+    "zstd_rust",
+]
+
 [target.'cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none")))'.dependencies]
 getrandom = { version = "^0.2", features = ["js"] }
 
@@ -38,7 +96,7 @@ getrandom = { version = "^0.2", features = ["js"] }
 default = ["dev"]
 dev = [
     # Improve compile times for dev builds by linking Bevy as a dynamic library.
-    # "bevy/dynamic_linking",
+    "bevy/dynamic_linking",
     "bevy/bevy_dev_tools",
     "bevy/bevy_ui_debug",
     # Improve error messages coming from Bevy
@@ -55,9 +113,9 @@ dev_native = [
     "bevy/embedded_watcher",
 
 ]
-wayland = ["bevy/wayland"]
 tracing = ["bevy/trace_tracy"]
 skip_intro = []
+multi_threaded = ["bevy/multi_threaded"]
 debugdump = ["dep:bevy_mod_debugdump"]
 
 
