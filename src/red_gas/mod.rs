@@ -34,7 +34,7 @@ pub fn plugin(app: &mut App) {
     .insert_resource(ExplosionDamage(0.0))
     .add_message::<RedOrbExplosionEvent>()
     .add_systems(
-        Update,
+        FixedUpdate,
         (explode_red_orbs, check_explosion_interactions)
             .run_if(in_state(Screen::Gameplay))
             .in_set(PausableSystems),

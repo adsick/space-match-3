@@ -83,6 +83,8 @@ pub fn explode_red_orbs(
             gizmo.line_2d(ship_tr, pos, YELLOW);
         }
 
+        // debug end
+
         let explosion_radius_tween = Tween::new(
             EaseFunction::SineOut,
             Duration::from_secs(EXPLOSION_DURATION_SECS),
@@ -91,7 +93,6 @@ pub fn explode_red_orbs(
                 radius_end: MAX_EXPLOSION_RADIUS,
             },
         );
-        // .with_completed_event(0);
 
         commands
             .spawn((
@@ -115,7 +116,7 @@ pub fn explode_red_orbs(
                 );
             })
             .observe(|trigger: On<AnimCompletedEvent>, mut commands: Commands| {
-                commands.entity(trigger.event().event_target()).try_despawn();
+                commands.entity(trigger.event_target()).try_despawn();
             });
     }
 }
@@ -147,7 +148,9 @@ pub fn spawn_explosion_mesh(
             NotShadowReceiver,
         ))
         .observe(|trigger: On<AnimCompletedEvent>, mut commands: Commands| {
-            commands.entity(trigger.event().event_target()).try_despawn();
+            commands
+                .entity(trigger.event().event_target())
+                .try_despawn();
         });
 }
 
@@ -177,7 +180,9 @@ pub fn spawn_explosion_light(builder: &mut RelatedSpawnerCommands<'_, ChildOf>) 
             },
         ))
         .observe(|trigger: On<AnimCompletedEvent>, mut commands: Commands| {
-            commands.entity(trigger.event().event_target()).try_despawn();
+            commands
+                .entity(trigger.event().event_target())
+                .try_despawn();
         });
 }
 

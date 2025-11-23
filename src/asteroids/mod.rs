@@ -133,6 +133,7 @@ fn on_add_ship_asteroid_collider(trigger: On<Add, ShipAsteroidCollider>, mut com
                             Srgba::new(1.0, 0.7, 0.7, 1.0),
                             Srgba::new(1.0, 0.1, 0.1, 0.0),
                             Duration::from_millis(1200),
+                            true,
                         );
                         spawn_animated_explosion(
                             builder,
@@ -142,6 +143,7 @@ fn on_add_ship_asteroid_collider(trigger: On<Add, ShipAsteroidCollider>, mut com
                             Srgba::new(1.0, 0.7, 0.7, 1.0),
                             Srgba::new(1.0, 0.7, 0.7, 0.0),
                             Duration::from_millis(900),
+                            false,
                         );
 
                         spawn_animated_explosion(
@@ -152,6 +154,7 @@ fn on_add_ship_asteroid_collider(trigger: On<Add, ShipAsteroidCollider>, mut com
                             Srgba::new(1.0, 0.7, 0.7, 1.0),
                             Srgba::new(1.0, 0.9, 0.9, 0.6),
                             Duration::from_millis(700),
+                            false,
                         )
                     });
 
@@ -168,7 +171,9 @@ fn spawn_animated_explosion(
     color_start: Srgba,
     color_end: Srgba,
     duration: Duration,
+    despawn_parent: bool,
 ) {
+    let parent = builder.target_entity();
     let sphere = SphereMeshBuilder::new(radius, SphereKind::Ico { subdivisions: 2 }).build();
 
     let rotation_anim = Tween::new(
@@ -228,9 +233,6 @@ fn spawn_animated_explosion(
                 ..default()
             },
         ))
-        .observe(|trigger: On<AnimCompletedEvent>, mut commands: Commands| {
-            commands.entity(trigger.event().anim_entity).try_despawn();
-        })
         .id();
 
     builder.spawn((
@@ -248,14 +250,22 @@ fn spawn_animated_explosion(
         AnimTarget::component::<PointLight>(anim_entity_id),
     ));
 
-    builder.spawn((
+    let mut color_anim = builder.spawn((
         TweenAnim::new(color_tween),
         AnimTarget::asset(asteroid_material_id),
     ));
-}
 
-fn foo(trigger: On<AnimCompletedEvent>, mut commands: Commands) {
-    commands.entity(trigger.event().anim_entity).try_despawn();
+    if despawn_parent {
+        color_anim.observe(
+            move |_trigger: On<AnimCompletedEvent>, mut commands: Commands| {
+                debug!("Despawning asteroid on anim completed event");
+                commands
+                    .get_entity(parent)
+                    .map(|mut ec| ec.try_despawn())
+                    .ok();
+            },
+        );
+    }
 }
 
 #[derive(Asset, AsBindGroup, Reflect, Debug, Clone)]
