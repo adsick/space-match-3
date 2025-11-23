@@ -15,11 +15,13 @@ pub mod gas;
 pub mod intro;
 
 pub fn plugin(app: &mut App) {
-    app.add_plugins((intro::plugin, gas::plugin))
+    app.add_plugins(intro::plugin);
+
+    app.add_plugins(gas::plugin)
         .insert_resource(GasGenerator {
             noise: Noise {
                 noise: Perlin::default(),
-                seed: NoiseRng(rand::random()), // it was 0 by default so every time you loaded the game it was the same
+                seed: NoiseRng(rand::random()),
                 frequency: 0.004,
             },
         })
@@ -31,7 +33,7 @@ pub fn plugin(app: &mut App) {
         );
 }
 
-pub const CHUNK_SIZE: f32 = 64.0; // TODO: Increase this
+pub const CHUNK_SIZE: f32 = 64.0;
 /// Number of orbs per m²
 pub const MAX_CLOUD_DENSITY: f32 = 0.018;
 pub const RENDER_DISTANCE: i32 = 12;

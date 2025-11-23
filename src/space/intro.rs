@@ -6,7 +6,7 @@ use crate::{player::Player, screens::Screen};
 pub const INTRO_DURATION_SECS: f32 = 3.0;
 
 pub fn plugin(app: &mut App) {
-    app.insert_state(IntroState(true))
+    app.insert_state(IntroState(false))
         .insert_resource(IntroProgress { t: 0.0 })
         .add_systems(OnEnter(Screen::Gameplay), setup_intro)
         .add_systems(OnEnter(IntroState(false)), on_intro_finished)
@@ -27,6 +27,7 @@ pub struct IntroProgress {
 }
 
 fn setup_intro(mut intro_state: ResMut<NextState<IntroState>>) {
+    #[cfg(not(feature = "skip_intro"))]
     intro_state.set(IntroState(true));
 }
 
