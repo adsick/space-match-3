@@ -1,12 +1,4 @@
-use bevy::{
-    app::{App, Update},
-    color::{Color, Mix},
-    ecs::{system::Res, world::Mut},
-    light::PointLight,
-    math::VectorSpace,
-    pbr::{MeshMaterial3d, StandardMaterial},
-    prelude::IntoScheduleConfigs,
-};
+use bevy::{prelude::*, window::PresentMode};
 use bevy_tweening::{AnimationSystem, Lens};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -39,4 +31,12 @@ impl Lens<PointLight> for PointLightLens {
         target.color = self.color_start.mix(&self.color_end, ratio);
         target.intensity = self.intensity_start.lerp(self.intensity_end, ratio);
     }
+}
+
+pub fn toggle_vsync(mut window: Single<&mut Window>) {
+    window.present_mode = match window.present_mode {
+        PresentMode::AutoVsync => PresentMode::AutoNoVsync,
+        PresentMode::AutoNoVsync => PresentMode::AutoVsync,
+        _ => panic!(),
+    };
 }

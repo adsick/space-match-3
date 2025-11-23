@@ -61,6 +61,8 @@ impl Plugin for AppPlugin {
                     primary_window: Window {
                         title: "Space Rush - Galactic Burnout".to_string(),
                         fit_canvas_to_parent: true,
+                        present_mode: bevy::window::PresentMode::AutoVsync,
+
                         ..default()
                     }
                     .into(),
@@ -79,6 +81,7 @@ impl Plugin for AppPlugin {
                     ..default()
                 }),
             PhysicsPlugins::default().with_length_unit(1.0),
+            #[cfg(feature = "framepace")]
             FramepacePlugin,
             TweeningPlugin,
             AudioPlugin,

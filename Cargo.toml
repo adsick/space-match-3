@@ -111,13 +111,13 @@ dev_native = [
     "bevy/file_watcher",
     # Enable embedded asset hot reloading for native dev builds.
     "bevy/embedded_watcher",
-
 ]
-tracing = ["bevy/trace_tracy"]
+
+framepace = []
 skip_intro = []
+tracing = ["bevy/trace_tracy"]
 multi_threaded = ["bevy/multi_threaded"]
 debugdump = ["dep:bevy_mod_debugdump"]
-
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 bevy_spatial = { git = "https://github.com/laundmo/bevy-spatial", rev = "refs/pull/37/head", default-features = false, features = [
