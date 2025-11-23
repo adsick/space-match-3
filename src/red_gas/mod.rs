@@ -47,9 +47,6 @@ pub fn plugin(app: &mut App) {
         )
             .run_if(in_state(Screen::Gameplay)),
     );
-
-    #[cfg(feature = "dev")]
-    app.add_systems(Startup, configure_gizmos);
 }
 
 #[derive(Resource)]

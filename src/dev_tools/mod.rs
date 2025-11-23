@@ -2,7 +2,10 @@
 
 use avian2d::prelude::PhysicsDebugPlugin;
 use bevy::{
-    color::palettes::css::WHITE, input::common_conditions::{input_just_pressed, input_pressed}, post_process::bloom::Bloom, prelude::*
+    color::palettes::css::WHITE,
+    input::common_conditions::{input_just_pressed, input_pressed},
+    post_process::bloom::Bloom,
+    prelude::*,
 };
 
 use bevy::dev_tools::states::log_transitions;
@@ -23,12 +26,13 @@ const DEBUG_TOGGLE_KEY: KeyCode = KeyCode::Backquote;
 const PERFUI_TOGGLE_KEY: KeyCode = KeyCode::F3;
 const BLOOM_TOGGLE_KEY: KeyCode = KeyCode::KeyB;
 
+mod gizmos;
+
 pub(super) fn plugin(app: &mut App) {
     // World inspector
     app.add_plugins((
         EguiPlugin {
-            ..Default::default()
-            // enable_multipass_for_primary_context: true,
+            ..Default::default() // enable_multipass_for_primary_context: true,
         },
         WorldInspectorPlugin::default().run_if(resource_equals(WorldInspectorEnabled(true))),
     ));
@@ -69,6 +73,8 @@ pub(super) fn plugin(app: &mut App) {
         Update,
         tooggle_bloom.run_if(input_just_pressed(BLOOM_TOGGLE_KEY)),
     );
+
+    app.add_systems(Startup, gizmos::configure_gizmos);
 }
 
 fn toggle_debug_ui(mut options: ResMut<UiDebugOptions>) {

@@ -57,8 +57,8 @@ pub fn explode_red_orbs(
     orb_assets: Res<RedOrbAssets>,
 
     // debug
-    player: Single<&Transform, With<Player>>,
-    mut gizmo: Gizmos,
+    #[cfg(feature = "dev")] player: Single<&Transform, With<Player>>,
+    #[cfg(feature = "dev")] mut gizmo: Gizmos,
 ) {
     for event in events.read() {
         let Ok(orb) = orbs.get(event.entity) else {
@@ -68,22 +68,22 @@ pub fn explode_red_orbs(
         commands.entity(event.entity).try_despawn();
 
         // debug
+        #[cfg(feature = "dev")]
+        {
+            let ship_tr = player.translation.truncate();
+            let source = event.meta;
 
-        let ship_tr = player.translation.truncate();
-        let source = event.meta;
+            let pos = orb.pos.truncate();
+            let relative = pos - ship_tr;
 
-        let pos = orb.pos.truncate();
-        let relative = pos - ship_tr;
-
-        if relative.dot(player.up().truncate()) > 0.0 {
-            debug!("Explosion in front. Source: {source}");
-            gizmo.line_2d(ship_tr, pos, RED);
-            gizmo.circle_2d(Isometry2d::from_translation(pos), 10.0, RED);
-        } else {
-            gizmo.line_2d(ship_tr, pos, YELLOW);
+            if relative.dot(player.up().truncate()) > 0.0 {
+                debug!("Explosion in front. Source: {source}");
+                gizmo.line_2d(ship_tr, pos, RED);
+                gizmo.circle_2d(Isometry2d::from_translation(pos), 10.0, RED);
+            } else {
+                gizmo.line_2d(ship_tr, pos, YELLOW);
+            }
         }
-
-        // debug end
 
         let explosion_radius_tween = Tween::new(
             EaseFunction::SineOut,
@@ -297,12 +297,3 @@ pub fn update_component_animator_speed(
 //         }
 //     }
 // }
-
-// #[cfg(feature = "dev")]
-pub fn configure_gizmos(mut gizmo_config: ResMut<GizmoConfigStore>) {
-    gizmo_config
-        .config_mut::<DefaultGizmoConfigGroup>()
-        .0
-        .line
-        .width = 8.0;
-}

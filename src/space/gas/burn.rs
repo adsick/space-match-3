@@ -3,6 +3,7 @@ use std::collections::VecDeque;
 use avian2d::prelude::Physics;
 use bevy::{
     app::{App, Update},
+    color::palettes::css::LIGHT_GREEN,
     math::Vec2,
     prelude::*,
     time::Time,
@@ -64,6 +65,9 @@ pub fn propagate_flames(
 
     time: Res<Time<Physics>>,
     mut explosion_queue: Local<VecDeque<OrbExplosionCell>>,
+
+    #[cfg(feature = "dev")]
+    mut gizmos: Gizmos,
 ) {
     let curr_time = time.elapsed().as_millis() as u32;
 
@@ -90,6 +94,13 @@ pub fn propagate_flames(
         let size = CELL_SIZE * variation[i % variation.len()];
         i += 1;
 
+        #[cfg(feature = "dev")]
+        gizmos.circle_2d(
+            Isometry2d::from_translation(explosion.pos),
+            size,
+            LIGHT_GREEN,
+        );
+
         // condition of burn propagation. basically the older the explosion is the longer it takes to propagate
         if curr_time > explosion.time + BASE_DELAY + SLOWDOWN * (LIFETIME - explosion.life) {
             let mut burnt_orbs = false;
@@ -104,7 +115,7 @@ pub fn propagate_flames(
             }
             for (_, entity) in red_orb_tree.within_distance(explosion.pos, size / 2.0) {
                 if let Some(e) = entity {
-                    red_orb_explosion_events.write(RedOrbExplosionEvent { entity: e, meta: 0});
+                    red_orb_explosion_events.write(RedOrbExplosionEvent { entity: e, meta: 0 });
                     // commands
                     //     .entity(e)
                     //     .try_remove::<GasOrb>()
@@ -147,6 +158,7 @@ pub fn propagate_flames(
     for explosion in new_explosions {
         i += 1;
 
+        // probabilistically add some explosions to the queue
         if (variation[i % variation.len()] * new_len as f32) < free_space as f32 {
             explosion_queue.push_back(explosion);
         }
