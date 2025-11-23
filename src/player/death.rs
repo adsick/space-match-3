@@ -1,7 +1,9 @@
 use avian2d::prelude::{Physics, PhysicsTime};
 use bevy::{color::palettes::css::RED, prelude::*};
 
-use crate::{PausableSystems, menus::Menu, red_gas::ExplosionDamage, screens::Screen};
+use crate::{
+    PausableSystems, menus::Menu, player::free::FreeMode, red_gas::ExplosionDamage, screens::Screen,
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(
@@ -58,6 +60,8 @@ fn check_explosion_damage(
 
     mut phys_time: ResMut<Time<Physics>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+
+    free_mode: Res<State<FreeMode>>,
 ) {
     let Some(material) = materials.get_mut(*overlay) else {
         return;
@@ -65,6 +69,10 @@ fn check_explosion_damage(
 
     material.base_color.set_alpha(explosion_damage.0);
     // material.alpha_mode = AlphaMode::Mask(explosion_damage.0);
+
+    if free_mode.0 {
+        return;
+    }
 
     if explosion_damage.0 >= 1.0 {
         phys_time.pause();

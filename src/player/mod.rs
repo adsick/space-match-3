@@ -12,6 +12,7 @@ pub mod assets;
 pub mod dash;
 pub mod death;
 pub mod engine;
+pub mod free;
 pub mod hud;
 pub mod movement;
 pub mod sound;
@@ -27,6 +28,7 @@ pub(super) fn plugin(app: &mut App) {
         death::plugin,
         dash::plugin,
         sound::plugin,
+        free::plugin,
     ))
     .add_systems(
         Update,
@@ -38,10 +40,8 @@ pub(super) fn plugin(app: &mut App) {
     )
     .add_systems(
         FixedPostUpdate,
-        camera_follow_player
-            .run_if(in_state(IntroState(false)))
-            // avian docs suggests this as well, but idk
-            // .before(TransformSystems::Propagate),
+        camera_follow_player.run_if(in_state(IntroState(false))), // avian docs suggests this as well, but idk
+                                                                  // .before(TransformSystems::Propagate),
     );
 
     app.insert_resource(Score(0.0));
@@ -56,13 +56,12 @@ pub struct Score(pub f32);
 
 #[derive(Component, Default)]
 pub struct Player {
-    pub aura_points: f32, // given based on style (flying by objects at high speeds, etc.) // * maybe change this to a float too
+    pub aura_points: f32, // given based on style (flying by objects at high speeds, etc.)
     pub bullet_time_until: f32, // seconds
     pub bullet_time_cooldown_until: f32, // seconds
     pub near_asteroids: bool,
 }
 
-// TODO: ensure it runs in the right schedule
 pub fn camera_follow_player(
     q_camera: Single<&mut Transform, With<Camera>>,
     q_player: Single<(&GlobalTransform, &LinearVelocity), With<Player>>,
