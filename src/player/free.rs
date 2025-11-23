@@ -1,6 +1,8 @@
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 
-const TOGGLE_FREE_MODE_KEY: KeyCode = KeyCode::KeyG;
+use bevy::dev_tools::states::log_transitions;
+
+const TOGGLE_FREE_MODE_KEY: KeyCode = KeyCode::KeyF;
 
 #[derive(States, Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
 // #[states(scoped_entities)]
@@ -14,8 +16,13 @@ fn toggle_free_mode(
 }
 
 pub fn plugin(app: &mut App) {
+    app.insert_state(FreeMode(false));
+
+    #[cfg(feature = "dev")]
     app.add_systems(
         Update,
         toggle_free_mode.run_if(input_just_pressed(TOGGLE_FREE_MODE_KEY)),
     );
+
+    app.add_systems(Update, log_transitions::<FreeMode>);
 }

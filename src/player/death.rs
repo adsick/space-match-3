@@ -60,7 +60,6 @@ fn check_explosion_damage(
 
     mut phys_time: ResMut<Time<Physics>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-
     free_mode: Res<State<FreeMode>>,
 ) {
     let Some(material) = materials.get_mut(*overlay) else {

@@ -20,10 +20,12 @@ mod utils;
 mod vfx;
 
 use avian2d::prelude::*;
+use bevy::log::Level;
 use bevy::{
     asset::AssetMetaCheck,
     color::palettes::css::WHITE,
     diagnostic::FrameTimeDiagnosticsPlugin,
+    log::LogPlugin,
     prelude::*,
     render::{
         RenderPlugin,
@@ -69,6 +71,11 @@ impl Plugin for AppPlugin {
                         power_preference: PowerPreference::LowPower,
                         ..default()
                     }),
+                    ..default()
+                })
+                .set(LogPlugin {
+                    level: Level::INFO,
+                    filter: "avian2d::dynamics::solver::islands::sleeping=error".to_string(),
                     ..default()
                 }),
             PhysicsPlugins::default().with_length_unit(1.0),
