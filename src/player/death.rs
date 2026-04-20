@@ -55,7 +55,7 @@ fn check_explosion_damage(
     explosion_damage: Res<ExplosionDamage>,
     overlay: Single<&MeshMaterial3d<StandardMaterial>, With<DamageOverlay>>,
 
-    menu_state: ResMut<NextState<Menu>>,
+    _menu_state: ResMut<NextState<Menu>>,
     mut screen_state: ResMut<NextState<Screen>>,
 
     mut phys_time: ResMut<Time<Physics>>,

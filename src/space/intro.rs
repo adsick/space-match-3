@@ -26,7 +26,7 @@ pub struct IntroProgress {
     t: f32,
 }
 
-fn setup_intro(mut intro_state: ResMut<NextState<IntroState>>) {
+fn setup_intro(_intro_state: ResMut<NextState<IntroState>>) {
     #[cfg(not(feature = "skip_intro"))]
     intro_state.set(IntroState(true));
 }
@@ -58,7 +58,7 @@ fn camera_follow_player(
     let t = ease_in_out_cubic(progress.t);
 
     let mut cam_transform = q_camera.into_inner();
-    let (player_transform, vel) = q_player.into_inner();
+    let (player_transform, _vel) = q_player.into_inner();
 
     let interpolated_translation = START_CAM_TRANSLATION.lerp(END_CAM_TRANSLATION, t);
 

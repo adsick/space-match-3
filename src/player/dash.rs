@@ -1,6 +1,8 @@
 use std::f32::consts::PI;
 
-use avian2d::prelude::{Forces, LinearVelocity, RigidBodyForces, Rotation};
+use avian2d::prelude::{
+    Forces, LinearVelocity, RigidBodyForces, Rotation, WriteRigidBodyForces as _,
+};
 use bevy::{math::VectorSpace, prelude::*, transform::commands};
 
 use crate::{screens::Screen, space::intro::IntroState};

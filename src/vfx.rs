@@ -1,5 +1,5 @@
 use avian2d::prelude::*;
-use rand::Rng;
+use rand::{Rng, RngExt as _};
 
 use bevy::{post_process::bloom::Bloom, prelude::*};
 

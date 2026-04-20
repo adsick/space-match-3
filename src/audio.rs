@@ -112,6 +112,6 @@ fn play_loop(mut commands: Commands, assets: Res<AudioAssets>, audio: Res<Audio>
 }
 
 /// [`GlobalVolume`] doesn't apply to already-running audio entities, so this system will update them.
-fn apply_global_volume(audio: Res<Audio>) {
+fn apply_global_volume(_audio: Res<Audio>) {
     // audio.set_volume(GlobalVolume::get());
 }

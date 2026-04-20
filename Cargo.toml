@@ -6,7 +6,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-rand = "0.9"
+rand = "0.10"
 # Compile low-severity logs out of native builds for performance.
 log = { version = "0.4", features = [
     "max_level_debug",
@@ -17,79 +17,25 @@ tracing = { version = "0.1", features = [
     "max_level_debug",
     "release_max_level_debug",
 ] }
-avian2d = "0.4.1"
-bevy-inspector-egui = "0.35.0"
-noiz = "0.3.0"
-bevy_input_prompts = "0.2.2"
-bevy_framepace = "0.20"
-iyes_perf_ui = { git = "https://github.com/IyesGames/iyes_perf_ui", rev = "refs/pull/35/head", optional = true }
+avian2d = "0.6.1"
+bevy-inspector-egui = "0.36.0"
+noiz = "0.4.0"
+# bevy_input_prompts = "0.2.2"
+bevy_framepace = "0.21"
+iyes_perf_ui = { git = "https://github.com/IyesGames/iyes_perf_ui", rev = "refs/pull/38/head", optional = true }
 # bevy_tweening = "0.14.0"
-bevy_tweening = { git = "https://github.com/djeedai/bevy_tweening", rev = "refs/pull/160/head" }
-bevy_kira_audio = "0.24.0"
-bevy_mod_debugdump = { version = "0.13.0", optional = true }
-kira = "0.11.0"
+bevy_tweening = "0.15"
+bevy_kira_audio = "0.25.0"
+bevy_mod_debugdump = { version = "0.15.0", optional = true }
+kira = "0.12.0"
 
 [dependencies.bevy]
-version = "0.17"
+version = "0.18"
 # this setup is currently required to disable some of the default features, e.g. `multi_threaded`
-default-features = false
-features = [
-    "std",
-    "async_executor",
-    "android-game-activity",
-    "android_shared_stdcxx",
-    "animation",
-    "bevy_asset",
-    "bevy_audio",
-    "bevy_color",
-    "bevy_core_pipeline",
-    "bevy_post_process",
-    "bevy_anti_alias",
-    "bevy_gilrs",
-    "bevy_gizmos",
-    "bevy_gltf",
-    "bevy_input_focus",
-    "bevy_log",
-    "bevy_mesh_picking_backend",
-    "bevy_pbr",
-    "bevy_picking",
-    "bevy_render",
-    "bevy_scene",
-    "bevy_image",
-    "bevy_mesh",
-    "bevy_camera",
-    "bevy_light",
-    "bevy_shader",
-    "bevy_sprite",
-    "bevy_sprite_picking_backend",
-    "bevy_sprite_render",
-    "bevy_state",
-    "bevy_text",
-    "bevy_ui",
-    "bevy_ui_picking_backend",
-    "bevy_ui_render",
-    "bevy_window",
-    "bevy_winit",
-    "custom_cursor",
-    "default_font",
-    "hdr",
-    "ktx2",
-    # "multi_threaded",
-    "png",
-    "reflect_auto_register",
-    "smaa_luts",
-    "sysinfo_plugin",
-    "tonemapping_luts",
-    "vorbis",
-    "webgl2",
-    "x11",
-    "wayland",
-    "debug",
-    "zstd_rust",
-]
+default-features = true
 
 [target.'cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none")))'.dependencies]
-getrandom = { version = "^0.2", features = ["js"] }
+getrandom = { version = "^0.4", features = ["wasm_js"]}
 
 [features]
 # Default to a native dev build.
@@ -120,12 +66,12 @@ multi_threaded = ["bevy/multi_threaded"]
 debugdump = ["dep:bevy_mod_debugdump"]
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-bevy_spatial = { git = "https://github.com/laundmo/bevy-spatial", rev = "refs/pull/37/head", default-features = false, features = [
+bevy_spatial = { git = "https://github.com/laundmo/bevy-spatial", rev = "refs/pull/38/head", default-features = false, features = [
     "kdtree",
 ] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-bevy_spatial = { git = "https://github.com/laundmo/bevy-spatial", rev = "refs/pull/37/head", default-features = true }
+bevy_spatial = { git = "https://github.com/laundmo/bevy-spatial", rev = "refs/pull/38/head", default-features = true }
 
 
 [package.metadata.bevy_cli.release]
